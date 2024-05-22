@@ -1,4 +1,0 @@
-User-agent: *
-Disallow:
-Allow: /
-Sitemap: https://exploiitm.github.io/blog/sitemap.xml
