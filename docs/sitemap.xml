@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://exploiitm.github.io/</loc>
+    </url>
+    <url>
+        <loc>https://exploiitm.github.io/about/</loc>
+    </url>
+    <url>
+        <loc>https://exploiitm.github.io/journal/</loc>
+        <lastmod>2019-10-05</lastmod>
+    </url>
+    <url>
+        <loc>https://exploiitm.github.io/posts/first-post/</loc>
+        <lastmod>2024-05-22</lastmod>
+    </url>
+    <url>
+        <loc>https://exploiitm.github.io/tags/</loc>
+    </url>
+    <url>
+        <loc>https://exploiitm.github.io/tags/example/</loc>
+    </url>
+</urlset>
