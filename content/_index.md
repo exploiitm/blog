@@ -10,7 +10,7 @@ Official blog of Cybersecurity Club, IIT Madras.
 ## Posts
 
 
-- [First Post](./blog/posts/first-post)
+- [Philosophy - What is Hacking?](./blog/posts/philosophy)
 
 ## Tags
 
