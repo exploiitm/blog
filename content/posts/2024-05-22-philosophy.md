@@ -1,7 +1,5 @@
 +++
 title = "Philosophy"
-[taxonomies]
-tags = ['Art of Exploitation']
 +++
 
 ## What is Hacking?
