@@ -12,13 +12,11 @@ Official blog of Cybersecurity Club, IIT Madras.
 
 - [Philosophy - What is Hacking?](./posts/philosophy)
 
-## Resources
+## :wqResources
 
 - [Basic Python Programming](./resources/resource1)
 
-## Tags
 
-Browse articles by *[tags](/blog/tags)*
 
 
 
