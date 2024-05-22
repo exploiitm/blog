@@ -1,0 +1,1248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>exploiitm blog - scripting</title>
+    <subtitle>Official blog of Cybersecurity Club, IIT Madras</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://exploiitm.github.io/blog/tags/scripting/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://exploiitm.github.io/blog"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-05-22T00:00:00+00:00</updated>
+    <id>https://exploiitm.github.io/blog/tags/scripting/atom.xml</id>
+    <entry xml:lang="en">
+        <title>1.1 Basic Python Programming</title>
+        <published>2024-05-22T00:00:00+00:00</published>
+        <updated>2024-05-22T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://exploiitm.github.io/blog/resources/resource1/"/>
+        <id>https://exploiitm.github.io/blog/resources/resource1/</id>
+        
+        <content type="html" xml:base="https://exploiitm.github.io/blog/resources/resource1/">&lt;h2 id=&quot;simple-operations&quot;&gt;Simple Operations&lt;&#x2F;h2&gt;
+&lt;p&gt;Python has the capability of carrying out calculations. Enter a calculation directly into a print statement:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(2 + 2)
+print(5 + 4 -3)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The spaces around the plus and the minus signs here are optional (the code would work without them) but they make it easier to read.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Python also carries out multiplication and division, using an &lt;strong&gt;asterisk&lt;&#x2F;strong&gt; &lt;code&gt;*&lt;&#x2F;code&gt; to indicate multiplication and a &lt;strong&gt;forward slash&lt;&#x2F;strong&gt; &lt;code&gt;&#x2F;&lt;&#x2F;code&gt; to indicate division.&lt;&#x2F;p&gt;
+&lt;p&gt;Use &lt;strong&gt;parentheses&lt;&#x2F;strong&gt; to determine which operations are performed first.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(2*(3+4))
+print(10&amp;#x2F;2)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Using a single slash to divide numbers produces a decimal (or &lt;strong&gt;&lt;em&gt;float&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt;, as it is called in programming). We’ll learn more about &lt;strong&gt;floats&lt;&#x2F;strong&gt; later.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Dividing by zero produces an &lt;strong&gt;error&lt;&#x2F;strong&gt; in python, as no answer can be calculated.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(11&amp;#x2F;0)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre&gt;&lt;code&gt;Traceback(most recent call last):
+File&amp;quot;\&amp;lt;stdin\&amp;gt;&amp;quot;, line 1, in \&amp;lt;module\&amp;gt;
+ZeroDivisionError: division by zero
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In python, the last line of an error message indicates the error’s type. Read error messages carefully, as they often tell you how to fix a program!&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;floats&quot;&gt;Floats&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;strong&gt;Floats&lt;&#x2F;strong&gt; are used in python to represent numbers that &lt;strong&gt;aren’t integers&lt;&#x2F;strong&gt; (whole numbers). Some examples of numbers that are represented as floats are 0.5 and -7.8538953. They can be created directly by entering a number with a decimal point, or by using operations such as division on integers.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(3&amp;#x2F;4)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Computers can’t store floats perfectly accurately, in the same way we can’t write down the complete decimal expansion of 1&#x2F;3 (0.333333333…). Keep this in mind, because it often leads to infuriating bugs!&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;A float is also produced by running an operation on two floats, or on a float and an integer.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;A float can be added to an integer, because Python silently converts the ineger to a float.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;exponentiation&quot;&gt;Exponentiation&lt;&#x2F;h2&gt;
+&lt;p&gt;Besides addition, subtraction, multiplication, and division, Python also supports exponentiation, which is raising of one number to the power of another. This operation is performed using two asterisks.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(2**5)
+print(9**(1&amp;#x2F;2))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You can chain exponentiation together. In other words, you can raise a number to multiple powers. Eg. 2&lt;strong&gt;3&lt;&#x2F;strong&gt;2&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;quotient&quot;&gt;Quotient&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;strong&gt;Floor division&lt;&#x2F;strong&gt; is done using two forward slashes and is used to determine the &lt;strong&gt;quotient&lt;&#x2F;strong&gt; of a division (the quantity produced by the division of two numbers).&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;For example:&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(20&amp;#x2F;&amp;#x2F;6)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The code above will output 3. &lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You can also use floor division on floats&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;remainder&quot;&gt;Remainder&lt;&#x2F;h2&gt;
+&lt;p&gt;The &lt;strong&gt;modulo operator&lt;&#x2F;strong&gt; is carried out with a percent symbol &lt;code&gt;%&lt;&#x2F;code&gt; and is used to get the &lt;strong&gt;remainder&lt;&#x2F;strong&gt; of a division.&lt;&#x2F;p&gt;
+&lt;p&gt;For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(20%6)
+print(1.25%0.5)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;All numerical operators can also be used with floats.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;strings&quot;&gt;Strings&lt;&#x2F;h2&gt;
+&lt;p&gt;If you want to use text in python, you have to use a string. A string is created by entering text between &lt;strong&gt;two single or double quotation marks&lt;&#x2F;strong&gt;.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(&amp;quot;Python is fun!&amp;quot;)
+print(&amp;quot;Always look on the bright side&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The delimiter (” or ’) used for a string doesn’t affect how it behaves in any way.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h3 id=&quot;backslash&quot;&gt;Backslash&lt;&#x2F;h3&gt;
+&lt;p&gt;Some characters cant be directly included in a string. For instance, double quotes can’t be directly included in a double quote string; this would cause it to end prematurely.&lt;&#x2F;p&gt;
+&lt;p&gt;Characters like double quotes must be escaped by placing a &lt;strong&gt;backslash&lt;&#x2F;strong&gt; before them. Double quotes need to be escaped in double quotes strings only, and the same is true for single quotes strings. For Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(&amp;#x27;Brian\&amp;#x27;s mother: He\&amp;#x27;s not an angel. He\&amp;#x27;s a naughty boy!&amp;#x27;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Backslashes can also be used to escape tabs, arbitrary Unicode characters, and various other things that can’t be reliably printed.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Newlines&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;\n&lt;&#x2F;code&gt; represents a new line. It can be used in strings to create multi-line output.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(&amp;#x27;One **\n** Two **\n** Three&amp;#x27;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Newlines will automatically be added for strings that are created using three quotes.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(&amp;quot;&amp;quot;&amp;quot;This
+is a
+multiline
+text&amp;quot;&amp;quot;&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Similarly, &lt;code&gt;\t&lt;&#x2F;code&gt; represents a tab.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h3 id=&quot;concatenation&quot;&gt;Concatenation&lt;&#x2F;h3&gt;
+&lt;p&gt;As with integers and floats, strings in Python can be added, using a process called &lt;em&gt;concatenation&lt;&#x2F;em&gt;, which can be done on any two strings.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(&amp;quot;Spam&amp;quot; + &amp;#x27;eggs&amp;#x27;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;When concatenating strings, it doesn’t matter whether they have been created with single or double quotes, as seen above&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Adding a string to a number produces an error, as even though they might look similar, they are two different entities&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h3 id=&quot;string-operations&quot;&gt;String Operations&lt;&#x2F;h3&gt;
+&lt;p&gt;Strings can also be &lt;strong&gt;multiplied&lt;&#x2F;strong&gt; with integers. This produces a repeated version of that string. The order of the &lt;em&gt;string&lt;&#x2F;em&gt; and the &lt;em&gt;integer&lt;&#x2F;em&gt; doesn’t matter, but the string usually comes first.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(&amp;quot;spam&amp;quot;*3)
+
+print(4*&amp;#x27;2&amp;#x27;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Strings can’t be multiplied with other strings. Strings also can’t be multiplied by floats, even if the floats are whole numbers.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;variables&quot;&gt;Variables&lt;&#x2F;h2&gt;
+&lt;p&gt;A &lt;em&gt;variable&lt;&#x2F;em&gt; allows you to store a value by assigning it to a name, which can be used to refer to the value later in the program. For example, in game development, you would use a variable to to store the points of the player.&lt;&#x2F;p&gt;
+&lt;p&gt;To assign a variable, use &lt;strong&gt;one equals sign&lt;&#x2F;strong&gt;.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;user = &amp;quot;James&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;You can use variables to perform corresponding operations, just as you did with numbers and strings:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;x = 7
+print(x)
+
+print(x + 3)
+print(x)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The variable stores its value throughout the program.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Variables can be assigned as many times as you want, in order to change their value. In python, variables don’t have specific types, so you can assign a string to a variable, and later assign an integer to the same variable.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;x = 123.456
+print(x)
+
+x = &amp;quot;This is a string&amp;quot;
+print(x+&amp;quot;!&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;However, this is not a good practice. To avoid mistakes, try to avoid overwriting the same variable with different data types.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h3 id=&quot;variable-names&quot;&gt;Variable Names&lt;&#x2F;h3&gt;
+&lt;p&gt;Certain restrictions apply in regard to the characters that may be used in python variable names. The only characters that are allowed are &lt;strong&gt;letters, numbers and underscore&lt;&#x2F;strong&gt;. Also, they can’t start with numbers. Not following these rules results in errors.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;this_is_a_normal_name = 7
+
+123abc = 7
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre&gt;&lt;code&gt;SyntaxError: invalid syntax
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Python is a case sensitive programming language. Thus, &lt;code&gt;lastname&lt;&#x2F;code&gt; and &lt;code&gt;Lastname&lt;&#x2F;code&gt; are two &lt;em&gt;different&lt;&#x2F;em&gt; variable names in python.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;You can use the &lt;em&gt;del&lt;&#x2F;em&gt; statement to remove a variable, which means the reference from the name to the value is deleted, and trying to use the variable causes an error.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;foo = 3
+del foo
+print(foo)
+# results in an error
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Deleted variables can also e reassigned to later as normal.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;foo = 2
+bar = 3
+del bar
+bar = 8
+print(foo + bar)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The variables foo and bar are called metasyntactic variables, meaning they are used as placeholder names in example code to demonstrate something.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;input&quot;&gt;Input&lt;&#x2F;h2&gt;
+&lt;p&gt;To get input from the user in python, you can use the intuitively named input function. For example, a game can ask for a user’s name and age as input and use them in the game.&lt;&#x2F;p&gt;
+&lt;p&gt;The input function prompts the user for input, and returns what they enter as a string (with the contents automatically escaped).&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;x = input()
+print(x)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Even if the user enters a number as an input, it is processed as a string.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;The input statement needs to be followed by parentheses. You can provide a string to &lt;code&gt;input()&lt;&#x2F;code&gt; between the parentheses, producing a prompt message.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;name = input(&amp;quot;Enter your name: &amp;quot;)
+print(&amp;quot;Hello&amp;quot;+name)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The prompt message helps clarify what the input is asking for.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;To convert the string to a number, we can use the &lt;code&gt;int()&lt;&#x2F;code&gt; function:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;age =int(input())
+print(age)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Similarly, in order to convert a number to a string, the str() function is used. This can be useful if you need to use a number in string concatenation. For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;age = 42
+print(&amp;quot;His age is&amp;quot; + str(age))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You can convert to float using the float() function.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;You can take input multiple times to take multiple user input. For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;name = input()
+age = input()
+
+print(name + &amp;quot;is&amp;quot; + age)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;When input function executes, program flow stops until the user enters some value.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;in-place-operators&quot;&gt;In Place Operators&lt;&#x2F;h2&gt;
+&lt;p&gt;In-place operators allow you to write code like &lt;code&gt;x = x + 3&lt;&#x2F;code&gt; more concisely as &lt;code&gt;x +=3&lt;&#x2F;code&gt;. The same thing is possible with other operators such as &lt;code&gt;-&lt;&#x2F;code&gt;,&lt;code&gt;*&lt;&#x2F;code&gt;, &lt;code&gt;&#x2F;&lt;&#x2F;code&gt;, and &lt;code&gt;%&lt;&#x2F;code&gt; as well.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;x = 2
+print(x)
+
+x += 3
+print(x)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;These operators can be used on types other than numbers, as well, such as strings.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;x= &amp;quot;spam&amp;quot;
+print(x)
+
+x += &amp;quot;eggs&amp;quot;
+print(x)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In-place operators can be used for any numerical operation (+,-,*,&#x2F;,%,**,&#x2F;&#x2F;).&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;booleans&quot;&gt;Booleans&lt;&#x2F;h2&gt;
+&lt;p&gt;Another type in python is the &lt;strong&gt;Boolean&lt;&#x2F;strong&gt; type. There are two Boolean values: &lt;code&gt;True&lt;&#x2F;code&gt; and &lt;code&gt;False&lt;&#x2F;code&gt;. They can be created by comparing values, for instance by using the equal to &lt;code&gt;==&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;my_boolean = True
+print(my_boolean)
+True
+
+print(2 == 3)
+False
+
+print(&amp;quot;hello&amp;quot; == &amp;#x27;hello&amp;#x27;)
+True
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Be careful not to confuse assignment (one equal sign) with comparison (two equal signs).&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;comparison&quot;&gt;Comparison&lt;&#x2F;h2&gt;
+&lt;p&gt;Another comparison operator, the &lt;em&gt;not&lt;&#x2F;em&gt; equal operator (!=), evaluates to True if the items being compared aren’t equal, and False if they are.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(1 != 1)
+False
+
+print(&amp;quot;eleven&amp;quot; != &amp;quot;seven&amp;quot;)
+True
+
+print(2 != 10)
+True
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Comparison operators are also called relational operators.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Python also has operators that determine whether one number (float or integer) is greater than or smaller than another. These operators are &lt;code&gt;&amp;gt;&lt;&#x2F;code&gt; and &lt;code&gt;&amp;lt;&lt;&#x2F;code&gt; respectively.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(7 &amp;gt; 5)
+True
+
+print(10 &amp;lt; 10)
+False
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Different numeric types can also be compared, for example, integer and float.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;The greater than or equal to, and the smaller than or equal to operators are &amp;gt;= and &amp;lt;=. They are the same as the strict greater than and smaller than operators, except that they return True when comparing equal numbers.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(7&amp;lt;= 8)
+True
+
+print(9&amp;gt;=9.0)
+True
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Greater than and smaller than operators can also be used to compare strings &lt;em&gt;lexicographically&lt;&#x2F;em&gt;. For Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(&amp;quot;Annie&amp;quot; &amp;gt; &amp;quot;Andy&amp;quot;)
+True
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;if-statements&quot;&gt;If statements&lt;&#x2F;h2&gt;
+&lt;p&gt;You can use if statements to run code if a certain condition holds. If the expression evaluates to True, some statements are carried out.Otherwise they aren’t carried out. An if statement looks like this:&lt;&#x2F;p&gt;
+&lt;p&gt;if expression:
+&lt;br&gt;    statements&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Python uses indentation, (white spaces at the beginning of a line) to delimit blocks of code. Depending on the program’s logic, indentation can be mandatory. As you can see, the statements in the if should be indented.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Here is an example of if statement:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;if 10 &amp;gt; 5:
+    print(&amp;quot;10 is greater than 5&amp;quot;)
+
+print(&amp;quot;The program ended&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The expression determines whether 10 is greater than 5. Since it is, the indented statement runs, and “10 is greater than 5” is output. Then, the unindented statement, which is not a part of the if statement, is run, and “Program ended” is displayed.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Notice the colon at the end of the expression in the if statement.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;To perform more complex checks, if statements can be nested, one inside the other. This means that the inner if statement is the statement part of the outer one. This is one way to see whether multiple conditions are satisfied.&lt;&#x2F;p&gt;
+&lt;p&gt;For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;num = 12
+if num &amp;gt; 5:
+    print(&amp;quot;Bigger than 5&amp;quot;)
+    if num &amp;lt;= 47:
+        print(&amp;quot;between 5 and 47&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Indentation is used to define the level of nesting.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;else-statements&quot;&gt;else Statements&lt;&#x2F;h2&gt;
+&lt;p&gt;The &lt;em&gt;if&lt;&#x2F;em&gt; statement allows you to check a condition and run some statements, if the condition is True. The &lt;em&gt;else&lt;&#x2F;em&gt; statement can be used to run some statements when the condition of the if statement is False.&lt;&#x2F;p&gt;
+&lt;p&gt;As with if statements, the code inside the block should be indented.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;x = 4
+if x == 5:
+    print(&amp;quot;Yes&amp;quot;)
+else:
+    print(&amp;quot;No&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Notice the colon after the else keyword.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Every if condition block can have only one else statement. In order to make multiple checks, you can chain if and else statements.&lt;&#x2F;p&gt;
+&lt;p&gt;For example, the following program checks and outputs the num variable’s value as text:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;num = 3
+if num == 1:
+    print(&amp;quot;One&amp;quot;)
+else:
+    if num == 2:
+        print(&amp;quot;Two&amp;quot;)
+    else:
+        if num == 3:
+            print(&amp;quot;Three&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Indentation determines which if&#x2F;else statements the code blocks belong to.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;elif-statements&quot;&gt;elif Statements&lt;&#x2F;h2&gt;
+&lt;p&gt;Multiple if&#x2F;else statements make the code long and not very readable. The elif (short for else if) statement is a shortcut to use when chaining if and else statements, making the code shorter.&lt;&#x2F;p&gt;
+&lt;p&gt;The same example from the previous part can be rewritten using elif statements:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;num = 3:
+if num == 1:
+    print(&amp;quot;One&amp;quot;)
+elif num == 2:
+    print(&amp;quot;Two&amp;quot;)
+elif num == 3:
+    print(&amp;quot;Three&amp;quot;)
+else:
+    print(&amp;quot;None are true&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;As you can see in the example above, a series of if elif statements can have a final else block, which is called if none of the if or elif expressions is True. &amp;gt;The elif statement is equivalent to an else&#x2F;if statement. It is used to make the code shorter, more readable, and avoid indentation increase.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;boolean-logic&quot;&gt;Boolean Logic&lt;&#x2F;h2&gt;
+&lt;p&gt;Boolean logic is used to make more complicated conditions for if statements that rely on more than one condition. Python’s Boolean operators are and, or, and not. The &lt;code&gt;and&lt;&#x2F;code&gt; operator takes two arguments, and evaluates as True if, and only if, both of its arguments are True. Otherwise, it evaluates to False.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print( 1 == 1 and 2 == 2)
+True
+
+print(1 == 1 and 2 == 3)
+False
+
+print( 1 != 1 and 2 &amp;gt; 3)
+False
+
+print( 2 &amp;lt; 3 and 3 &amp;gt; 6)
+False
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Boolean operators can be used in expression as many times as needed.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;The &lt;code&gt;or&lt;&#x2F;code&gt; operator also takes two arguments. It evaluates to True if either (or both) of its arguments are True, and False if both arguments are False.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print( 1 == 1 or 2 == 2)
+True
+
+print(1 == 1 or 2 == 3)
+True
+
+print( 1 != 1 or 2 &amp;gt; 3)
+False
+
+print( 2 &amp;lt; 3 or 3 &amp;gt; 6)
+True
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Besides values, you can also compare variables.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Unlike other operators we’ve seen so far, &lt;code&gt;not&lt;&#x2F;code&gt; only takes one argument, and inverts it. The result of not True is False, and not False goes to True&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print( not 1 == 1)
+False
+
+print( not 1 &amp;gt; 7)
+True
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You can chain multiple conditional statements in an if statement using the Boolean operators.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;operator-precedence&quot;&gt;Operator Precedence&lt;&#x2F;h2&gt;
+&lt;p&gt;Operator precedence is a very important concept in programming. It is an extension of the mathematical idea of order of operations (multiplication being performed before addition, etc.) to include other operators, such as those in Boolean logic.&lt;&#x2F;p&gt;
+&lt;p&gt;The below code shows that == has a higher precedence than or&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(False == False or True)
+True
+
+print(False == (False or True))
+False
+
+print((False == False) or True)
+True
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Python’s order of operations is the same as that of normal mathematics: parentheses first, then exponentiation, then multiplication&#x2F;division, and then addition&#x2F;subtraction.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;chaining-multiple-conditions&quot;&gt;Chaining Multiple Conditions&lt;&#x2F;h2&gt;
+&lt;p&gt;You can chain multiple conditional statements in an if statement using the Boolean operators.&lt;&#x2F;p&gt;
+&lt;p&gt;For example, we can check if the value of a grade is between 70 and 100:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;grade = 88
+if (grade &amp;gt;= 70 and grade &amp;lt;= 100):
+    print(&amp;quot;Passed!&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You can use multiple and, or, not operators to chain multiple conditions together.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;lists&quot;&gt;Lists&lt;&#x2F;h2&gt;
+&lt;p&gt;Lists are used to store items. A list is created using square brackets with commas separating items.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;words = [&amp;quot;Hello&amp;quot;, &amp;quot;world&amp;quot;, &amp;quot;!&amp;quot;]
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In the example above the words list contains three string items.&lt;&#x2F;p&gt;
+&lt;p&gt;A certain item in the list can be accessed by using its index in square brackets.&lt;&#x2F;p&gt;
+&lt;p&gt;For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;words = [&amp;quot;Hello&amp;quot;, &amp;quot;world&amp;quot;, &amp;quot;!&amp;quot;]
+print(words[0])
+print(words[1])
+print(words[2])
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The first list item’s index is 0, rather than 1, as might be expected.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Sometimes you need to create an empty list and populate it later during the program. For example, if you are creating a queue management program, the queue is going to be empty in the beginning and get populated with people data later.&lt;&#x2F;p&gt;
+&lt;p&gt;An empty list is created with an empty pair of square brackets.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;empty_list = []
+print(empty_list)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In some code samples you might see a comma after the last item in the list. It’s not mandatory, but perfectly valid.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Typically, a list will contain items of a single item type, but it is also possible to include several different types. Lists can also be nested within other lists.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;number = 3
+things = [&amp;quot;string&amp;quot;,  0,  [1,  2, number],  4.56]
+print(things[1])
+print(things[2])
+print(things[2][2])
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Nested lists can be used to represent 2D grids, such as matrices. For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;m = [[0,1,2],[4,5,6]]
+print(list([1][2])
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;A matrix-like structure can be used in cases where you need to store data in row-column format. For example, when creating a ticketing program, the seat numbers can be stored in a matrix, with their corresponding rows and numbers. &lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The code above outputs the 3rd item of the 2nd row.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Some types, such as strings, can be indexed like lists. Indexing strings behaves as though you are indexing a list containing each character in the string.&lt;&#x2F;p&gt;
+&lt;p&gt;For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;string = &amp;quot;Hello world&amp;quot;
+print(string[6])
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Space (” “) is also a symbol and has an index.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Trying to access a non existing index will lead to an error.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;list-operations&quot;&gt;List Operations&lt;&#x2F;h2&gt;
+&lt;p&gt;The item at a certain index in a list can be reassigned. For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;list = [0,1,2,3,4]
+list[2] = 5
+print(list)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You can replace the item with an item of a different type.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Lists can be added and multiplied in the same way as strings. For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;nums = [0,1,2]
+print(nums + [3,4,5])
+print(nums*3)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Lists and strings are similar in many ways - strings can be thought of as lists of characters that can’t be changed.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;For example, the string “Hello” can be thought of as a list, where each character is an item in the list. The first item is “H”, the second item is “e”, and so on.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;To check if an item is in a list, the in operator can be used. It returns True if the item occurs one or more times in the list, and False if it doesn’t.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;words = [&amp;quot;spam&amp;quot;,  &amp;quot;egg&amp;quot;,  &amp;quot;spam&amp;quot;,  &amp;quot;sausage&amp;quot;]
+print(&amp;quot;spam&amp;quot;  in words)
+print(&amp;quot;egg&amp;quot;  in words)
+print(&amp;quot;tomato&amp;quot;  in words)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The in operator is also used to determine whether or not a string is a substring of another string.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;To check if an item is not in a list, you can use the not operator in one of the following ways:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;nums = [1,  2,  3]
+print(not  4  in nums)
+print(4  not  in nums)
+print(not  3  in nums)
+print(3  not  in nums)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;list-functions&quot;&gt;List Functions&lt;&#x2F;h2&gt;
+&lt;p&gt;The append method adds an item to the end of an existing list. For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;nums = [1,2,3]
+nums.append[4]
+print(nums)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The dot before append is there because it is a method of the list class. Methods will be explained in later.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;To get the number of items in a list, you can use the len function.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;list = [0,1,2,3,4]
+print(len(list))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Unlike the index of the items, len does not start with 0. So, the list above contains 5 items, meaning len will return 5.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;len&lt;&#x2F;code&gt; is written before the list it is being called on, without a dot.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;The insert method is similar to append, except that it allows you to insert a new item at any position in the list, as opposed to just at the end.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;words = [&amp;quot;Python&amp;quot;,  &amp;quot;fun&amp;quot;]
+index = 1
+words.insert(index,  &amp;quot;is&amp;quot;)
+print(words)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Elements, that are after the inserted item, are shifted to the right.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;The index method finds the first occurrence of a list item and returns its index. If the item isn’t in the list, it raises a ValueError.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;letters = [&amp;#x27;p&amp;#x27;,  &amp;#x27;q&amp;#x27;,  &amp;#x27;r&amp;#x27;,  &amp;#x27;s&amp;#x27;,  &amp;#x27;p&amp;#x27;,  &amp;#x27;u&amp;#x27;]
+print(letters.index(&amp;#x27;r&amp;#x27;))
+print(letters.index(&amp;#x27;p&amp;#x27;))
+print(letters.index(&amp;#x27;z&amp;#x27;))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;There are a few more useful functions and methods for lists.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;max(list)&lt;&#x2F;code&gt;: Returns the list item with the maximum value&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;min(list)&lt;&#x2F;code&gt;: Returns the list item with minimum value&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;list.count(item)&lt;&#x2F;code&gt;: Returns a count of how many times an item occurs in a list.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;list.remove(item)&lt;&#x2F;code&gt;: Removes an object from a list&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;list.reverse()&lt;&#x2F;code&gt;: Reverses items in a list.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;For example, you can count how many 42s are there in the list using: items.count(42) where items is the name of our list.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;while-loops&quot;&gt;While Loops&lt;&#x2F;h2&gt;
+&lt;p&gt;A while loop is used to repeat a block of code multiple times. For example, let’s say we need to process multiple user inputs, so that each time the user inputs something, the same block of code needs to execute.&lt;&#x2F;p&gt;
+&lt;p&gt;Below is a while loop containing a variable that counts up from 1 to 5, at which point the loop terminates.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;i = 1
+while i &amp;lt;=5:
+    print(i)
+    i += 1
+print(&amp;quot;Finished!&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;During each loop iteration, the i variable will get incremented by one, until it reaches 5. So, the loop will execute the print statement 5 times.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The code in the body of a while loop is executed repeatedly. This is called iteration.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;You can use multiple statements in the while loop.&lt;&#x2F;p&gt;
+&lt;p&gt;For example, you can use an if statement to make decisions. This can be useful, if you are making a game and need to loop through a number of player actions and add or remove points of the player.&lt;&#x2F;p&gt;
+&lt;p&gt;The code below uses an if&#x2F;else statement inside a while loop to separate the even and odd numbers in the range of 1 to 10:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;x = 1
+while x &amp;lt;= 10:
+    if x%2 == 0:
+        print(str(x) + &amp;quot;is even&amp;quot;)
+    else:
+        print(str(x) + &amp;quot;is odd&amp;quot;)
+    x += 1
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;str(x)&lt;&#x2F;code&gt; is used to convert the number x to a string, so that it can be used for concatenation.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In console, you can stop the program’s execution by using the Ctrl-C shortcut or by closing the program.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;&lt;code&gt;break&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;To end a while loop prematurely, the break statement can be used. For example, we can break an infinite loop if some condition is met:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;i = 0
+while  1==1:
+    print(i)
+    i = i + 1
+    if i &amp;gt;= 5:
+        print(&amp;quot;Breaking&amp;quot;)
+        break
+print(&amp;quot;Finished&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;while True is a short and easy way to make an infinite loop.&lt;&#x2F;p&gt;
+&lt;p&gt;An example use case of break: An infinite while loop can be used to continuously take user input. For example, you are making a calculator and need to take numbers from the user to add and stop, when the user enters “stop”. In this case, the break statement can be used to end the infinite loop when the user input equals “stop”.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Using the break statement outside of a loop causes an error.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;&lt;code&gt;continue&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Another statement that can be used within loops is continue. Unlike break, continue jumps back to the top of the loop, rather than stopping it. Basically, the continue statement stops the current iteration and continues with the next one.&lt;&#x2F;p&gt;
+&lt;p&gt;For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;i = 0
+while i&amp;lt;5:
+    i += 1
+    if i==3:
+        print(&amp;quot;Skipping 3&amp;quot;)
+        continue
+    print(i)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;An example use case of continue: An airline ticketing system needs to calculate the total cost for all tickets purchased. The tickets for children under the age of 1 are free. We can use a while loop to iterate through the list of passengers and calculate the total cost of their tickets. Here, the continue statement can be used to skip the children.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Using the continue statement outside of a loop causes an error.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;for-loop&quot;&gt;for Loop&lt;&#x2F;h2&gt;
+&lt;p&gt;The for loop is used to iterate over a given sequence, such as lists or strings.&lt;&#x2F;p&gt;
+&lt;p&gt;The code below outputs each item in the list and adds an exclamation mark at the end:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;words = [&amp;#x27;hello&amp;#x27;, &amp;#x27;world&amp;#x27;]
+for word in words:
+    print(word + &amp;#x27;!&amp;#x27;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In the code above, the word variable represents the corresponding item of the list in each iteration of the loop. During the 1st iteration, word is equal to “hello”, and during the 2nd iteration it’s equal to “world”.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;The for loop can be used to iterate over strings.&lt;&#x2F;p&gt;
+&lt;p&gt;For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;str = &amp;quot;testing for loops&amp;quot;
+count = 0
+for x in  str:
+    if(x == &amp;#x27;t&amp;#x27;):
+        count += 1
+print(count)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The code above defines a count variable, iterates over the string and calculates the count of ‘t’ letters in it. During each iteration, the x variable represents the current letter of the string. The count variable is incremented each time the letter ‘t’ is found, thus, at the end of the loop it represents the number of ‘t’ letters in the string. &amp;gt;Similar to while loops, the break and continue statements can be used in for loops, to stop the loop or jump to the next iteration.
+for vs while&lt;&#x2F;p&gt;
+&lt;p&gt;Both, for and while loops can be used to execute a block of code for multiple times.&lt;&#x2F;p&gt;
+&lt;p&gt;It is common to use the for loop when the number of iterations is fixed. For example, iterating over a fixed list of items in a shopping list.&lt;&#x2F;p&gt;
+&lt;p&gt;The while loop is used in cases when the number of iterations is not known and depends on some calculations and conditions in the code block of the loop. For example, ending the loop when the user enters a specific input in a calculator program.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Both, for and while loops can be used to achieve the same results, however, the for loop has cleaner and shorter syntax, making it a better choice in most cases.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h3 id=&quot;range&quot;&gt;Range&lt;&#x2F;h3&gt;
+&lt;p&gt;The &lt;code&gt;range()&lt;&#x2F;code&gt; function returns a sequence of numbers. By default, it starts from 0, increments by 1 and stops before the specified number.&lt;&#x2F;p&gt;
+&lt;p&gt;The code below generates a list containing all of the integers, up to 10.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;nums = list(range(10))
+print(nums)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In order to output the range as a list, we need to explicitly convert it to a list, using the list() function.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;If range is called with one argument, it produces an object with values from 0 to that argument. If it is called with two arguments, it produces values from the first to the second. For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;nums = list(range(3,10))
+print(numbers)
+
+print(range(20) == range(0, 20))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Remember, the second argument is not included in the range, so range(3, 8) will not include the number 8.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;range can have a third argument, which determines the interval of the sequence produced, also called the step.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;numbers = list(range(5,20,2))
+print(numbers)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;We can also create list of decreasing numbers, using a negative number as the third argument, for example list(range(20, 5, -2)).&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;for-loops&quot;&gt;for Loops&lt;&#x2F;h2&gt;
+&lt;p&gt;The for loop is commonly used to repeat some code a certain number of times. This is done by combining for loops with range objects.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;for i in range(5):
+    print(&amp;quot;hello world!&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You don’t need to call list on the range object when it is used in a for loop, because it isn’t being indexed, so a list isn’t required.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;functions&quot;&gt;Functions&lt;&#x2F;h2&gt;
+&lt;p&gt;You’ve already used functions previously. Any statement that consists of a word followed by information in parentheses is a function call. Here are some examples that you’ve already seen:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(&amp;quot;Hello world&amp;quot;)
+range(2,20)
+str(12)
+range(10,20,3)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The words in front of the parentheses are function names, and the comma-separated values inside the parentheses are function arguments.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;In addition to using pre-defined functions, you can create your own functions by using the def statement. Here is an example of a function named my_func. It takes no arguments, and prints “spam” three times. It is defined, and then called. The statements in the function are executed only when the function is called.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def my_func():
+    print(&amp;quot;spam&amp;quot;)
+    print(&amp;quot;spam&amp;quot;)
+    print(&amp;quot;spam&amp;quot;)
+my_func()
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The code block within every function starts with a colon (:) and is indented.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;You must define functions before they are called, in the same way that you must assign variables before using them.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;hello()
+
+def hello():
+    print(&amp;#x27;Hello world&amp;#x27;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;arguments&quot;&gt;Arguments&lt;&#x2F;h3&gt;
+&lt;p&gt;All the function definitions we’ve looked at so far have been functions of zero arguments, which are called with empty parentheses. However, most functions take arguments. The example below defines a function that takes one argument:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def print_with_exclamation(word):
+    print(word + &amp;quot;!&amp;quot;)
+print_with_exclamation(&amp;quot;spam&amp;quot;)
+print_with_exclamation(&amp;quot;eggs&amp;quot;)
+print_with_exclamation(&amp;quot;python&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;As you can see, the argument is defined inside the parentheses.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;You can also define functions with more than one argument; separate them with commas.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def print_sum_twice(x, y):
+    print(x+y)
+    print(x+y)
+
+print_sum_twice(5, 20)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Function arguments can be used as variables inside the function definition. However, they cannot be referenced outside of the function’s definition. This also applies to other variables created inside a function.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def function(variable):
+    variable += 1
+    print(variable)
+function(7)
+print(variable)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This code will throw an error because the variable is defined inside the function and can be referenced only there. &amp;gt;Technically, parameters are the variables in a function definition, and arguments are the values put into parameters when functions are called.
+Returning from Functions&lt;&#x2F;p&gt;
+&lt;p&gt;Certain functions, such as int or str, return a value that can be used later. To do this for your defined functions, you can use the return statement.&lt;&#x2F;p&gt;
+&lt;p&gt;For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def  max(x, y):
+    if x &amp;gt;=y:
+        return x
+    else:
+        return y
+print(max(4,  7))
+z = max(8,  5)
+print(z)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The return statement cannot be used outside of a function definition.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Once you return a value from a function, it immediately stops being executed. Any code after the return statement will never happen. For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def add_numbers(x, y):
+    total = x + y
+    return total
+    print(&amp;quot;This won&amp;#x27;t be printed&amp;quot;)
+print(add_numbers(4,  5))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Although they are created differently from normal variables, functions are just like any other kind of value. They can be assigned and reassigned to variables, and later referenced by those names.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def multiply(x, y):
+    return x * y
+a = 4
+b = 7
+operation = multiply
+print(operation(a, b))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The example above assigned the function multiply to a variable operation. Now, the name operation can also be used to call the function.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Functions can also be used as arguments of other functions.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def add(x, y):
+    return x + y
+def do_twice(func, x, y):
+return func(func(x, y), func(x, y))
+a = 5
+b = 10
+print(do_twice(add, a, b))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;modules&quot;&gt;Modules&lt;&#x2F;h2&gt;
+&lt;p&gt;Modules are pieces of code that other people have written to fulfill common tasks, such as generating random numbers, performing mathematical operations, etc.&lt;&#x2F;p&gt;
+&lt;p&gt;The basic way to use a module is to add import module_name at the top of your code, and then using module_name.var to access functions and values with the name var in the module. For example, the following example uses the random module to generate random numbers:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;import random
+for i in  range(5):
+    value = random.randint(1,  6)
+    print(value)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The code uses the randint function defined in the random module to print 5 random numbers in the range 1 to 6.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;There is another kind of import that can be used if you only need certain functions from a module. These take the form from module_name import var, and then var can be used as if it were defined normally in your code. For example, to import only the pi constant from the math module:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;from math import pi
+    print(pi)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Use a comma separated list to import multiple objects. For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;from math import pi, sqrt
+print(sqrt(pi))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;*&lt;&#x2F;code&gt; imports all objects from a module. For example: from math import *. This is generally discouraged, as it confuses variables in your code with variables in the external module.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;the-standard-library&quot;&gt;The standard library&lt;&#x2F;h2&gt;
+&lt;p&gt;There are three main types of modules in Python, those you write yourself, those you install from external sources, and those that are preinstalled with Python. The last type is called the standard library, and contains many useful modules. Some of the standard library’s useful modules include string, re, datetime, math, random, os, multiprocessing, subprocess, socket, email, json, doctest, unittest, pdb, argparse and sys.&lt;&#x2F;p&gt;
+&lt;p&gt;Tasks that can be done by the standard library include string parsing, data serialization, testing, debugging and manipulating dates, emails, command line arguments, and much more!&lt;&#x2F;p&gt;
+&lt;p&gt;Some of the modules in the standard library are written in Python, and some are written in C. Most are available on all platforms, but some are Windows or Unix specific.&lt;&#x2F;p&gt;
+&lt;p&gt;Many third-party Python modules are stored on the Python Package Index (PyPI). The best way to install these is using a program called pip. This comes installed by default with modern distributions of Python. If you don’t have it, it is easy to install online. Once you have it, installing libraries from PyPI is easy. Look up the name of the library you want to install, go to the command line (for Windows it will be the Command Prompt), and enter pip install library_name. Once you’ve done this, import the library and use it in your code.&lt;&#x2F;p&gt;
+&lt;p&gt;Using pip is the standard way of installing libraries on most operating systems, but some libraries have prebuilt binaries for Windows. These are normal executable files that let you install libraries with a GUI the same way you would install other programs.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;files&quot;&gt;Files&lt;&#x2F;h2&gt;
+&lt;p&gt;You can use Python to read and write the contents of files. Text files are the easiest to manipulate. Before a file can be edited, it must be opened, using the open function.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;myfile = open(&amp;quot;filename.txt&amp;quot;)
+
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The argument of the open function is the path to the file. If the file is in the current working directory of the program, you can specify only its name.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;You can specify the mode used to open a file by applying a second argument to the open function. Sending “r” means open in read mode, which is the default. Sending “w” means write mode, for rewriting the contents of a file. Sending “a” means append mode, for adding new content to the end of the file.&lt;&#x2F;p&gt;
+&lt;p&gt;Adding “b” to a mode opens it in binary mode, which is used for non-text files (such as image and sound files). For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;# write mode
+open(&amp;quot;filename.txt&amp;quot;, &amp;quot;w&amp;quot;)
+
+# read mode
+open(&amp;quot;filename.txt&amp;quot;, &amp;quot;r&amp;quot;)
+open(&amp;quot;filename.txt&amp;quot;)
+
+# binary write mode
+open(&amp;quot;filename.txt&amp;quot;, &amp;quot;wb&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You can use the + sign with each of the modes above to give them extra access to files. For example, r+ opens the file for both reading and writing.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Once a file has been opened and used, you should close it. This is done with the close method of the file object.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;file = open(&amp;quot;filename.txt&amp;quot;, &amp;quot;w&amp;quot;)
+# do stuff to the file
+file.close()
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The contents of a file that has been opened in text mode can be read using the read method.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;file = open(&amp;quot;filename.txt&amp;quot;, &amp;quot;r&amp;quot;)
+cont = file.read()
+print(cont)
+file.close()
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This will print all of the contents of the file “filename.txt”.&lt;&#x2F;p&gt;
+&lt;p&gt;To read only a certain amount of a file, you can provide a number as an argument to the read function. This determines the number of bytes that should be read. You can make more calls to read on the same file object to read more of the file byte by byte. With no argument, read returns the rest of the file.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;file = open(&amp;quot;filename.txt&amp;quot;, &amp;quot;r&amp;quot;)
+print(file.read(16))
+print(file.read(4))
+print(file.read(4))
+print(file.read())
+file.close()
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Just like passing no arguments, negative values will return the entire contents.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;After all contents in a file have been read, any attempts to read further from that file will return an empty string, because you are trying to read from the end of the file.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;file = open(&amp;quot;filename.txt&amp;quot;, &amp;quot;r&amp;quot;)
+file.read()
+print(&amp;quot;Re-reading&amp;quot;)
+print(file.read())
+print(&amp;quot;Finished&amp;quot;)
+file.close()
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Result:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;&amp;gt;&amp;gt;&amp;gt;
+Re-reading
+
+Finished
+&amp;gt;&amp;gt;&amp;gt;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;To retrieve each line in a file, you can use the readlines method to return a list in which each element is a line in the file. For example:&lt;&#x2F;p&gt;
+&lt;p&gt;file = open(“filename.txt”, “r”) print(file.readlines()) file.close()&lt;&#x2F;p&gt;
+&lt;p&gt;Result:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;&amp;gt;&amp;gt;&amp;gt;
+[&amp;#x27;Line 1 text \n&amp;#x27;, &amp;#x27;Line 2 text \n&amp;#x27;, &amp;#x27;Line 3 text&amp;#x27;]
+&amp;gt;&amp;gt;&amp;gt;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;You can also use a for loop to iterate through the lines in the file:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;file = open(&amp;quot;filename.txt&amp;quot;, &amp;quot;r&amp;quot;)
+
+for line in file:
+print(line)
+
+file.close()
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Result:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;&amp;gt;&amp;gt;&amp;gt;
+Line 1 text
+
+Line 2 text
+
+Line 3 text
+&amp;gt;&amp;gt;&amp;gt;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In the output, the lines are separated by blank lines, as the print function automatically adds a new line at the end of its output.&lt;&#x2F;p&gt;
+&lt;p&gt;To write to files you use the write method, which writes a string to the file. For example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;file = open(&amp;quot;newfile.txt&amp;quot;,  &amp;quot;w&amp;quot;)
+file.write(&amp;quot;This has been written to a file&amp;quot;)
+file.close()
+file = open(&amp;quot;newfile.txt&amp;quot;,  &amp;quot;r&amp;quot;)
+print(file.read())
+file.close()
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The “w” mode will create a file, if it does not already exist.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;When a file is opened in write mode, the file’s existing content is deleted.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;file = open(&amp;quot;newfile.txt&amp;quot;,  &amp;quot;w&amp;quot;)
+file.write(&amp;quot;Some new text&amp;quot;)
+file.close()
+file = open(&amp;quot;newfile.txt&amp;quot;,  &amp;quot;r&amp;quot;)
+print(&amp;quot;Reading new contents&amp;quot;)
+print(file.read())
+print(&amp;quot;Finished&amp;quot;)
+file.close()
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;As you can see, the content of the file has been overwritten.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;The write method returns the number of bytes written to a file, if successful.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;msg = &amp;quot;Hello world!&amp;quot;
+file = open(&amp;quot;newfile.txt&amp;quot;,  &amp;quot;w&amp;quot;)
+amount_written = file.write(msg)
+print(amount_written)
+file.close()
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;To write something other than a string, it needs to be converted to a string first.&lt;&#x2F;p&gt;
+&lt;p&gt;It is good practice to avoid wasting resources by making sure that files are always closed after they have been used.&lt;&#x2F;p&gt;
+&lt;p&gt;A way of doing this is using with statements. This creates a temporary variable (often called f), which is only accessible in the indented block of the with statement.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;with open(&amp;quot;filename.txt&amp;quot;)  as f:
+    print(f.read())
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The file is automatically closed at the end of the with statement, even if exceptions occur within it.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;none&quot;&gt;None&lt;&#x2F;h2&gt;
+&lt;p&gt;The &lt;strong&gt;None&lt;&#x2F;strong&gt; object is used to represent the absence of a value. It is similar to null in other programming languages. Like other “empty” values, such as 0, [] and the empty string, it is False when converted to a Boolean variable. When entered at the Python console, it is displayed as the empty string.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(None)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Run the code and see how it works!&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;The None object is returned by any function that doesn’t explicitly return anything else.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def some_func():
+print(&amp;quot;Hi!&amp;quot;)
+var = some_func()
+print(var)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;dictionaries&quot;&gt;Dictionaries&lt;&#x2F;h2&gt;
+&lt;p&gt;Dictionaries are data structures used to map arbitrary keys to values. Lists can be thought of as dictionaries with integer keys within a certain range. Dictionaries can be indexed in the same way as lists, using square brackets containing keys. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;ages = {&amp;quot;Dave&amp;quot;:  24,  &amp;quot;Mary&amp;quot;:  42,  &amp;quot;John&amp;quot;:  58}
+print(ages[&amp;quot;Dave&amp;quot;])
+print(ages[&amp;quot;Mary&amp;quot;])
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Each element in a dictionary is represented by a key:value pair.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Trying to index a key that isn’t part of the dictionary returns a KeyError. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;primary = {
+&amp;quot;red&amp;quot;:  [255,  0,  0],
+&amp;quot;green&amp;quot;:  [0,  255,  0],
+&amp;quot;blue&amp;quot;:  [0,  0,  255],
+}
+print(primary[&amp;quot;red&amp;quot;])
+print(primary[&amp;quot;yellow&amp;quot;])
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;As you can see, a dictionary can store any types of data as values. &amp;gt;An empty dictionary is defined as {}.&lt;&#x2F;p&gt;
+&lt;p&gt;Only immutable objects can be used as keys to dictionaries. Immutable objects are those that can’t be changed. So far, the only mutable objects you’ve come across are lists and dictionaries. Trying to use a mutable object as a dictionary key causes a TypeError.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;bad_dict = {
+
+[1,  2,  3]:  &amp;quot;one two three&amp;quot;,
+
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Run the code and see how it works!&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Just like lists, dictionary keys can be assigned to different values. However, unlike lists, a new dictionary key can also be assigned a value, not just ones that already exist.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;squares = {1:  1,  2:  4,  3:  &amp;quot;error&amp;quot;,  4:  16,}
+squares[8] = 64
+squares[3] = 9
+print(squares)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;To determine whether a key is in a dictionary, you can use in and not in, just as you can for a list. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;nums = {
+1:  &amp;quot;one&amp;quot;,
+2:  &amp;quot;two&amp;quot;,
+3:  &amp;quot;three&amp;quot;,
+}
+print(1  in nums)
+print(&amp;quot;three&amp;quot;  in nums)
+print(4  not  in nums)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;A useful dictionary method is get. It does the same thing as indexing, but if the key is not found in the dictionary it returns another specified value instead (‘None’, by default). Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;pairs = {1:  &amp;quot;apple&amp;quot;,
+&amp;quot;orange&amp;quot;:  [2,  3,  4],
+True:  False,
+None:  &amp;quot;True&amp;quot;,
+}
+
+print(pairs.get(&amp;quot;orange&amp;quot;))
+print(pairs.get(7))
+print(pairs.get(12345,  &amp;quot;not in dictionary&amp;quot;))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;tuples&quot;&gt;Tuples&lt;&#x2F;h2&gt;
+&lt;p&gt;Tuples are very similar to lists, except that they are immutable (they cannot be changed). Also, they are created using parentheses, rather than square brackets. Example:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;words = (&amp;quot;spam&amp;quot;, &amp;quot;eggs&amp;quot;, &amp;quot;sausages&amp;quot;,)&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;You can access the values in the tuple with their index, just as you did with lists:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;print(words[0])&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Trying to reassign a value causes a TypeError.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;words[1] = &amp;quot;cheese&amp;quot;&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You can access the values in the tuple with their index, just as you did with lists.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Tuples can be created without the parentheses, by just separating the values with commas. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;my_tuple = &amp;quot;one&amp;quot;, &amp;quot;two&amp;quot;, &amp;quot;three&amp;quot;
+print(my_tuple[0])
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;An empty tuple is created using an empty parenthesis pair.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;tpl = ()&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Tuples are faster than lists, but they cannot be changed.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;list-slices&quot;&gt;List Slices&lt;&#x2F;h2&gt;
+&lt;p&gt;List slices provide a more advanced way of retrieving values from a list. Basic list slicing involves indexing a list with two colon-separated integers. This returns a new list containing all the values in the old list between the indices. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;squares = [0,  1,  4,  9,  16,  25,  36,  49,  64,  81]
+print(squares[2:6])
+print(squares[3:8])
+print(squares[0:1])
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Like the arguments to range, the first index provided in a slice is included in the result, but the second isn’t.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;If the first number in a slice is omitted, it is taken to be the start of the list. If the second number is omitted, it is taken to be the end. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;squares = [0,  1,  4,  9,  16,  25,  36,  49,  64,  81]
+print(squares[:7])
+print(squares[7:])
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Slicing can also be done on tuples.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;List slices can also have a third number, representing the step, to include only alternate values in the slice.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;squares = [0,  1,  4,  9,  16,  25,  36,  49,  64,  81]
+print(squares[::2])
+print(squares[2:8:3])
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[2:8:3] will include elements starting from the 2nd index up to the 8th with a step of 3.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Negative values can be used in list slicing (and normal list indexing). When negative values are used for the first and second values in a slice (or a normal index), they count from the end of the list.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;squares = [0,  1,  4,  9,  16,  25,  36,  49,  64,  81]
+print(squares[1::-1])
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;If a negative value is used for the step, the slice is done backwards. Using [::-1] as a slice is a common and idiomatic way to reverse a list.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;list-comprehensions&quot;&gt;List Comprehensions&lt;&#x2F;h2&gt;
+&lt;p&gt;List comprehensions are a useful way of quickly creating lists whose contents obey a simple rule. For example, we can do the following:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;# a list comprehension
+cubes = [i**3  for i in  range(5)]
+print(cubes)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;List comprehensions are inspired by set-builder notation in mathematics.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;A list comprehension can also contain an if statement to enforce a condition on values in the list. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;evens=[i**2  for i in  range(10)  if i**2 % 2 == 0]
+print(evens)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Trying to create a list in a very extensive range will result in a MemoryError. This code shows an example where the list comprehension runs out of memory.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;even = [2*i for i in  range(10**100)]
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;This issue is solved by generators, which are covered later.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;string-formatting&quot;&gt;String Formatting&lt;&#x2F;h2&gt;
+&lt;p&gt;So far, to combine strings and non-strings, you’ve converted the non-strings to strings and added them. String formatting provides a more powerful way to embed non-strings within strings. String formatting uses a string’s format method to substitute a number of arguments in the string. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;# string formatting
+nums = [4,  5,  6]
+msg = &amp;quot;Numbers: {0} {1} {2}&amp;quot;. format(nums[0], nums[1], nums[2])
+print(msg)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Each argument of the format function is placed in the string at the corresponding position, which is determined using the curly braces { }.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;String formatting can also be done with named arguments. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;a= &amp;quot;{x}, {y}&amp;quot;.format(x = 5, y = 12)
+print(a)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;string-functions&quot;&gt;String Functions&lt;&#x2F;h2&gt;
+&lt;p&gt;Python contains many useful built-in functions and methods to accomplish common tasks. join - joins a list of strings with another string as a separator. replace - replaces one substring in a string with another. startswith and endswith - determine if there is a substring at the start and end of a string, respectively. To change the case of a string, you can use lower and upper. The method split is the opposite of join turning a string with a certain separator into a list. Some examples:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(&amp;quot;, &amp;quot;.join([&amp;quot;spam&amp;quot;,  &amp;quot;eggs&amp;quot;,  &amp;quot;ham&amp;quot;]))
+#prints &amp;quot;spam, eggs, ham&amp;quot;
+
+print(&amp;quot;Hello ME&amp;quot;.replace(&amp;quot;ME&amp;quot;,  &amp;quot;world&amp;quot;))
+#prints &amp;quot;Hello world&amp;quot;
+
+print(&amp;quot;This is a sentence.&amp;quot;.startswith(&amp;quot;This&amp;quot;))
+# prints &amp;quot;True&amp;quot;
+
+print(&amp;quot;This is a sentence.&amp;quot;.endswith(&amp;quot;sentence.&amp;quot;))
+# prints &amp;quot;True&amp;quot;
+
+print(&amp;quot;This is a sentence.&amp;quot;.upper())
+# prints &amp;quot;THIS IS A SENTENCE.&amp;quot;
+
+print(&amp;quot;AN ALL CAPS SENTENCE&amp;quot;.lower())
+#prints &amp;quot;an all caps sentence&amp;quot;
+
+print(&amp;quot;spam, eggs, ham&amp;quot;.split(&amp;quot;, &amp;quot;))
+#prints &amp;quot;[&amp;#x27;spam&amp;#x27;, &amp;#x27;eggs&amp;#x27;, &amp;#x27;ham&amp;#x27;]&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;numeric-functions&quot;&gt;Numeric Functions&lt;&#x2F;h2&gt;
+&lt;p&gt;To find the maximum or minimum of some numbers or a list, you can use max or min. To find the distance of a number from zero (its absolute value), use abs. To round a number to a certain number of decimal places, use round. To find the total of a list, use sum. Some examples:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;print(min(1,  2,  3,  4,  0,  2,  1))
+print(max([1,  4,  9,  2,  5,  6,  8]))
+print(abs(-99))
+print(abs(42))
+print(sum([1,  2,  3,  4,  5]))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;list-functions-1&quot;&gt;List Functions&lt;&#x2F;h2&gt;
+&lt;p&gt;Often used in conditional statements, all and any take a list as an argument, and return True if all or any (respectively) of their arguments evaluate to True (and False otherwise). The function enumerate can be used to iterate through the values and indices of a list simultaneously. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;nums = [55,  44,  33,  22,  11]
+if  all([i &amp;gt; 5  for i in nums]):
+    print(&amp;quot;All larger than 5&amp;quot;)
+
+if  any([i % 2 == 0  for i in nums]):
+    print(&amp;quot;At least one is even&amp;quot;)
+
+for v in  enumerate(nums):
+    print(v)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;lambdas&quot;&gt;Lambdas&lt;&#x2F;h2&gt;
+&lt;p&gt;Creating a function normally (using def) assigns it to a variable automatically. This is different from the creation of other objects - such as strings and integers - which can be created on the fly, without assigning them to a variable. The same is possible with functions, provided that they are created using lambda syntax. Functions created this way are known as anonymous. This approach is most commonly used when passing a simple function as an argument to another function. The syntax is shown in the next example and consists of the lambda keyword followed by a list of arguments, a colon, and the expression to evaluate and return.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def my_func(f, arg):
+return f(arg)
+
+my_func(lambda x: 2*x*x, 5)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Lambda functions get their name from lambda calculus, which is a model of computation invented by Alonzo Church.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Lambda functions aren’t as powerful as named functions. They can only do things that require a single expression - usually equivalent to a single line of code. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;#named function
+def polynomial(x):
+return x**2 + 5*x + 4
+print(polynomial(-4))
+
+#lambda
+print((lambda x: x**2 + 5*x + 4)  (-4))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In the code above, we created an anonymous function on the fly and called it with an argument.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Lambda functions can be assigned to variables, and used like normal functions. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;double = lambda x: x * 2
+print(double(7))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;However, there is rarely a good reason to do this - it is usually better to define a function with def instead.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;map&quot;&gt;map&lt;&#x2F;h2&gt;
+&lt;p&gt;The function map takes a function and an iterable as arguments, and returns a new iterable with the function applied to each argument. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def add_five(x):
+return x + 5
+
+nums = [11,  22,  33,  44,  55]
+result = list(map(add_five, nums))
+print(result)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We could have achieved the same result more easily by using lambda syntax.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;nums = [11,  22,  33,  44,  55]
+
+result = list(map(lambda x: x+5, nums))
+print(result)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;filter&quot;&gt;filter&lt;&#x2F;h2&gt;
+&lt;p&gt;The function filter filters an iterable by removing items that don’t match a predicate (a function that returns a Boolean). Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;nums = [11,  22,  33,  44,  55]
+res = list(filter(lambda x: x%2==0, nums))
+print(res)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Like map, the result has to be explicitly converted to a list if you want to print it.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;generators&quot;&gt;Generators&lt;&#x2F;h2&gt;
+&lt;p&gt;Generators are a type of iterable, like lists or tuples. Unlike lists, they don’t allow indexing with arbitrary indices, but they can still be iterated through with for loops. They can be created using functions and the yield statement. Example:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def countdown():
+    i=5
+    while i &amp;gt; 0:
+        yield i
+        i -= 1
+for i in countdown():
+    print(i)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The yield statement is used to define a generator, replacing the return of a function to provide a result to its caller without destroying local variables.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Due to the fact that they yield one item at a time, generators don’t have the memory restrictions of lists. In fact, they can be infinite!&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def infinite_sevens():
+    while True:
+        yield 7
+
+for i in infinite_sevens():
+    print(i)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Result:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;&amp;gt;&amp;gt;&amp;gt;
+7
+7
+7
+7
+7
+7
+7
+...
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In short, generators allow you to declare a function that behaves like an iterator, i.e. it can be used in a for loop.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Finite generators can be converted into lists by passing them as arguments to the list function.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;def numbers(x):
+    for i in  range(x):
+        if i % 2 == 0:
+            yield i
+print(list(numbers(11)))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Using generators results in improved performance, which is the result of the lazy (on demand) generation of values, which translates to lower memory usage. Furthermore, we do not need to wait until all the elements have been generated before we start to use them.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;sets&quot;&gt;Sets&lt;&#x2F;h2&gt;
+&lt;p&gt;Sets are data structures, similar to lists or dictionaries. They are created using curly braces, or the set function. They share some functionality with lists, such as the use of in to check whether they contain a particular item.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;num_set = {1,  2,  3,  4,  5}
+word_set = set([&amp;quot;spam&amp;quot;,  &amp;quot;eggs&amp;quot;,  &amp;quot;sausage&amp;quot;])
+
+print(3  in num_set)
+print(&amp;quot;spam&amp;quot;  not  in word_set)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;To create an empty set, you must use &lt;code&gt;set()&lt;&#x2F;code&gt;, as &lt;code&gt;{}&lt;&#x2F;code&gt; creates an empty dictionary.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Sets differ from lists in several ways, but share several list operations such as len. They are unordered, which means that they can’t be indexed. They cannot contain duplicate elements. Due to the way they’re stored, it’s faster to check whether an item is part of a set, rather than part of a list. Instead of using append to add to a set, use add. The method remove removes a specific element from a set; pop removes an arbitrary element.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;nums = {1,  2,  1,  3,  1,  4,  5,  6}
+print(nums)
+nums.add(-7)
+nums.remove(3)
+print(nums)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Basic uses of sets include membership testing and the elimination of duplicate entries.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Sets can be combined using mathematical operations. The union operator &lt;code&gt;|&lt;&#x2F;code&gt; combines two sets to form a new one containing items in either. The intersection operator &lt;code&gt;&amp;amp;&lt;&#x2F;code&gt; gets items only in both. The difference operator &lt;code&gt;-&lt;&#x2F;code&gt; gets items in the first set but not in the second. The symmetric difference operator &lt;code&gt;^&lt;&#x2F;code&gt; gets items in either set, but not both.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;py&quot; class=&quot;language-py &quot;&gt;&lt;code class=&quot;language-py&quot; data-lang=&quot;py&quot;&gt;first = {1,  2,  3,  4,  5,  6}
+second = {4,  5,  6,  7,  8,  9}
+
+print(first | second)
+print(first &amp;amp; second)
+print(first - second)
+print(second - first)
+print(first ^ second)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</content>
+        
+    </entry>
+</feed>
