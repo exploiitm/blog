@@ -1,4 +1,4 @@
-base_url = "https://exploiitm.github.io/blog"
+base_url = "https://exploiitm.github.io"
 title = "exploiitm blog"
 description = "Official blog of Cybersecurity Club, IIT Madras"
 compile_sass = false
