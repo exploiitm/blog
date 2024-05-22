@@ -18,8 +18,8 @@ highlight_code = false
 highlight_theme = "gruvbox-dark"
 
 [slugify]
-paths = "on"
-taxonomies = "on"
+paths = "off"
+taxonomies = "off"
 anchors = "on"
 
 [link_checker]
