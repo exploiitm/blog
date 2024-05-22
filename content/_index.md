@@ -16,7 +16,6 @@ Official blog of Cybersecurity Club, IIT Madras.
 
 Browse our posts by tags:
 
-- [example](./tags/example)
 
 
 
