@@ -5,6 +5,7 @@ compile_sass = false
 minify_html = true
 generate_feed = true
 default_language = "en"
+output_dir = "docs"
 
 taxonomies = [
     {name = "tags", feed = true},

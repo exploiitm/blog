@@ -10,7 +10,7 @@ Official blog of Cybersecurity Club, IIT Madras.
 ## Posts
 
 
-- [First Post](./blog/first-post)
+- [First Post](./blog/posts/first-post)
 
 ## Tags
 
