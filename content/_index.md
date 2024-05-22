@@ -14,7 +14,7 @@ Official blog of Cybersecurity Club, IIT Madras.
 
 ## Resources
 
-- [Basic Python Programming](/resources/resource1)
+- [Basic Python Programming](./resources/resource1)
 
 ## Tags
 

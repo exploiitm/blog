@@ -39,10 +39,10 @@ twitter_card = true
 
 header_nav = [
   { url = "https://exploiitm.github.io/", name_en = "home"  }, 
-  { url = "/", name_en = "blog"},
-  { url = "/resources", name_en = "resources"},
-  { url = "/posts", name_en = "posts"},
-  { url = "/about" ,name_en = "about"}
+  { url = "/blog", name_en = "blog"},
+  { url = "/blog/resources", name_en = "resources"},
+  { url = "/blog/posts", name_en = "posts"},
+  { url = "/blog/about" ,name_en = "about"}
 ]
 
 # Optional footer license text. It will only show, when using footer_content_license.
