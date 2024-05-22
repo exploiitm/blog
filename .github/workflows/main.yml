@@ -20,3 +20,4 @@ jobs:
       uses: shalzz/zola-deploy-action@v0.18.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BUILD_FALGS: --base-url=https://exploiitm.github.io/blog/
