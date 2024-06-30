@@ -7,3 +7,7 @@ page_template = "blog-page.html"
 +++
 
 > List of all *[tags](/blog/tags)*   
+
+# Posts
+
+[Summer School](./summer_school)
