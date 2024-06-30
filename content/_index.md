@@ -9,7 +9,7 @@ Official blog of Cybersecurity Club, IIT Madras.
 
 ## Posts
 
-
+- [View all posts](./posts)
 
 ## Resources
 

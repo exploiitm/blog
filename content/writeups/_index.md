@@ -1,7 +1,7 @@
 +++
 paginate_by = 15
-paginate_path = "posts"
-title = "All posts"
+paginate_path = "writeups"
+title = "All Writeups"
 sort_by = "date"
 page_template = "blog-page.html"
 +++
