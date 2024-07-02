@@ -78,5 +78,7 @@ Part of this drive results in an ultimately beneficial co-evolution of security 
 
 The introduction and progression of intrusion detection systems (IDSs) is a prime example of this co-evolutionary process. The defending hackers create IDSs to add to their arsenal, while the attacking hackers develop IDS-evasion techniques, which are eventually compensated for in bigger and better IDS products. The net result of this interaction is positive, as it produces smarter people, improved security, more stable software, inventive problem-solving techniques, and even a new economy.
 
+# Let's get in touch
 
+Have a project idea or collaboration in mind? [Get in touch](./contacts.md) and let's make it happen!
 
