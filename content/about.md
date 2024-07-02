@@ -80,5 +80,5 @@ The introduction and progression of intrusion detection systems (IDSs) is a prim
 
 # Let's get in touch
 
-Have a project idea or collaboration in mind? [Get in touch](./contacts.md) and let's make it happen!
+Have a project idea or collaboration in mind? [Get in touch](./content/contacts.md) and let's make it happen!
 
