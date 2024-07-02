@@ -3,7 +3,7 @@ title = "Summer School 2024"
 date = 2024-07-01
 +++
 
-In the summer school conducted by the Cybersecuirty club, titled **"The Art of Exploitation"** , we provided a 9 session course on binary exploitation. 
+In the summer school conducted by the Cybersecurity club, titled **"The Art of Exploitation"** , we provided a 9 session course on binary exploitation. 
 This course coverd everythin from the basics of C to advanced topics including ret2libc, ASLR and more.
 
 You can find the [YouTube playlist](https://www.youtube.com/watch?v=EfeU8pxDhVE&list=PLhHkiL2SJ7Xf9Meg6fj-yLJt1DJ0bwSAZ&pp=iAQB) of the recordings.

@@ -9,6 +9,7 @@ Official blog of Cybersecurity Club, IIT Madras.
 
 ## Posts
 
+- [BoB](./posts/the_book)
 - [Summer School](./posts/summer_school)
 - [View all posts](./posts)
 
