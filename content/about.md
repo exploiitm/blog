@@ -107,5 +107,5 @@ languages, personal computers, and many other technologies that we use every day
 
 # Let's get in touch
 
-Have a project idea or collaboration in mind? [Get in touch](./ContactUs/contacts.md) and let's make it happen!
+Have a project idea or collaboration in mind? [Get in touch](/blog/contacts) and let's make it happen!
 
