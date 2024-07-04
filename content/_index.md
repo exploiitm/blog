@@ -13,6 +13,10 @@ Official blog of Cybersecurity Club, IIT Madras.
 - [Summer School](./posts/summer_school)
 - [View all posts](./posts)
 
+## Writeups
+
+- [View Writeups](./writeups)
+
 ## Resources
 
 - [Basic Python Programming](./resources/resource1)
