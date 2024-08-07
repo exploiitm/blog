@@ -11,6 +11,7 @@ Official blog of Cybersecurity Club, IIT Madras.
 
 - [BoB](./posts/the_book)
 - [Summer School](./posts/summer_school)
+- [Freshie Induction](./posts/freshie_induction)
 - [View all posts](./posts)
 
 ## Writeups
