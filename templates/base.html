@@ -1,8 +1,22 @@
 <!DOCTYPE html>
 <html lang="{% if page %}{{ page.lang }}{% else %}{{ config.default_language }}{% endif %}">
 <head>
+	<script>
+		MathJax = {
+		  tex: {
+			inlineMath: [['$', '$'], ['\\(', '\\)']],
+			displayMath: [['$$', '$$'], ["\\[", "\\]"]],
+			processEscapes: true,
+			processEnvironments: true
+		  }
+		};
+		</script>
+		<script type="text/javascript" id="MathJax-script" async
+		  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+		</script>
     {% include "head.html" %}
 </head>
+
 <body>
       <header>
           {% include "header.html" %}
