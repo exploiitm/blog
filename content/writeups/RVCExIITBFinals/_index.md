@@ -6,4 +6,3 @@ sort_by = "date"
 page_template = "blog-page.html"
 redirect_to = "writeups/RVCExIITBFinals/writeup"
 +++
-
