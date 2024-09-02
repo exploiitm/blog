@@ -20,7 +20,9 @@ Official blog of Cybersecurity Club, IIT Madras.
 
 ## Resources
 
+- [Bandit Writeup](./resources/bandit_writeup)
 - [Basic Python Programming](./resources/resource1)
+- [View Resources](./resources)
 
 ## Tags
 
