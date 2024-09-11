@@ -8,4 +8,5 @@ page_template = "blog-page.html"
 
 ## CTF writeups
 
+- [Guild Selection CTF](./Guild_Selection_CTF)
 - [RVCExIITBCTF](./RVCExIITBFinals)
