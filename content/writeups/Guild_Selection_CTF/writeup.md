@@ -6,6 +6,7 @@ date = 2024-09-11
 ## Binary Exploitation
 - [What The Canary](@/writeups/Guild_Selection_CTF/whatTheCanary.md)
 - [Overflow Orchestra](@/writeups/Guild_Selection_CTF/overfloworchestra.md)
+- [Shell Is Love, Shell Is Life](@/writeups/Guild_Selection_CTF/shell.md)
 
 ## Reverse Engineering
 
