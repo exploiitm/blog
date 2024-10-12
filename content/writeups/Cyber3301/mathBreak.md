@@ -16,7 +16,7 @@ What number will be next?
 
 This part is a viral math meme. Even if you don't have any idea about the meme, a quick google search will give you the picture of what number would be next.
 
-   ![image info](hehehaw.jpeg)
+{{ img(id="hehehaw.jpeg", alt="image info", class="textCenter") }}
 
 From the image, we can see that the number can be arbitrary (as shown in the image using polynomial interpolation). But the description says "Trust the number which we have". The only number that we have is 3301 , and we conclude that the missing number is 3301. 
 
@@ -28,9 +28,10 @@ This statement implies us to get the graph/plot of the function the numbers corr
 
 Now using these 5 values, just as how the image has a polynomial function constructed, we also construct a polynomial function. Set up the linear equations and solve them using an online solver
 
-![image info2](solverimg.jpg)
+{{ img(id="solverimg.jpg", alt="image info2", class="textCenter") }}
 
-![image info3](yukashimg.jpg)
+{{ img(id="yukashimg.jpg", alt="image info3", class="textCenter") }}
+
 
 ## Part 2 Description:
 ```
@@ -45,7 +46,7 @@ If we search about how the musical notes are correlated, we can find that the no
 1.  dependent on the points we choose(which is by default, the maxima , minima and the roots of the polynomial)
 1.  dependent on where you look the graph from.
 
-![image info4](graphimg.jpg)
+{{ img(id="graphimg.jpg", alt="image info4", class="textCenter") }}
 
 So, if we notice, the first line asks us to view it from 150s of x and y. So we set the visible region from -150 <= x <= 150 and -150 <= y <= 150.
 
