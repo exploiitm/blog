@@ -35,7 +35,7 @@ void main(void)
   printf("\nAlright Mr. ");
   printf(local_38);
   printf(
-        "\nI\'ll look forward to doing business with you...Till then, is there anything that you wou ld like to convey? "
+        "\nI\'ll look forward to doing business with you...Till then, is there anything that you would like to convey? "
         );
   fflush(stdout);
   read(0,local_68,0x110);

@@ -9,7 +9,7 @@ This challenge gives us this cryptic text, and nothing else
 
 		Vielaedhc tdtycsus us one xrto. Cra kiryyc ntje prie rv td uzet rd onus uv cra tooedzez one hcmeisehaiuoc hyam's hickor sessurd wZ.btom.ud/qebuktzuyab. U'p faso ctkkudx neie t muo prie sr onto one orry lauklauk gribs etsuyc. Kirks or cra uv cra sryjez onus.
 
-The first thought the comes to mind when I see plaintext encryption is simple `rot` like ceaser cipher. So, I tired rotating the letters for all possible combinations and nothing made sense.
+The first thought the comes to mind when I see plaintext encryption is simple `rot` like caeser cipher. So, I tired rotating the letters for all possible combinations and nothing made sense.
 
 The next way to attack this is using frequency analysis. Note that frequency analysis in general, always works. If the plain text has been encoded using a single key and a letter `x` always maps to a letter `y`, then frequency analysis is the way to go.
 
@@ -18,7 +18,7 @@ So, head over to
 
 		https://www.101computing.net/frequency-analysis/
 
-and start guessing and checking. You just want the text to resemble plaintext english, so, make use of all the grammer that you know! (Note that frequency analysis actually means something different, its based off of the idea that some letter are more frequent than other letters and therefore in cases when a text is encrypted while preserving the frequencies, we can determine the original letters using just that).
+and start guessing and checking. You just want the text to resemble plaintext english, so, make use of all the grammar that you know! (Note that frequency analysis actually means something different, its based off of the idea that some letter are more frequent than other letters and therefore in cases when a text is encrypted while preserving the frequencies, we can determine the original letters using just that).
 
 I like to do it this way, cause it seems more fun, but you might want to write a program for this (if the text is too big, then sure a python script is necessary). 
 

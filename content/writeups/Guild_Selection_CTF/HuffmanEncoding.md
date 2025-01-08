@@ -58,7 +58,7 @@ Now in the decompiled code, we can see the frequency table, (look carefully!) an
 			mp['f'] = '2';
 			mp['m'] = '1';
 
-This means the flag contains these symbols with these frequencies. Thus, we can get a general flag as `5RnK4CTTII0uFM{_}Hffm` and why this is useful, is simply because huffman encoding gives the same encoding for "x" any other permuatation of "x".
+This means the flag contains these symbols with these frequencies. Thus, we can get a general flag as `5RnK4CTTII0uFM{_}Hffm` and why this is useful, is simply because huffman encoding gives the same encoding for "x" any other permutation of "x".
 
 Thus, if we encode this flag, we'll get a different binary but it will have the same number of bits. But firstly, we'll have to find the binary form of the fake flag. This is because 
 

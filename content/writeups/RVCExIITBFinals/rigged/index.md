@@ -34,7 +34,7 @@ undefined8 main(void)
      "\nHe\'ll fail the test if he keeps getting this wrong! The evil school must have rigged the s ystem"
      );
  printf(
-      "\nQ. In order to write efficent \'____\', developers usually go to a \'____\' to drink some  coffee: "
+      "\nQ. In order to write efficient \'____\', developers usually go to a \'____\' to drink some  coffee: "
       );
  fflush(stdout);
  fgets(local_78,100,stdin);
@@ -68,7 +68,7 @@ the payload ABCD.%lx.%lx.%lx.%lx.%lx.%lx.%lx.%lx.%lx...
 <br>
 {{ img(id="image2.png", alt="Alt Text", class="textCenter") }}
 
-clearly, 8th arguement is the input we give (hex 414243)
+clearly, 8th argument is the input we give (hex 414243)
 
 2. Address of win function is at 0x401247
 > all addresses remain same since PIE is off, we can get these from Ghidra or any decompiler

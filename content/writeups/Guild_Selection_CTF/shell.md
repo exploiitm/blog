@@ -21,7 +21,7 @@ As with all pwn challenges, we run checksec on the binary
 ```
 
 NX bit is disabled !, we can execute code on the stack!, 
-let us try dissassembling the binary using GHIDRA
+let us try disassembling the binary using GHIDRA
 ```c
 
 undefined8 main(void)

@@ -50,7 +50,7 @@ To decode base64, we use it with `-d` flag
 We can write a code to decode ROT13 or we can just go to a website(rot13.com) to solve it for us.
 
 ## Bandit 12
-Creating another directory called `this` in `tmp`, copyting `data.txt` to `new.txt`, then reversing `xxd` by using flag `-r`. We get files that are compressed multiple times. Decompressing them gives our password.
+Creating another directory called `this` in `tmp`, copying `data.txt` to `new.txt`, then reversing `xxd` by using flag `-r`. We get files that are compressed multiple times. Decompressing them gives our password.
 - `cd /tmp/`
 - `mkdir this`
 - `touch my_file`

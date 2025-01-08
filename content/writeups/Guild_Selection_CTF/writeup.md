@@ -23,7 +23,7 @@ date = 2024-09-11
 ## Misc
 
 - [Befunge](@/writeups/Guild_Selection_CTF/Befunge.md)
-- [Oh Captain My Captian](@/writeups/Guild_Selection_CTF/ocaptainmycaptain.md)
+- [Oh Captain My Captain](@/writeups/Guild_Selection_CTF/ocaptainmycaptain.md)
 - [Protogame](@/writeups/Guild_Selection_CTF/Protogame.md)
 
 ## Forensics

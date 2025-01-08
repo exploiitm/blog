@@ -17,6 +17,6 @@ Thus to properly escape the query and comment it out, you'll need to take care o
 		username: admin') or '1'='1'--
 		password: <any random stuff>
 
-Note that we've used single quotation marks, this is because a double quotation was being interepreted differently by the server (try and check it out!)
+Note that we've used single quotation marks, this is because a double quotation was being interpreted differently by the server (try and check it out!)
 
 `flag: iitmCTF{PpP0Oo5tgr85Ql}`

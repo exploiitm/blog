@@ -45,7 +45,7 @@ If we calculate, we'll never be able to kill protoboss in 51 rounds, without dyi
                 }
             }
 
-What this is saying is, if the P1.ID != 2 (which will be true as it'll definetly be 1) then we move Proto1, just as we normally would. And if P2.ID is not 2 (which won't be trust as it'll be 2), then we move P2.
+What this is saying is, if the P1.ID != 2 (which will be true as it'll definitely be 1) then we move Proto1, just as we normally would. And if P2.ID is not 2 (which won't be trust as it'll be 2), then we move P2.
 
 The cool thing is, when P2.ID is 2, then we move P1 and when P1.ID is 2 we move P2. ID will be 2 for proto2, which heals everyone. Now, the boss damage increases and keeps increasing... when we reach round 30, the boss damage is more than INT32_MAX! 
 

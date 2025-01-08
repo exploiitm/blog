@@ -18,7 +18,7 @@ Now that it gives us an image, lets open that.
 
 		open 5d/9d/9d/lol.png
 
-This is definetly `hydra`! Now, if you know about password cracking then you'd know that **hydra** is a pretty popular tool in that field. However, in this case, its not meant for that. This is another grep search! (again, you might be tempted to "crack" png file using hydra somehow, but you'll soon learn its not worth it). 
+This is definitely `hydra`! Now, if you know about password cracking then you'd know that **hydra** is a pretty popular tool in that field. However, in this case, its not meant for that. This is another grep search! (again, you might be tempted to "crack" png file using hydra somehow, but you'll soon learn its not worth it). 
 
 		grep -ir hydra .
 
