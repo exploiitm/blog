@@ -1,0 +1,47 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Patch up or die</title><meta content="Patch up or die" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/patchUporDie/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Patch up or die" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/patchUporDie/ property=twitter:url><meta content="Patch up or die" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/patchUporDie/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>patchUporDie</span></div><time datetime=2024-09-05>Published on: <span class=accent-data>2024-09-05</span></time><address rel=author>By <span class=accent-data> Achintya J, and exploiitm </span></address><h1>Patch up or die</h1><p>We’ve been given a binary, let’s run that. So, we’re getting a prompt to enter a number and when we do so, we get an error message. We keep getting that, nothing seems to be working. We also have <code>flag.txt</code> but it’s not the actual flag of course, its encrypted. You can try and reverse the encryption, but there is an <code>easier way</code>.<p>We’ll fire this up in IDA because it’s the best disassembler ever!<p>You’ll encounter this bit of code. At first it might seem harmless, but this code is essentially saying, that we move a random <code>time based</code> number into the <code>eax</code> register. This is what is used to compare out input to!<pre style=background:#282828;color:#fdf4c1aa><code><span>	.text:00401953                 lea     ecx, [esp+4]
+</span><span>	.text:00401957                 and     esp, 0FFFFFFF0h
+</span><span>	.text:0040195A                 push    dword ptr [ecx-4]
+</span><span>	.text:0040195D                 push    ebp
+</span><span>	.text:0040195E                 mov     ebp, esp
+</span><span>	.text:00401960                 push    esi
+</span><span>	.text:00401961                 push    ebx
+</span><span>	.text:00401962                 push    ecx
+</span><span>	.text:00401963                 sub     esp, 3Ch
+</span><span>	.text:00401966                 call    ___main
+</span><span>	.text:0040196B                 mov     dword ptr [esp], 0 ; Time
+</span><span>	.text:00401972                 call    _time
+</span><span>	.text:00401977                 mov     [esp], eax      ; Seed
+</span><span>	.text:0040197A                 call    _srand
+</span><span>	.text:0040197F                 call    _rand
+</span><span>	.text:00401984                 mov     [ebp+var_1C], eax
+</span></code></pre><p>This means, there are 3 ways to move forward,<ol><li>Reverse the flag encryption logic and decode it<li>Set a breakpoint when we load the random number and then use that<li>Patch the binary</ol><p>Comparing all of these, I find it much easier to patch the logic. Here’s how we do it,<pre style=background:#282828;color:#fdf4c1aa><code><span>	.text:00401987                 mov     dword ptr [esp+4], offset aEnterTheNumber ; "Enter the number: "
+</span><span>	.text:0040198F                 mov     dword ptr [esp], offset __ZSt4cout ; std::ostream::sentry *
+</span><span>	.text:00401996                 call    __ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc
+</span><span>	.text:0040199B                 lea     eax, [ebp+var_28]
+</span><span>	.text:0040199E                 mov     [esp], eax
+</span><span>	.text:004019A1                 mov     ecx, offset __ZSt3cin ; std::cin
+</span><span>	.text:004019A6                 call    __ZNSirsERy     ; std::istream::operator>>(ulong long &)
+</span><span>	.text:004019AB                 sub     esp, 4
+</span><span>	.text:004019AE                 mov     eax, [ebp+var_1C]
+</span><span>	.text:004019B1                 mov     edx, 0
+</span><span>	.text:004019B6                 mov     [ebp+var_30], eax
+</span><span>	.text:004019B9                 mov     [ebp+var_2C], edx
+</span><span>	.text:004019BC                 mov     eax, [ebp+var_28]
+</span><span>	.text:004019BF                 mov     edx, [ebp+var_24]
+</span><span>	.text:004019C2                 mov     ecx, [ebp+var_30]
+</span><span>	.text:004019C5                 xor     ecx, eax
+</span><span>	.text:004019C7                 mov     ebx, ecx
+</span><span>	.text:004019C9                 mov     ecx, [ebp+var_2C]
+</span><span>	.text:004019CC                 xor     ecx, edx
+</span><span>	.text:004019CE                 mov     esi, ecx
+</span><span>	.text:004019D0                 mov     eax, esi
+</span><span>	.text:004019D2                 or      eax, ebx
+</span><span>	.text:004019D4                 test    eax, eax
+</span><span>	.text:004019D6                 jnz     short loc_4019DF
+</span><span>	.text:004019D8                 call    __Z22decrypt_and_print_flagv ; decrypt_and_print_flag(void)
+</span><span>	.text:004019DD                 jmp     short loc_401A06
+</span></code></pre><p>This is the main function. Look at this specific code here,<pre style=background:#282828;color:#fdf4c1aa><code><span>	.text:004019D4                 test    eax, eax
+</span><span>	.text:004019D6                 jnz     short loc_4019DF
+</span></code></pre><p>This is being used to compare the two values (the one we enter and the random number), and if it’s not true, then we jump to the error message code. So, if we patch the binary by changing these instructions to <code>nop</code>.<p>We change the first first 4 bytes to 90 in the <code>test</code> instruction. <code>90</code> stands for the <code>nop</code> instruction, which is the instruction which will be skipped over. Hence, we can control the flow of execution through this.<pre style=background:#282828;color:#fdf4c1aa><code><span>	.text:004019D4                 nop  
+</span><span>	.text:004019D6                 nop  
+</span></code></pre><p>Thus, we are going to call the <code>decrypt_and_print_flag()</code> regardless of whether the number we enter is same as the random time based number.<p>flag: <code>IITMCTF{B1n4ry_p4tch1ng_r0ck5}</code><p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

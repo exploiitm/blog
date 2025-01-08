@@ -1,0 +1,52 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Protogame</title><meta content=Protogame name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/Protogame/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content=Protogame property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/Protogame/ property=twitter:url><meta content=Protogame property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/Protogame/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>Protogame</span></div><time datetime=2024-09-09>Published on: <span class=accent-data>2024-09-09</span></time><address rel=author>By <span class=accent-data> Achintya J, Yukash, and exploiitm </span></address><h1>Protogame</h1><p>In this challenge we are given a C++ program, a helper file and a netcat address. If we try to connect to the address, we can see that there is a lot of things going on here!<h3 id=stage-0>Stage 0</h3><p>This stage is where we understand the program. Reading the <code>cpp</code> file, we can see that the code for 2 levels. The helper file contains all the functions that are not normally defined in cpp (like ProtoBossStatus) and all the classes are also present in the helper file (like ProtoBoss).<p>The code for stage 1 says that we’re supposed to choose 2 characters out of 4 (in the <code>Choosecharacter()</code> function). The characters have a varying degree of skills, relating to the hitpoints and the attack they have. We’re supposed to kill the protoboss in this round. (hmm doesn’t seem so hard)<p>The code for stage 2 says that we’re supposed to pick how much ever hitpoints we want, but the protoboss will have an attack power of 3 times that. It’s also evident that to kill the protoboss here, we’ll have to attack twice (cause our attack power is 100), but protoboss will kill us in one go…<h3 id=stage-1>Stage 1</h3><p>The four characters that we have are:<pre style=background:#282828;color:#fdf4c1aa><code><span>	Proto1 : Proto1 has the highest damage but also has the lowest health in the game
+</span><span>	Proto2 : Proto2 can't deal any damage but can heal the other character if it's alive
+</span><span>	Proto3 : Proto3 has mediocre damage and a health enough to sustain few attacks from ProtoBoss
+</span><span>	Proto4 : Proto4 has the highest health while it has the lowest damage
+</span></code></pre><p>We’ll have to find a way to kill the protoboss so the most logical choice would be <code>Proto1</code> and <code>Proto2</code>, cause Proto1 will hit him hard and Proto2 will heal. However, the problem is <strong>Protoboss levels up!</strong> He gains attack points depending on the current round and after <code>51</code> rounds, he basically has god level status and can one-kill all the protos.<p>If we calculate, we’ll never be able to kill protoboss in 51 rounds, without dying first if we choose any of the 6 possible combinations! What we’re going to exploit is this piece of code<pre style=background:#282828;color:#fdf4c1aa><code><span>       	if(P1.ID != 2){
+</span><span>                P1.move(P1.ID , P1 , ProtoBoss) ;
+</span><span>            }
+</span><span>            else{
+</span><span>                P1.move(P1.ID , P2 , ProtoBoss) ;
+</span><span>            }
+</span><span>        }
+</span><span>        else{
+</span><span>            if(P2.ID != 2){
+</span><span>                P2.move(P2.ID , P2 ,  ProtoBoss) ;
+</span><span>            }
+</span><span>            else{
+</span><span>                P2.move(P2.ID , P1 , ProtoBoss);
+</span><span>            }
+</span><span>        }
+</span></code></pre><p>What this is saying is, if the P1.ID != 2 (which will be true as it’ll definitely be 1) then we move Proto1, just as we normally would. And if P2.ID is not 2 (which won’t be trust as it’ll be 2), then we move P2.<p>The cool thing is, when P2.ID is 2, then we move P1 and when P1.ID is 2 we move P2. ID will be 2 for proto2, which heals everyone. Now, the boss damage increases and keeps increasing… when we reach round 30, the boss damage is more than INT32_MAX!<p>Hence, we’d have reached an integer underflow condition and subtracting this value from the hitpoints, in fact adds to it (cause you’re subtracting a bigger negative number, which means you’re adding a big number)! So, autoplay will continue this, until you will…<p>Note that, <strong>you needed proto2 to sustain proto4 until round 30</strong>. Any other proto other than 4 would’ve died before reaching round 30 no matter how much proto2 tried to heal it.<h3 id=stage-2>stage 2</h3><p>Now in this stage, we’ve been asked to enter a number between 0 and INT_MAX (2147483647). Whatever we choose, this will be our hitpoints, but we’re doomed anyway cause protoboss’s attack is 3 times this!<p>Let’s look at the relevant code to see any vulnerabilities,<pre style=background:#282828;color:#fdf4c1aa><code><span> if(c == 'A'){
+</span><span>        ProtoBosshitpoints -= damage ;
+</span><span>        if(ProtoBosshitpoints <= 0){
+</span><span>            Stage2Status(ProtoBosshitpoints , ProtoBossdamage , hitpoints , damage);
+</span><span>            cout << Stage2WinText ; Stage2Win();
+</span><span>            return true ;
+</span><span>        }
+</span><span>        Stage2Status(ProtoBosshitpoints , ProtoBossdamage , hitpoints , damage); 
+</span><span>        cout << Protobossturn ; 
+</span><span>        int originalhitpoint = hitpoints ;
+</span><span>        hitpoints = hitpoints - ProtoBossdamage ;           
+</span><span>        if(originalhitpoint < hitpoints){
+</span><span>            slp();
+</span><span>            cout << Impossible ; hitpoints = 0 ;         
+</span><span>        }     
+</span><span>        else if(-INT32_MAX < hitpoints && hitpoints < originalhitpoint){
+</span><span>            hitpoints = 0 ;
+</span><span>        }       
+</span><span>        if(hitpoints == 0){
+</span><span>            Stage2Status(ProtoBosshitpoints , ProtoBossdamage , hitpoints , damage); slp();
+</span><span>            cout << Stage2LossText; slp(); return false ;
+</span><span>        }
+</span><span>        else{
+</span><span>            continue ;
+</span><span>        }
+</span><span>    }
+</span></code></pre><p>This is what happens when we attack. Note that, in order to win we have to somehow attack twice, but one hit from protoboss and we’re dead… <strong>or are we</strong>?<p>Look at this,<pre style=background:#282828;color:#fdf4c1aa><code><span>	else if(-INT32_MAX < hitpoints && hitpoints < originalhitpoint){
+</span><span>		hitpoints = 0 ;
+</span><span>	}       
+</span></code></pre><p>Its checking if our <code>hitpoints</code> is higher than -INT32_MAX. What if it’s less than that? Well, it’ll just continue as if nothing happened. What about our hitpoints then? It’ll be lower than -INT32_MAX, so negative! This means in the next round, we’ll again reach the <code>continue</code> bit while our health goes even more negative. This means we’ll win!<p>How do we reach that negative hitpoint? INT32_MAX is 2147483647, and we know that protoboss’s attack is 3 times whatever number we choose. Let’s say we chose <code>x</code>. Protoboss’s hitpoints is <code>3x</code>. What we need is, to solve this equation,<pre style=background:#282828;color:#fdf4c1aa><code><span>	x-3x <= -2147483647
+</span><span>	or
+</span><span>	x-3x = -2147483648
+</span></code></pre><p>When protoboss attacks us, we want out final hitpoints to go below -INT32_MAX. Thus, <code>x</code> comes out to be <code>1073741824</code>. This means that, if we choose this specific number, then protoboss’s attack will be just enough to push our final hitpoints below -INT32_MAX and hence, out of the restrictions of the program!<p>Use this, and get the flag.<p>flag: <code>IITM{R6G_pRo7O_f1Ag}</code><p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>
