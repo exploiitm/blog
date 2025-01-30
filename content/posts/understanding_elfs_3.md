@@ -1,4 +1,4 @@
-+
++++
 title = "Understanding ELFs, part 3"
 date = 2025-01-30
 authors = ["InnocentZero"]
