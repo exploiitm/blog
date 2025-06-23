@@ -1,5 +1,5 @@
 +++
-title = "picoCTF"
+title = "Echo Valley"
 date = 2025-04-10
 authors = ["rishit khandelwal"]
 +++

@@ -10,4 +10,5 @@ page_template = "blog-page.html"
 
 - [Guild Selection CTF](./Guild_Selection_CTF)
 - [RVCExIITBCTF](./RVCExIITBFinals)
+- [picoCTF2025](./picoCTF2025)
 - [Cyber3301](./Cyber3301)
