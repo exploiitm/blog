@@ -1,0 +1,292 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Huffing and puffing</title><meta content="Huffing and puffing" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/HuffmanEncoding/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Huffing and puffing" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/HuffmanEncoding/ property=twitter:url><meta content="Huffing and puffing" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/HuffmanEncoding/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>HuffmanEncoding</span></div><time datetime=2024-09-05>Published on: <span class=accent-data>2024-09-05</span></time><address rel=author>By <span class=accent-data> Achintya J, and exploiitm </span></address><h1>Huffing and puffing</h1><p>In this we’ve been given a binary file, that we are supposed to exploit somehow. If we run this using IDA, we get a lot of functions. We can list down a bunch of important ones,<ol><li>buildHuffmanTree<li>buildCodes<li>encode<li>binaryStringToInt<li>binaryStringToMatrix<li>largestPrimeFactor</ol><p>It’s evident that, there is huffman encoding involved! If we check out the <code>largestPrimeFactor</code> its simply giving the largest prime factor for a given number. You might try opening this with Ghidra as well,<p><code>binaryStringToMatrix()</code> seems interesting<pre style=background:#282828;color:#fdf4c1aa><code><span>	for (local_28 = 0; __n = local_28, (int)local_28 < (int)local_3c; local_28 = local_28 + 1) {
+</span><span>		this_00 = std::vector<>::operator[](&local_1f4,local_24);
+</span><span>		pvVar7 = std::vector<>::operator[](this_00,__n);
+</span><span>		std::__cxx11::to_string(*pvVar7);
+</span><span>		std::__cxx11::basic_string<>::operator+=((basic_string<> *)&local_218,local_f4);
+</span><span>		std::__cxx11::basic_string<>::~basic_string((basic_string<> *)local_f4);
+</span><span>	}
+</span><span>	binaryStringToInt(&local_218);
+</span><span>	this_01 = std::vector<>::operator[](&local_200,local_24);
+</span><span>	std::__cxx11::basic_string<>::operator=((basic_string<> *)this_01,local_dc);
+</span><span>	std::__cxx11::basic_string<>::~basic_string((basic_string<> *)local_dc);
+</span><span>	std::__cxx11::basic_string<>::~basic_string((basic_string<> *)&local_218);
+</span><span>}
+</span></code></pre><p>I got something like this, what this means is we enter a bunch of stuff in the vector <code>this_00</code>, convert binary strings to integers (which is prolly what is printing the numbers that we see on the screen).<p>Now what do we know about the numbers that we are getting? We know that according to the above function each number that we get is being converted from a binary string. This means our first step should be to get the binary versions of each numbers.<p>Now in the decompiled code, we can see the frequency table, (look carefully!) and we can write that in C++ as,<pre style=background:#282828;color:#fdf4c1aa><code><span>	std::unordered_map&LTchar, unsigned> mp;
+</span><span>		mp['5'] = '1';
+</span><span>		mp['R'] = '1';
+</span><span>		mp['n'] = '1';
+</span><span>		mp['K'] = '1';
+</span><span>		mp['4'] = '1';
+</span><span>		mp['C'] = '1';
+</span><span>		mp['T'] = '2';
+</span><span>		mp['I'] = '2';
+</span><span>		mp['0'] = '1';
+</span><span>		mp['u'] = '1';
+</span><span>		mp['F'] = '1';
+</span><span>		mp['M'] = '1';
+</span><span>		mp['{'] = '1';
+</span><span>		mp['_'] = '1';
+</span><span>		mp['H'] = '1';
+</span><span>		mp['}'] = '1';
+</span><span>		mp['f'] = '2';
+</span><span>		mp['m'] = '1';
+</span></code></pre><p>This means the flag contains these symbols with these frequencies. Thus, we can get a general flag as <code>5RnK4CTTII0uFM{_}Hffm</code> and why this is useful, is simply because huffman encoding gives the same encoding for “x” any other permutation of “x”.<p>Thus, if we encode this flag, we’ll get a different binary but it will have the same number of bits. But firstly, we’ll have to find the binary form of the fake flag. This is because<pre style=background:#282828;color:#fdf4c1aa><code><span>	#include &LTiostream>
+</span><span>	#include &LTstring>
+</span><span>	#include &LTqueue>
+</span><span>	#include &LTunordered_map>
+</span><span>	#include &LTalgorithm>
+</span><span>	#include &LTbitset>
+</span><span>	#include &LTstdexcept>
+</span><span>	#include &LTvector>
+</span><span>	#include &LTfstream>
+</span><span>	#include &LTsstream>
+</span><span>	#include &LTcmath>
+</span><span>	using namespace std;
+</span><span>	struct HuffmanNode {
+</span><span>	    char data;
+</span><span>	    unsigned frequency;
+</span><span>	    HuffmanNode* left;
+</span><span>	    HuffmanNode* right;
+</span><span>	    HuffmanNode(char data, unsigned frequency)
+</span><span>	        : data(data), frequency(frequency), left(nullptr), right(nullptr) {}
+</span><span>	    ~HuffmanNode() {
+</span><span>	        delete left;
+</span><span>	        delete right;
+</span><span>	    }
+</span><span>	};
+</span><span>	struct Compare {
+</span><span>	    bool operator()(HuffmanNode* left, HuffmanNode* right) {
+</span><span>	        return left->frequency > right->frequency;
+</span><span>	    }
+</span><span>	};
+</span><span>	void buildCodes(HuffmanNode* root, const std::string& code, std::unordered_map&LTchar, std::string>& codes) {
+</span><span>		if (!root)
+</span><span>			return;
+</span><span>		if (root->data != '\0')
+</span><span>			codes[root->data] = code;
+</span><span>		buildCodes(root->left, code + "0", codes);
+</span><span>		buildCodes(root->right, code + "1", codes);
+</span><span>		}
+</span><span>	HuffmanNode* buildHuffmanTree(const std::unordered_map&LTchar, unsigned>& freqMap) {
+</span><span>		std::priority_queue&LTHuffmanNode*, std::vector&LTHuffmanNode*>, Compare> pq;
+</span><span>		for (const auto& pair : freqMap) {
+</span><span>			pq.push(new HuffmanNode(pair.first, pair.second));
+</span><span>		}
+</span><span>		while (pq.size() != 1) {
+</span><span>			HuffmanNode* left = pq.top(); pq.pop();
+</span><span>			HuffmanNode* right = pq.top(); pq.pop();
+</span><span>			HuffmanNode* parent = new HuffmanNode('\0', left->frequency + right->frequency);
+</span><span>			parent->left = left;
+</span><span>			parent->right = right;
+</span><span>			pq.push(parent);
+</span><span>		}
+</span><span>		return pq.top();
+</span><span>}
+</span><span>	int main(){
+</span><span>		std::unordered_map&LTchar, unsigned> mp;
+</span><span>		mp['5'] = '1';
+</span><span>		mp['R'] = '1';
+</span><span>		mp['n'] = '1';
+</span><span>		mp['K'] = '1';
+</span><span>		mp['4'] = '1';
+</span><span>		mp['C'] = '1';
+</span><span>		mp['T'] = '2';
+</span><span>		mp['I'] = '2';
+</span><span>		mp['0'] = '1';
+</span><span>		mp['u'] = '1';
+</span><span>		mp['F'] = '1';
+</span><span>		mp['M'] = '1';
+</span><span>		mp['{'] = '1';
+</span><span>		mp['_'] = '1';
+</span><span>		mp['H'] = '1';
+</span><span>		mp['}'] = '1';
+</span><span>		mp['f'] = '2';
+</span><span>		mp['m'] = '1';
+</span><span>		std::string encoded_flag = "1773 1166 1693 1110 795 1561 115 1879";
+</span><span>		std::string data = "5RnK4CTTII0uFM{_}Hffm";
+</span><span>		HuffmanNode* root = buildHuffmanTree(mp); // build the tree
+</span><span>		std::unordered_map&LTchar, std::string> codes; // build the codes
+</span><span>		buildCodes(root, "", codes);
+</span><span>		std::string encoded = encode(data, codes);
+</span><span>		std::cout << encoded.size();                    // this is the size
+</span></code></pre><p>This boiler plate code is simply using ready made functions you can find on GitHub. Now, what do we know about the size?<p>Now in the <code>binaryStringToMatrix()</code> function we know that the binary string is being converted to a matrix and it uses the length of the binary string as the rows. The number of rows we have is the number of numbers in the encoded flag, which is 8 <code>1773 1166 1693 1110 795 1561 115 1879</code>.<pre style=background:#282828;color:#fdf4c1aa><code><span>	int cols = encoded.size();
+</span><span>	int rows = 8;
+</span></code></pre><p>Now we want to convert each encoded number to its binary form and then pad that to the <code>cols</code> size. For example, base2 of 317 is 100111101 which is 9 digits, but i need 11, so, i will make 317 as 00100111101… and so on for each of them. Why 11? its because the flag encoded in base2 gives 11 bits… (you can run the code to find out!)<pre style=background:#282828;color:#fdf4c1aa><code><span>	std::stringstream ss(encoded_flag);
+</span><span>	    std::vector&LTint> numbers;
+</span><span>	    std::string temp;
+</span><span>	    														// break the string into numbers
+</span><span>	    while (ss >> temp) {
+</span><span>	        numbers.push_back(std::stoi(temp)); // Convert to integer and store
+</span><span>	    }
+</span><span>	    std::vector&LTstd::string> binaryStrings;														// convert to binary, pad to length 11, and store it in the binaryStrings vector
+</span><span>	    for (int num : numbers) {
+</span><span>	        std::string binary = std::bitset&LT11>(num).to_string();
+</span><span>	        binaryStrings.push_back(binary);
+</span><span>	    }
+</span><span>	/*
+</span><span>	   	for (const std::string &binary : binaryStrings) {													// print em
+</span><span>	        std::cout << binary;
+</span><span>	    }
+</span><span>	*/
+</span><span>	    // with this you get the huffman encoded string of the FLAG itself and you have the frequency table of the flag...
+</span><span>	    // 1101110110110010001110110100111011000101011001100011011110000110010000111001111101010111
+</span><span>	    std::string encodedString = "1101110110110010001110110100111011000101011001100011011110000110010000111001111101010111";
+</span><span>	    // now write the decode function and decode it using the frequency table and the encoded string to get the flag.
+</span><span>	    std::string flagDecoded = decodeHuffman(encodedString, root);
+</span><span>	    std::cout << flagDecoded;
+</span><span>	}
+</span></code></pre><p>The decode function can be found online (or just ask “someone” to do it for you)<pre style=background:#282828;color:#fdf4c1aa><code><span>	std::string encode(const std::string& data, const std::unordered_map&LTchar, std::string>& codes) {
+</span><span>	    std::string encoded;
+</span><span>	    for (char c : data) {
+</span><span>	        encoded += codes.at(c);
+</span><span>	    }
+</span><span>	    return encoded;
+</span><span>	}
+</span><span>	std::string decodeHuffman(const std::string& encodedStr, HuffmanNode* root) {
+</span><span>	    std::string result;
+</span><span>	    HuffmanNode* current = root;
+</span><span>	    for (char bit : encodedStr) {
+</span><span>	        if (bit == '0') current = current->left;
+</span><span>	        else current = current->right;
+</span><span>	        if (!current->left && !current->right) {
+</span><span>	            result += current->data;
+</span><span>	            current = root;
+</span><span>	        }
+</span><span>	    }
+</span><span>	    return result;
+</span><span>	}
+</span></code></pre><p>So, the final code to decode is<pre style=background:#282828;color:#fdf4c1aa><code><span>	#include &LTiostream>
+</span><span>	#include &LTstring>
+</span><span>	#include &LTqueue>
+</span><span>	#include &LTunordered_map>
+</span><span>	#include &LTalgorithm>
+</span><span>	#include &LTbitset>
+</span><span>	#include &LTstdexcept>
+</span><span>	#include &LTvector>
+</span><span>	#include &LTfstream>
+</span><span>	#include &LTsstream>
+</span><span>	#include &LTcmath>
+</span><span>	using namespace std;
+</span><span>	struct HuffmanNode {
+</span><span>	    char data;
+</span><span>	    unsigned frequency;
+</span><span>	    HuffmanNode* left;
+</span><span>	    HuffmanNode* right;
+</span><span>	    HuffmanNode(char data, unsigned frequency)
+</span><span>	        : data(data), frequency(frequency), left(nullptr), right(nullptr) {}
+</span><span>	    ~HuffmanNode() {
+</span><span>	        delete left;
+</span><span>	        delete right;
+</span><span>	    }
+</span><span>	};
+</span><span>	struct Compare {
+</span><span>	    bool operator()(HuffmanNode* left, HuffmanNode* right) {
+</span><span>	        return left->frequency > right->frequency;
+</span><span>	    }
+</span><span>	};
+</span><span>	void buildCodes(HuffmanNode* root, const std::string& code, std::unordered_map&LTchar, std::string>& codes) {
+</span><span>	    if (!root)
+</span><span>	        return;
+</span><span>	    if (root->data != '\0')
+</span><span>	        codes[root->data] = code;
+</span><span>	    buildCodes(root->left, code + "0", codes);
+</span><span>	    buildCodes(root->right, code + "1", codes);
+</span><span>	}
+</span><span>	HuffmanNode* buildHuffmanTree(const std::unordered_map&LTchar, unsigned>& freqMap) {
+</span><span>	    std::priority_queue&LTHuffmanNode*, std::vector&LTHuffmanNode*>, Compare> pq;
+</span><span>	    for (const auto& pair : freqMap) {
+</span><span>	        pq.push(new HuffmanNode(pair.first, pair.second));
+</span><span>	    }
+</span><span>	    while (pq.size() != 1) {
+</span><span>	        HuffmanNode* left = pq.top(); pq.pop();
+</span><span>	        HuffmanNode* right = pq.top(); pq.pop();
+</span><span>	        HuffmanNode* parent = new HuffmanNode('\0', left->frequency + right->frequency);
+</span><span>	        parent->left = left;
+</span><span>	        parent->right = right;
+</span><span>	        pq.push(parent);
+</span><span>	    }
+</span><span>	    return pq.top();
+</span><span>	}
+</span><span>	std::string encode(const std::string& data, const std::unordered_map&LTchar, std::string>& codes) {
+</span><span>	    std::string encoded;
+</span><span>	    for (char c : data) {
+</span><span>	        encoded += codes.at(c);
+</span><span>	    }
+</span><span>	    return encoded;
+</span><span>	}
+</span><span>	std::string decodeHuffman(const std::string& encodedStr, HuffmanNode* root) {
+</span><span>	    std::string result;
+</span><span>	    HuffmanNode* current = root;
+</span><span>	    for (char bit : encodedStr) {
+</span><span>	        if (bit == '0') current = current->left;
+</span><span>	        else current = current->right;
+</span><span>	        if (!current->left && !current->right) {
+</span><span>	            result += current->data;
+</span><span>	            current = root;
+</span><span>	        }
+</span><span>	    }
+</span><span>	    return result;
+</span><span>	}
+</span><span>	int main(){
+</span><span>		std::unordered_map&LTchar, unsigned> mp;
+</span><span>		mp['5'] = '1';
+</span><span>		mp['R'] = '1';
+</span><span>		mp['n'] = '1';
+</span><span>		mp['K'] = '1';
+</span><span>		mp['4'] = '1';
+</span><span>		mp['C'] = '1';
+</span><span>		mp['T'] = '2';
+</span><span>		mp['I'] = '2';
+</span><span>		mp['0'] = '1';
+</span><span>		mp['u'] = '1';
+</span><span>		mp['F'] = '1';
+</span><span>		mp['M'] = '1';
+</span><span>		mp['{'] = '1';
+</span><span>		mp['_'] = '1';
+</span><span>		mp['H'] = '1';
+</span><span>		mp['}'] = '1';
+</span><span>		mp['f'] = '2';
+</span><span>		mp['m'] = '1';
+</span><span>		std::string encoded_flag = "1773 1166 1693 1110 795 1561 115 1879";
+</span><span>		
+</span><span>		/*
+</span><span>		we know it has 8 rows (cause 8 numbers here)... How do we figure out the number of characters?
+</span><span>		The thing about huffman codes is, as long as the frequencies remain the same, the encoded string is the same... --> make a random string from the
+</span><span>		frequency table, say "5RnK4CTTII0uFM{_}Hffm", then encode it using huffman encoding
+</span><span>	*/
+</span><span>		std::string data = "5RnK4CTTII0uFM{_}Hffm";
+</span><span>		HuffmanNode* root = buildHuffmanTree(mp); // build the tree
+</span><span>		std::unordered_map&LTchar, std::string> codes; // build the codes
+</span><span>	    buildCodes(root, "", codes);
+</span><span>	    
+</span><span>	    std::string encoded = encode(data, codes);
+</span><span>	    std::cout << encoded.size(); // Now we have the size of the encoded flag
+</span><span>	    int cols = encoded.size();
+</span><span>	    int rows = 8;
+</span><span>	    // now we want to convert each number in encoded_flag to its binary form and pad that to "cols" size. for example, base2 of 317 is 100111101 which is 9 digits, but i need 11
+</span><span>	    // so, i will make 317 as 00100111101... and so on for each of them 
+</span><span>	    std::stringstream ss(encoded_flag);
+</span><span>	    std::vector&LTint> numbers;
+</span><span>	    std::string temp;
+</span><span>	    														// break the string into numbers
+</span><span>	    while (ss >> temp) {
+</span><span>	        numbers.push_back(std::stoi(temp)); // Convert to integer and store
+</span><span>	    }
+</span><span>	    std::vector&LTstd::string> binaryStrings;														// convert to binary, pad to length 11, and store it in the binaryStrings vector
+</span><span>	    for (int num : numbers) {
+</span><span>	        std::string binary = std::bitset&LT11>(num).to_string();
+</span><span>	        binaryStrings.push_back(binary);
+</span><span>	    }
+</span><span>	/*
+</span><span>	   	for (const std::string &binary : binaryStrings) {													// print em
+</span><span>	        std::cout << binary;
+</span><span>	    }
+</span><span>	*/
+</span><span>	    // with this you get the huffman encoded string of the FLAG itself and you have the frequency table of the flag...
+</span><span>	    // 1101110110110010001110110100111011000101011001100011011110000110010000111001111101010111
+</span><span>	    std::string encodedString = "1101110110110010001110110100111011000101011001100011011110000110010000111001111101010111";
+</span><span>	    // now write the decode function and decode it using the frequency table and the encoded string to get the flag.
+</span><span>	    std::string flagDecoded = decodeHuffman(encodedString, root);
+</span><span>	    std::cout << flagDecoded;
+</span><span>	}
+</span></code></pre><p>–<p>You’ll prolly realise this is brainfuckery. A lot of things are hard to read from the disassembly, but this is how its going to be in the real world! A lot of it is domain knowledge, and some intuitive feel.<p>There is always a way for those brave enough to find it…<p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

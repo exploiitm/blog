@@ -1,0 +1,51 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Understanding ELFs, part 2</title><meta content="Understanding ELFs, part 2" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/posts/understanding_elfs_2/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Understanding ELFs, part 2" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/posts/understanding_elfs_2/ property=twitter:url><meta content="Understanding ELFs, part 2" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/posts/understanding_elfs_2/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>understanding_elfs_2</span></div><time datetime=2025-01-29>Published on: <span class=accent-data>2025-01-29</span></time><address rel=author>By <span class=accent-data> InnocentZero, and exploiitm </span></address><h1>Understanding ELFs, part 2</h1><h2 id=segments>Segments</h2><p>Sections gather all the information needed to link a given executable. Segments, on the other hand, contain information needed to load the program into memory. Segments can be imagined as a tool to make linux loader’s life easier, as they group sections by attributes into single segments in order to make the loading process more efficient. Otherwise the loader would load each individual section into memory independently.<p>Similar to sections, Segments, also called <em>Program Headers</em>, also have a <strong>Program Header Table</strong> that lists all the segments. This table is read by the loader and helps map the ELF into memory. These can be seen via <code>readelf -l executable</code>.<pre style=background:#282828;color:#fdf4c1aa><code><span>Elf file type is DYN (Position-Independent Executable file)
+</span><span>Entry point 0x1040
+</span><span>There are 13 program headers, starting at offset 64
+</span><span>
+</span><span>Program Headers:
+</span><span>  Type           Offset             VirtAddr           PhysAddr
+</span><span>                 FileSiz            MemSiz              Flags  Align
+</span><span>  PHDR           0x0000000000000040 0x0000000000000040 0x0000000000000040
+</span><span>                 0x00000000000002d8 0x00000000000002d8  R      0x8
+</span><span>  INTERP         0x0000000000000318 0x0000000000000318 0x0000000000000318
+</span><span>                 0x000000000000001c 0x000000000000001c  R      0x1
+</span><span>      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+</span><span>  LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
+</span><span>                 0x0000000000000630 0x0000000000000630  R      0x1000
+</span><span>  LOAD           0x0000000000001000 0x0000000000001000 0x0000000000001000
+</span><span>                 0x0000000000000191 0x0000000000000191  R E    0x1000
+</span><span>  LOAD           0x0000000000002000 0x0000000000002000 0x0000000000002000
+</span><span>                 0x00000000000000bc 0x00000000000000bc  R      0x1000
+</span><span>  LOAD           0x0000000000002dd0 0x0000000000003dd0 0x0000000000003dd0
+</span><span>                 0x0000000000000248 0x0000000000000250  RW     0x1000
+</span><span>  DYNAMIC        0x0000000000002de0 0x0000000000003de0 0x0000000000003de0
+</span><span>                 0x00000000000001e0 0x00000000000001e0  RW     0x8
+</span><span>  NOTE           0x0000000000000338 0x0000000000000338 0x0000000000000338
+</span><span>                 0x0000000000000040 0x0000000000000040  R      0x8
+</span><span>  NOTE           0x0000000000000378 0x0000000000000378 0x0000000000000378
+</span><span>                 0x0000000000000044 0x0000000000000044  R      0x4
+</span><span>  GNU_PROPERTY   0x0000000000000338 0x0000000000000338 0x0000000000000338
+</span><span>                 0x0000000000000040 0x0000000000000040  R      0x8
+</span><span>  GNU_EH_FRAME   0x0000000000002018 0x0000000000002018 0x0000000000002018
+</span><span>                 0x0000000000000024 0x0000000000000024  R      0x4
+</span><span>  GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000
+</span><span>                 0x0000000000000000 0x0000000000000000  RW     0x10
+</span><span>  GNU_RELRO      0x0000000000002dd0 0x0000000000003dd0 0x0000000000003dd0
+</span><span>                 0x0000000000000230 0x0000000000000230  R      0x1
+</span><span>
+</span><span> Section to Segment mapping:
+</span><span>  Segment Sections...
+</span><span>   00     
+</span><span>   01     .interp 
+</span><span>   02     .interp .note.gnu.property .note.gnu.build-id .note.ABI-tag .gnu.hash .dynsym .dynstr .gnu.version .gnu.version_r .rela.dyn .rela.plt 
+</span><span>   03     .init .plt .text .fini 
+</span><span>   04     .rodata .eh_frame_hdr .eh_frame 
+</span><span>   05     .init_array .fini_array .dynamic .got .got.plt .data .bss 
+</span><span>   06     .dynamic 
+</span><span>   07     .note.gnu.property 
+</span><span>   08     .note.gnu.build-id .note.ABI-tag 
+</span><span>   09     .note.gnu.property 
+</span><span>   10     .eh_frame_hdr 
+</span><span>   11     
+</span><span>   12     .init_array .fini_array .dynamic .got 
+</span></code></pre><h2 id=types-of-segments>Types of Segments</h2><p>There are many types of segments. The most common and important ones are:<ul><li><code>PT_PHDR</code>: Contains the program header.<li><code>PT_LOAD</code>: Actually loaded in the memory. Every other section is mapped to this.<li><code>PT_INTERP</code>: Holds the <code>.interp</code> section responsible for providing the interpreter.<li><code>PT_NULL</code>: First entry of the table, unassigned.<li><code>PT_DYNAMIC</code>: Holds the <code>.dynamic</code> section.</ul><p>An interesting thing to note here is the <code>GNU_STACK</code> segment in the output. It has a peculiar size of 0. This implies that the stack size is decided by the kernel. Its size is always ignored and it is just there for permission management.<p>Another thing to be mentioned is <code>GNU_EH_FRAME</code> that specifies the frame unwinding information. Usually the same as <code>.eh_frame_hdr</code> section.<p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

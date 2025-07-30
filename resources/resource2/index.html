@@ -1,0 +1,130 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Basic GDB cheatsheet</title><meta content="Basic GDB cheatsheet" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/resources/resource2/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Basic GDB cheatsheet" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/resources/resource2/ property=twitter:url><meta content="Basic GDB cheatsheet" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/resources/resource2/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>resource2</span></div><time datetime=2025-01-07>Published on: <span class=accent-data>2025-01-07</span></time><address rel=author>By <span class=accent-data>exploiitm </span></address><h1>Basic GDB cheatsheet</h1><h1 id=gdb>gdb</h1><p>More important commands have a (*) by them.<h2 id=startup>Startup</h2><pre style=background:#282828;color:#fdf4c1aa><code><span>*% gdb object        normal debug  *% gdb object core  core debug (must specify core file)
+</span></code></pre><h2 id=help>Help</h2><pre style=background:#282828;color:#fdf4c1aa><code><span>*(gdb) help         list command classes
+</span></code></pre><h2 id=breakpoints>Breakpoints</h2><pre style=background:#282828;color:#fdf4c1aa><code><span>*(gdb) break main       set a breakpoint on a function
+</span><span>*(gdb) break 101        set a breakpoint on a line number
+</span><span>*(gdb) break basic.c:101        set breakpoint at file and line (or function)
+</span><span>*(gdb) info breakpoints        show breakpoints
+</span><span>*(gdb) delete 1         delete a breakpoint by number
+</span></code></pre><h2 id=running-the-program>Running the program</h2><pre style=background:#282828;color:#fdf4c1aa><code><span>*(gdb) run          run the program with current arguments
+</span><span>*(gdb) run args redirection        run with args and redirection
+</span><span>*(gdb) cont            continue the program
+</span><span>*(gdb) step            single step the program; step into functions
+</span><span>*(gdb) next            step but step over functions 
+</span><span>*(gdb) CTRL-C          actually SIGINT, stop execution of current program 
+</span><span>*(gdb) attach process-id        attach to running program
+</span><span>*(gdb) detach        detach from running program
+</span><span>*(gdb) finish        finish current function's execution
+</span></code></pre><h3 id=stack-backtrace>Stack backtrace</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>*(gdb) bt           print stack backtrace
+</span><span>*(gdb) info locals      print automatic variables in frame
+</span></code></pre><h2 id=browsing-source>Browsing source</h2><pre style=background:#282828;color:#fdf4c1aa><code><span>*(gdb) list 101         list 10 lines around line 101
+</span><span>*(gdb) list 1,10        list lines 1 to 10
+</span><span>*(gdb) list main    list lines around function 
+</span><span>*(gdb) list basic.c:main        list from another file basic.c
+</span><span>*(gdb) list -           list previous 10 lines
+</span></code></pre><h2 id=browsing-data>Browsing Data</h2><pre style=background:#282828;color:#fdf4c1aa><code><span>*(gdb) print expression        print expression, added to value history
+</span><span>*(gdb) print/x expressionR        print in hex
+</span><span>*(gdb) info locals      print local automatics only
+</span><span>*(gdb) ptype name        print type definition
+</span><span>*(gdb) set variable = expression        assign value
+</span></code></pre><h2 id=miscellaneous>Miscellaneous</h2><pre style=background:#282828;color:#fdf4c1aa><code><span>(gdb) define command ... end        define user command
+</span><span>*(gdb) RETURN               repeat last command
+</span><span>*(gdb) shell command args       execute shell command 
+</span><span>*(gdb) source file          load gdb commands from file
+</span><span>*(gdb) quit             quit gdb
+</span></code></pre><hr><h3 id=startup-1>Startup</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>% gdb -help             print startup help, show switches
+</span><span>%% gdb object pid   attach to running process
+</span><span>% gdb               use file command to load object 
+</span></code></pre><h3 id=help-1>Help</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>(gdb) help running      list commands in one command class
+</span><span>(gdb) help run          bottom-level help for a command "run" 
+</span><span>(gdb) help info         list info commands (running program state)
+</span><span>(gdb) help info line    help for a particular info command
+</span><span>(gdb) help show         list show commands (gdb state)
+</span><span>(gdb) help show commands        specific help for a show command
+</span></code></pre><h3 id=breakpoints-1>Breakpoints</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>(gdb) delete            delete all breakpoints (prompted)
+</span><span>(gdb) clear             delete breakpoints at current line
+</span><span>(gdb) clear function    delete breakpoints at function
+</span><span>(gdb) clear line        delete breakpoints at line
+</span><span>(gdb) disable 2         turn a breakpoint off, but don't remove it
+</span><span>(gdb) enable 2          turn disabled breakpoint back on
+</span><span>(gdb) tbreak function|line        set a temporary breakpoint
+</span><span>(gdb) commands break-no ... end   set gdb commands with breakpoint
+</span><span>(gdb) ignore break-no count       ignore bpt N-1 times before activation
+</span><span>(gdb) condition break-no expression         break only if condition is true
+</span><span>(gdb) condition 2 i == 20         example: break on breakpoint 2 if i equals 20
+</span><span>(gdb) watch expression        set software watchpoint on variable
+</span><span>(gdb) info watchpoints        show current watchpoints
+</span></code></pre><h3 id=running-the-program-1>Running the program</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>(gdb) set args args...        set arguments for run 
+</span><span>(gdb) show args        show current arguments to run
+</span><span>(gdb) step count       singlestep \fIcount\fR times
+</span><span>(gdb) next count       next \fIcount\fR times
+</span><span>(gdb) kill           kill current executing program 
+</span></code></pre><h3 id=stack-backtrace-1>Stack Backtrace</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>(gdb) frame         show current execution position
+</span><span>(gdb) up            move up stack trace  (towards main)
+</span><span>(gdb) down          move down stack trace (away from main)
+</span><span>(gdb) info args         print function parameters 
+</span></code></pre><h3 id=browsing-source-1>Browsing source</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>(gdb) list *0x22e4      list source at address
+</span><span>(gdb) cd dir            change current directory to \fIdir\fR
+</span><span>(gdb) pwd           print working directory
+</span><span>(gdb) search regexpr    forward current for regular expression
+</span><span>(gdb) reverse-search regexpr        backward search for regular expression
+</span><span>(gdb) dir dirname       add directory to source path
+</span><span>(gdb) dir           reset source path to nothing
+</span><span>(gdb) show directories        show source path
+</span></code></pre><h3 id=browsing-data-1>Browsing Data</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>(gdb) print array[i]@count        artificial array - print array range
+</span><span>(gdb) print $           print last value
+</span><span>(gdb) print *$->next    print thru list
+</span><span>(gdb) print $1          print value 1 from value history
+</span><span>(gdb) print ::gx        force scope to be global
+</span><span>(gdb) print 'basic.c'::gx        global scope in named file (>=4.6)
+</span><span>(gdb) print/x &main     print address of function
+</span><span>(gdb) x/countFormatSize address        low-level examine command
+</span><span>(gdb) x/x &gx           print gx in hex
+</span><span>(gdb) x/4wx &main       print 4 longs at start of \fImain\fR in hex
+</span><span>(gdb) x/gf &gd1         print double
+</span><span>(gdb) help x            show formats for x
+</span><span>(gdb) info functions regexp         print function names
+</span><span>(gdb) info variables  regexp        print global variable names
+</span><span>(gdb) whatis expression       print type of expression
+</span><span>(gdb) display expression        display expression result at stop
+</span><span>(gdb) undisplay        delete displays
+</span><span>(gdb) info display     show displays
+</span><span>(gdb) show values      print value history (>= gdb 4.0)
+</span><span>(gdb) info history     print value history (gdb 3.5)
+</span></code></pre><h3 id=object-file-manipulation>Object File manipulation</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>(gdb) file object           load new file for debug (sym+exec)
+</span><span>(gdb) file                  discard sym+exec file info
+</span><span>(gdb) symbol-file object        load only symbol table
+</span><span>(gdb) exec-file object      specify object to run (not sym-file)
+</span><span>(gdb) core-file core        post-mortem debugging
+</span></code></pre><h3 id=signal-control>Signal Control</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>(gdb) info signals          print signal setup
+</span><span>(gdb) handle signo actions      set debugger actions for signal
+</span><span>(gdb) handle INT print          print message when signal occurs
+</span><span>(gdb) handle INT noprint        don't print message
+</span><span>(gdb) handle INT stop           stop program when signal occurs
+</span><span>(gdb) handle INT nostop         don't stop program
+</span><span>(gdb) handle INT pass           allow program to receive signal
+</span><span>(gdb) handle INT nopass         debugger catches signal; program doesn't
+</span><span>(gdb) signal signo          continue and send signal to program
+</span><span>(gdb) signal 0              continue and send no signal to program
+</span></code></pre><h3 id=machine-level-debug>Machine-level Debug</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>(gdb) info registers            print registers sans floats
+</span><span>(gdb) info all-registers        print all registers
+</span><span>(gdb) print/x $pc           print one register
+</span><span>(gdb) stepi             single step at machine level
+</span><span>(gdb) si                single step at machine level
+</span><span>(gdb) nexti             single step (over functions) at machine level
+</span><span>(gdb) ni                single step (over functions) at machine level
+</span><span>(gdb) display/i $pc         print current instruction in display
+</span><span>(gdb) x/x &gx               print variable gx in hex
+</span><span>(gdb) info line 22          print addresses for object code for line 22
+</span><span>(gdb) info line *0x2c4e         print line number of object code at address
+</span><span>(gdb) x/10i main            disassemble first 10 instructions in \fImain\fR
+</span><span>(gdb) disassemble addr          disassemble code for function around addr
+</span></code></pre><h3 id=history-display>History Display</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>(gdb) show commands         print command history (>= gdb 4.0)
+</span><span>(gdb) info editing          print command history (gdb 3.5)
+</span><span>(gdb) ESC-CTRL-J            switch to vi edit mode from emacs edit mode
+</span><span>(gdb) set history expansion on       turn on c-shell like history
+</span><span>(gdb) break class::member       set breakpoint on class member. may get menu
+</span><span>(gdb) list class::member        list member in class
+</span><span>(gdb) ptype class               print class members
+</span><span>(gdb) print *this           print contents of this pointer
+</span><span>(gdb) rbreak regexpr        useful for breakpoint on overloaded member name
+</span></code></pre><p class=tags-data><a href=/blog/tags/gdb>/gdb/</a></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>
