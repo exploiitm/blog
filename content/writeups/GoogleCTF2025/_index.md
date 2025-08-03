@@ -7,4 +7,4 @@ page_template = "blog-page.html"
 +++
 
 
-The writeups for the bi0sCTF 2025.
+The writeups for the GoogleCTF 2025.
