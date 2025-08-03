@@ -126,4 +126,14 @@ We can ignore the other instructions and notice that ![](./gdb_cmp_ext.png) wher
 First there is an xor between constants `0x8675309` and `0x13370539`, and then the result is stored.
 This result is added to our input and stored. The result of this operation is then subtracted from `0xaaaaaaaa` as mentioned above which triggers an exception if the difference is non-zero. So we have to figure out a input which would be equal to `0xaaaaaaaa` after this bunch of operations. Simply entering these values in python and solving for the input gives us `0x8f5a547a` or 2405061754.
 
-If we give this as an input to the first challenge, we pass it and reach the 2nd challenge "Tell me a joke"
+If we give this as an input to the first challenge, we pass it and reach the 2nd challenge "Tell me a joke".
+
+When we walk through the execution, we can observe that:
+
+- Our input bytes (4 at a time) are multiplied by `0xCAFEBABE` using `MUL_IMM`.
+- The output is stored into 2 registers `C` (lower bits) and `D` (higher bits)
+- Store the value of `B ^ D` into `B` (initially 0)
+- Do this 7 times
+- If the value of B is not equal to `0x7331` it will not allow us to pass to the next challenge, so we have to simply figure out a value of an input which will produce such an output.
+
+Our
