@@ -1,4 +1,4 @@
-+++ 
++++
 title = "MAME A"
 date = 2025-08-07
 authors = ["Aditya Sharma"]
