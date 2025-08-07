@@ -1,3 +1,8 @@
++++ 
+title = "MAME B"
+date = 2025-08-07
+authors = ["Aditya Sharma"]
++++
 ![](attachments/Pasted%20image%2020250724195326.png)
 # The Challenge
 

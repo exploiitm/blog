@@ -1,4 +1,9 @@
-## context
++++ 
+title = "MAME A"
+date = 2025-08-07
+authors = ["Aditya Sharma"]
++++
+## Context
 
 This challenge involves running a video game ROM on an emulator, I'll give a little bit of context for the people who don't mess around with emulators and emulation in general.
 
