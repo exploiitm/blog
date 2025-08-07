@@ -1,6 +1,6 @@
 +++
 title = "Unicornel-Trustzone"
-date = 2025-08-7
+date = 2025-08-07
 author = ["anirud"]
 +++
 
