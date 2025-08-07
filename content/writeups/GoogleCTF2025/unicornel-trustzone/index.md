@@ -25,8 +25,7 @@ We see that a trustzone mechanism is implemented that is checked using `TRUSTED_
 `create_trustzone` -- creates a trustzone where trusted system calls can be executed by `trustzone_invoke`.
 `trustzone_invoke` -- temporarily sets `trustzone_mode` to be true, and executes code in the trustzone. 
 
-Binary protections of chal
-{{ img(id="/writeups/GoogleCTF2025/unicornel-trustzone/sec.png", alt="Alt Text", class="textCenter") }}
+![Binary protections of chal](./sec.png)
 
 ### How is the trustzone protected from normal processes?
 
@@ -418,8 +417,8 @@ This now gives us the leaked buffer. If you notice, the buffer address always en
 
 Running vmmap we can see the memory mapping, and also obtain the PIE base. Also if you notice, the trustzone with modified RWX permission is also there. We need to be able to find this address as well to inject the shellcode for RCE
 
-{{ img(id="/writeups/GoogleCTF2025/unicornel-trustzone/rwx-section.png", alt="Alt Text", class="textCenter") }}
-{{ img(id="/writeups/GoogleCTF2025/unicornel-trustzone/pie-map.png", alt="Alt Text", class="textCenter") }}
+![Memory map](./rwx-section.png)
+![](./pie-map.png)
 
 This is the shellcode to calculate and leak PIE base and RWX base. 
 
@@ -552,7 +551,7 @@ print(f'{hex(leaked_pie_base) = }')
 leaked_rwx_base = int(p.recvline().strip().decode())
 print(f'{hex(leaked_rwx_base) = }')
 ```
-{{ img(id="/writeups/GoogleCTF2025/unicornel-trustzone/leaked.png", alt="Alt Text", class="textCenter") }}
+![Leaked addresses](./leaked.png)
 
 If you remember the binary securities implemented in the beginning, we observed that relocation is set to Partial Relocation Read-Only. That means that this program is susceptible to GOT overwrite. So we can easily overwrite the GOT entry by mapping an address to the calculated GOT position from the known PIE base address. 
 Let's try to find the GOT address of write function so that we can gain remote shell access by running `unicornel_write`.
@@ -756,5 +755,4 @@ print(f'{hex(leaked_rwx_base) = }')
 p.interactive()
 ```
 
-{{ img(id="/writeups/GoogleCTF2025/unicornel-trustzone/final-exp.png", alt="Alt Text", class="textCenter") }}
-
+![](./final-exp.png)
