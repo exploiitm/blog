@@ -1,7 +1,7 @@
 +++
 title = "Unicornel-Trustzone"
 date = 2025-08-07
-author = ["anirud"]
+authors = ["anirud"]
 +++
 
 # Pwn - Unicornel Trustzone
