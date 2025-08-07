@@ -1,4 +1,8 @@
-+++ title = "Unicornel-Trustzone" date = 2025-08-7 author = ["anirud"] +++
++++
+title = "Unicornel-Trustzone"
+date = 2025-08-7
+author = ["anirud"]
++++
 
 # Pwn - Unicornel Trustzone
 
