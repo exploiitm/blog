@@ -1,6 +1,6 @@
 +++
 title = "exploit 'em - my cysec journey"
-date = 2024-07-02
+date = 2025-08-09
 authors = ["Arivoli R"]
 +++
 
