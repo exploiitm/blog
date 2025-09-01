@@ -14,6 +14,8 @@ Also, hints given mentioned the way `cicada 3301` had used the dimensions of the
 
 hence they had to find the very first image on our website, our logo, and take the product of dimensions
 
+exploiitm{ar3_y0u_sm4Rt_3NougH}
+
 Q2:
 
 Use the product from the previous level for this
