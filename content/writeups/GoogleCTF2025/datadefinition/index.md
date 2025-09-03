@@ -1,5 +1,5 @@
 +++
-title = "datadefinition"
+title = "Data_Definition"
 date = 2025-08-13
 authors = ["Hargun Kaur"]
 +++
