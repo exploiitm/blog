@@ -1,4 +1,8 @@
-+++ title = "FILTERMAZE" date = 2025-08-14 authors = ["Vibhu Mehrotra"] +++
++++
+title = "FILTERMAZE"
+date = 2025-08-14
+authors = ["Vibhu Mehrotra"]
++++
 
 ## Summary
 The problem has two parts:
