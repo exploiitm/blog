@@ -1,4 +1,8 @@
-+++ title = "MYTHOS" date = 2025-08-15 authors = ["Vibhu Mehrotra"] +++
++++
+title = "MYTHOS"
+date = 2025-08-15
+authors = ["Vibhu Mehrotra"]
++++
 
 ## Summary
 On the surface, this game appears to be similar to the terminal games played in the 1980s, where you get 1-4 options and based on your choice the story proceeds, everything is hardcoded. This simple version has only around 20 possibilities to go through and only 1 good ending which you can get only if you collect all the 'items' however, that is not sufficient to print the flag, the game on winning returns the descriptions of the items you hold.... So we need to somehow change the filepath of the description to the path of the flag to get the flag printed.
