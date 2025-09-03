@@ -1,3 +1,8 @@
++++
+title = "MultiArch2"
+date = "2025-09-03"
+authors = ["Vrishab"]
++++
 ## Summary of the Exploit
 
 This challenge is built around exploiting a custom VM built with two separate instruction sets (stack‑based and register‑based)
@@ -69,5 +74,6 @@ Finally, we use stack‑arch syscall 5, which usually calls `get_flag`. But it n
 3. Dump (`fwrite`) `masm_struct` and find seg1 address
 4. Overwrite `get_flag` with that address
 5. Call `syscall 5` → shellcode runs
+
 
 **Credits**: 堇姬 Naup (https://naup.mygo.tw/2025/07/05/2025-Google-CTF-writeup/)
