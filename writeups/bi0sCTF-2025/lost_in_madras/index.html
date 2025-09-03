@@ -1,0 +1,180 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Lost In Madras</title><meta content="Lost In Madras" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/lost_in_madras/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Lost In Madras" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/lost_in_madras/ property=twitter:url><meta content="Lost In Madras" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/lost_in_madras/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>lost_in_madras</span></div><time datetime=2025-07-08>Published on: <span class=accent-data>2025-07-08</span></time><address rel=author>By <span class=accent-data> Aditya Sharma, and exploiitm </span></address><h1>Lost In Madras</h1><h3 id=description>Description</h3><p>I recently visited Madras… and I got carjacker T-T<p>Luckily, I had a wireless OBD adapter connected to my car through which I was able to obtain the CAN log for the whole journey. It’s so unfortunate that I cant make sense of the log.<ol><li>To confirm that it’s mine, find the VIN for my car.<li>Also, can you help me find where my car ended up?</ol><p>Flag format: bi0s{VIN_Landmark Name}<p>along with the challenge, you’re given a 37 MB canlog.txt file.<h3 id=preface>Preface</h3><p><img alt src=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/lost_in_madras/attachments/20250707203254.png> This is what canlog.txt looks like, for 956236 lines.<p>with entries of the format: <code>vcan0/1/2 { message identifier (hexadecimal) } { length of message } { message }</code><p>the message itself has its bytes separated using a whitespace as a delimiter, no message exceeds 8 bytes in length.<h3 id=the-vin>The VIN</h3><p>my solution here is very blind to the way CAN logs function, my solution somewhat assumes that if a message has to be broken into several packets, the bytes from those packets form a contiguous message with no other messages in between<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>import </span><span>re
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>parse_log_iso_tp</span><span>(</span><span style=color:#fdf4c1>file_path</span><span>):
+</span><span>    isotp_sessions </span><span style=color:#fe8019>= </span><span>{}
+</span><span>    
+</span><span>    </span><span style=color:#fa5c4b>with </span><span style=color:#fabd2f>open</span><span style=color:#fdf4c1>(file_path, </span><span style=color:#b8bb26>'r'</span><span style=color:#fdf4c1>) </span><span style=color:#fa5c4b>as </span><span>file:
+</span><span>        </span><span style=color:#fa5c4b>for </span><span>line </span><span style=color:#fa5c4b>in </span><span>file:
+</span><span>            match </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>re.match(</span><span style=color:#fa5c4b>r</span><span style=color:#b8bb26>'</span><span style=color:#d3869b>\s</span><span style=color:#fe8019>*</span><span style=color:#b8bb26>vcan</span><span style=color:#d3869b>\d</span><span style=color:#fe8019>+</span><span style=color:#d3869b>\s</span><span style=color:#fe8019>+</span><span style=color:#b8bb26>(</span><span style=color:#fdf4c1>[0-9A-Fa-f]</span><span style=color:#fe8019>+</span><span style=color:#b8bb26>)</span><span style=color:#d3869b>\s</span><span style=color:#fe8019>+</span><span style=color:#b8bb26>\[</span><span style=color:#d3869b>\d</span><span style=color:#fe8019>+</span><span style=color:#b8bb26>\]</span><span style=color:#d3869b>\s</span><span style=color:#fe8019>+</span><span style=color:#b8bb26>((?:</span><span style=color:#fdf4c1>[0-9A-Fa-f]</span><span style=color:#fe8019>{2}</span><span style=color:#d3869b>\s</span><span style=color:#fe8019>+</span><span style=color:#b8bb26>)</span><span style=color:#fe8019>+</span><span style=color:#b8bb26>)'</span><span style=color:#fdf4c1>, line)
+</span><span>            
+</span><span>            </span><span style=color:#fa5c4b>if </span><span style=color:#fe8019>not </span><span>match:
+</span><span>                </span><span style=color:#fa5c4b>continue
+</span><span>            can_id </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>match.group(</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>).upper()
+</span><span>            data </span><span style=color:#fe8019>= </span><span>[</span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(byte, </span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>) </span><span style=color:#fa5c4b>for </span><span>byte </span><span style=color:#fa5c4b>in </span><span style=color:#fdf4c1>match.group(</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>).strip().split()</span><span>]
+</span><span>            pci </span><span style=color:#fe8019>= </span><span>data[</span><span style=color:#d3869b>0</span><span>]
+</span><span>            </span><span style=color:#fa5c4b>if </span><span>pci </span><span style=color:#fe8019>>> </span><span style=color:#d3869b>4 </span><span style=color:#fe8019>== </span><span style=color:#d3869b>1</span><span>:  </span><span style=font-style:italic;color:#928374># First frame (0x1X)
+</span><span>                total_length </span><span style=color:#fe8019>= </span><span>((pci </span><span style=color:#fe8019>& </span><span style=color:#d3869b>0xF</span><span>) </span><span style=color:#fe8019><< </span><span style=color:#d3869b>8</span><span>) </span><span style=color:#fe8019>+ </span><span>data[</span><span style=color:#d3869b>1</span><span>]
+</span><span>                payload </span><span style=color:#fe8019>= </span><span>data[</span><span style=color:#d3869b>3</span><span>:]  </span><span style=font-style:italic;color:#928374># Skip PCI and 2 bytes header
+</span><span>                isotp_sessions[can_id] </span><span style=color:#fe8019>= </span><span>{
+</span><span>                    </span><span style=color:#b8bb26>'expected_len'</span><span>: total_length,
+</span><span>                    </span><span style=color:#b8bb26>'payload'</span><span>: payload,
+</span><span>                    </span><span style=color:#b8bb26>'next_seq'</span><span>: </span><span style=color:#d3869b>1
+</span><span>                }
+</span><span>            </span><span style=color:#fa5c4b>elif </span><span>pci </span><span style=color:#fe8019>>> </span><span style=color:#d3869b>4 </span><span style=color:#fe8019>== </span><span style=color:#d3869b>2 </span><span style=color:#fe8019>and </span><span>can_id </span><span style=color:#fe8019>in </span><span>isotp_sessions:  </span><span style=font-style:italic;color:#928374># Consecutive frame
+</span><span>                seq </span><span style=color:#fe8019>= </span><span>pci </span><span style=color:#fe8019>& </span><span style=color:#d3869b>0xF
+</span><span>                session </span><span style=color:#fe8019>= </span><span>isotp_sessions[can_id]
+</span><span>                </span><span style=color:#fa5c4b>if </span><span>seq </span><span style=color:#fe8019>== </span><span>session[</span><span style=color:#b8bb26>'next_seq'</span><span>]:
+</span><span>                    session[</span><span style=color:#b8bb26>'payload'</span><span>]</span><span style=color:#fdf4c1>.extend(data[</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>:])  </span><span style=font-style:italic;color:#928374># skip PCI
+</span><span>                    session[</span><span style=color:#b8bb26>'next_seq'</span><span>] </span><span style=color:#fe8019>= </span><span>(session[</span><span style=color:#b8bb26>'next_seq'</span><span>] </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>1</span><span>) </span><span style=color:#fe8019>% </span><span style=color:#d3869b>0x10
+</span><span>
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374># Decode VIN-like strings
+</span><span>    found </span><span style=color:#fe8019>= </span><span style=color:#d3869b>False
+</span><span>    </span><span style=color:#fa5c4b>for </span><span>can_id, session </span><span style=color:#fa5c4b>in </span><span style=color:#fdf4c1>isotp_sessions.items()</span><span>:
+</span><span>        </span><span style=color:#fa5c4b>try</span><span>:
+</span><span>            ascii_data </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>''</span><span style=color:#fdf4c1>.join(</span><span style=color:#fabd2f>chr</span><span style=color:#fdf4c1>(b) </span><span style=color:#fa5c4b>for </span><span style=color:#fdf4c1>b </span><span style=color:#fa5c4b>in </span><span style=color:#fdf4c1>session[</span><span style=color:#b8bb26>'payload'</span><span style=color:#fdf4c1>] </span><span style=color:#fa5c4b>if </span><span style=color:#d3869b>32 </span><span style=color:#fe8019><= </span><span style=color:#fdf4c1>b </span><span style=color:#fe8019><= </span><span style=color:#d3869b>126</span><span style=color:#fdf4c1>)
+</span><span>            vin_match </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>re.search(</span><span style=color:#fa5c4b>r</span><span style=color:#b8bb26>'</span><span style=color:#fa5c4b>\b</span><span style=color:#fdf4c1>[A-HJ-NPR-Z0-9]</span><span style=color:#fe8019>{17}</span><span style=color:#fa5c4b>\b</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>, ascii_data)
+</span><span>            </span><span style=color:#fa5c4b>if </span><span>vin_match:
+</span><span>                </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"✅ VIN found from CAN ID </span><span style=color:#fdf4c1>{can_id}</span><span style=color:#b8bb26>: </span><span style=color:#fdf4c1>{vin_match.group()}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>                found </span><span style=color:#fe8019>= </span><span style=color:#d3869b>True
+</span><span>        </span><span style=color:#fa5c4b>except</span><span>:
+</span><span>            </span><span style=color:#fa5c4b>continue
+</span><span>    </span><span style=color:#fa5c4b>if </span><span style=color:#fe8019>not </span><span>found:
+</span><span>        </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"❌ No VIN found in ISO-TP messages."</span><span style=color:#fdf4c1>)
+</span><span style=font-style:italic;color:#928374># Usage
+</span><span>
+</span><span style=color:#fdf4c1>parse_log_iso_tp(</span><span style=color:#b8bb26>"canlog.txt"</span><span style=color:#fdf4c1>)
+</span></code></pre><p>this is a script that someone from my team prompt-engineered out of an LLM.<p>the way this works is it takes the message data from the canlog and matches it against a regex which checks for the format of a VIN.<p>fortunately this worked out for us and gave us the VIN.<h3 id=frequency-analysis>Frequency analysis</h3><p><img alt src=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/lost_in_madras/attachments/freq1.png> <img alt src=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/lost_in_madras/attachments/freq2.png> the images above are graphed “unique call frequency” versus “vcan ID” and “gross call frequency” versus “vcan ID”<p>unfortunately we messed up here because we weren’t actually able to identify any leads to go further.<p>The idea was that GPS data would be very frequent and very different, so analysis of unique messages should give us narrowed down can ids to further run checks on, but alas.<h3 id=the-part-we-didn-t-get>The part we didn’t get</h3><p>The intended continuation from after getting the VIN is finding out what vehicle this VIN belonged to. The problem we faced was that we had no idea that this VIN was valid and associated with a real world car. If we had looked into what vehicle this VIN identified, using something like <a href=https://vpic.nhtsa.dot.gov/decoder/ rel=noopener target=_blank>this decoder</a><p>The thing about CAN IDs is that they’re very proprietary, but there’s this thing known as a DBC, which maps CAN ids to what they represent,<p><a href=https://www.csselectronics.com/pages/uds-protocol-tutorial-unified-diagnostic-services rel=noopener target=_blank>https://www.csselectronics.com/pages/uds-protocol-tutorial-unified-diagnostic-services</a><p><a href=https://github.com/commaai/opendbc rel=noopener target=_blank>https://github.com/commaai/opendbc</a><p><img alt src=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/lost_in_madras/attachments/20250707214753.png><p>here the number 1125 is just decimal for hex 0x465, which is associated with GPS data<p>there are also GPS_Data_NAV_2 and 3, however the CAN IDs associated with them do no occur in the canlog.<p>after this its rather simple.<p><img alt src=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/lost_in_madras/attachments/20250707215201.png><p>the python-can library provides pretty good resources to parse this automatically.<pre class=language-zsh data-lang=zsh style=background:#282828;color:#fdf4c1aa><code class=language-zsh data-lang=zsh><span style=color:#fdf4c1>pip install 
+</span></code></pre><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=font-style:italic;color:#928374>#!/usr/bin/env python3
+</span><span>
+</span><span style=font-style:italic;color:#928374>"""
+</span><span style=font-style:italic;color:#928374>
+</span><span style=font-style:italic;color:#928374>ford_gps_decode.py
+</span><span style=font-style:italic;color:#928374>
+</span><span style=font-style:italic;color:#928374>––––––––––––––––––
+</span><span style=font-style:italic;color:#928374>
+</span><span style=font-style:italic;color:#928374>Reads a candump-style log and prints latitude/longitude every time the
+</span><span style=font-style:italic;color:#928374>
+</span><span style=font-style:italic;color:#928374>Ford GPS broadcast (CAN ID 0x465) appears.
+</span><span style=font-style:italic;color:#928374>
+</span><span style=font-style:italic;color:#928374>  
+</span><span style=font-style:italic;color:#928374>
+</span><span style=font-style:italic;color:#928374>Usage examples
+</span><span style=font-style:italic;color:#928374>
+</span><span style=font-style:italic;color:#928374>  cat canlog.txt | python ford_gps_decode.py
+</span><span style=font-style:italic;color:#928374>
+</span><span style=font-style:italic;color:#928374>  python ford_gps_decode.py canlog.txt
+</span><span style=font-style:italic;color:#928374>
+</span><span style=font-style:italic;color:#928374>"""
+</span><span>
+</span><span style=color:#fa5c4b>import </span><span>argparse, re, sys, json
+</span><span>
+</span><span style=color:#fdf4c1>GPS_ID </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x465                                    </span><span style=font-style:italic;color:#928374># Ford “GPS_Data_Nav_1” frame[1]
+</span><span>
+</span><span>  
+</span><span>
+</span><span style=font-style:italic;color:#928374># ------- low-level decoder (replicates fordcan.py’s hard-coded lambdas) --------
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>decode_gps</span><span>(</span><span style=color:#fdf4c1>payload</span><span>: </span><span style=color:#fabd2f>bytes</span><span>):
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374>"""Return (lat, lon) in decimal degrees from the eight-byte GPS frame."""
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>if </span><span style=color:#fabd2f>len</span><span style=color:#fdf4c1>(payload) </span><span style=color:#fe8019>!= </span><span style=color:#d3869b>8</span><span>:
+</span><span>
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#d3869b>None
+</span><span>
+</span><span>  
+</span><span>
+</span><span>    value </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>.from_bytes(payload, byteorder</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"big"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>  
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374># latitude ‑- 28 bits: 8° / 6′ / 14 ×0.0001′  (offset −89)[1][2]
+</span><span>
+</span><span>    lat_raw  </span><span style=color:#fe8019>= </span><span>(value </span><span style=color:#fe8019>>> </span><span style=color:#d3869b>36</span><span>) </span><span style=color:#fe8019>& </span><span>((</span><span style=color:#d3869b>1 </span><span style=color:#fe8019><< </span><span style=color:#d3869b>28</span><span>) </span><span style=color:#fe8019>- </span><span style=color:#d3869b>1</span><span>)
+</span><span>
+</span><span>    lat_deg  </span><span style=color:#fe8019>=  </span><span>(lat_raw </span><span style=color:#fe8019>>> </span><span style=color:#d3869b>20</span><span>) </span><span style=color:#fe8019>& </span><span style=color:#d3869b>0xFF
+</span><span>
+</span><span>    lat_min  </span><span style=color:#fe8019>=  </span><span>(lat_raw </span><span style=color:#fe8019>>> </span><span style=color:#d3869b>14</span><span>) </span><span style=color:#fe8019>& </span><span style=color:#d3869b>0x3F
+</span><span>
+</span><span>    lat_frac </span><span style=color:#fe8019>=   </span><span>lat_raw         </span><span style=color:#fe8019>& </span><span style=color:#d3869b>0x3FFF
+</span><span>
+</span><span>  
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374># longitude ‑- 29 bits: 9° / 6′ / 14 ×0.0001′  (offset −179)[1][2]
+</span><span>
+</span><span>    lon_raw  </span><span style=color:#fe8019>= </span><span>(value </span><span style=color:#fe8019>>> </span><span style=color:#d3869b>7</span><span>) </span><span style=color:#fe8019>& </span><span>((</span><span style=color:#d3869b>1 </span><span style=color:#fe8019><< </span><span style=color:#d3869b>29</span><span>) </span><span style=color:#fe8019>- </span><span style=color:#d3869b>1</span><span>)
+</span><span>
+</span><span>    lon_deg  </span><span style=color:#fe8019>=  </span><span>(lon_raw </span><span style=color:#fe8019>>> </span><span style=color:#d3869b>20</span><span>) </span><span style=color:#fe8019>& </span><span style=color:#d3869b>0x1FF
+</span><span>
+</span><span>    lon_min  </span><span style=color:#fe8019>=  </span><span>(lon_raw </span><span style=color:#fe8019>>> </span><span style=color:#d3869b>14</span><span>) </span><span style=color:#fe8019>& </span><span style=color:#d3869b>0x3F
+</span><span>
+</span><span>    lon_frac </span><span style=color:#fe8019>=   </span><span>lon_raw         </span><span style=color:#fe8019>& </span><span style=color:#d3869b>0x3FFF
+</span><span>
+</span><span>  
+</span><span>
+</span><span>    lat </span><span style=color:#fe8019>= -</span><span style=color:#d3869b>89  </span><span style=color:#fe8019>+ </span><span>(lat_deg </span><span style=color:#fe8019>+ </span><span>(lat_min </span><span style=color:#fe8019>+ </span><span>lat_frac </span><span style=color:#fe8019>* </span><span style=color:#d3869b>0.0001</span><span>) </span><span style=color:#fe8019>/ </span><span style=color:#d3869b>60</span><span>)
+</span><span>
+</span><span>    lon </span><span style=color:#fe8019>= -</span><span style=color:#d3869b>179 </span><span style=color:#fe8019>+ </span><span>(lon_deg </span><span style=color:#fe8019>+ </span><span>(lon_min </span><span style=color:#fe8019>+ </span><span>lon_frac </span><span style=color:#fe8019>* </span><span style=color:#d3869b>0.0001</span><span>) </span><span style=color:#fe8019>/ </span><span style=color:#d3869b>60</span><span>)
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>return </span><span style=color:#fabd2f>round</span><span style=color:#fdf4c1>(lat, </span><span style=color:#d3869b>6</span><span style=color:#fdf4c1>)</span><span>, </span><span style=color:#fabd2f>round</span><span style=color:#fdf4c1>(lon, </span><span style=color:#d3869b>6</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>  
+</span><span>
+</span><span style=font-style:italic;color:#928374># -------------------------- log-line parser ------------------------------------
+</span><span>
+</span><span style=color:#fdf4c1>CANDUMP </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>re.compile(
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>    </span><span style=color:#fa5c4b>r</span><span style=color:#b8bb26>"</span><span style=color:#fa5c4b>\b</span><span style=color:#b8bb26>(</span><span style=color:#fdf4c1>[0-9A-Fa-f]</span><span style=color:#fe8019>{3,8}</span><span style=color:#b8bb26>)</span><span style=color:#fa5c4b>\b</span><span style=color:#b8bb26>"      </span><span style=font-style:italic;color:#928374># arbitration ID
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>    </span><span style=color:#fa5c4b>r</span><span style=color:#b8bb26>"</span><span style=color:#d3869b>\s</span><span style=color:#fe8019>+</span><span style=color:#b8bb26>\[(</span><span style=color:#d3869b>\d</span><span style=color:#b8bb26>)\]</span><span style=color:#d3869b>\s</span><span style=color:#fe8019>+</span><span style=color:#b8bb26>"              </span><span style=font-style:italic;color:#928374># DLC
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>    </span><span style=color:#fa5c4b>r</span><span style=color:#b8bb26>"((?:</span><span style=color:#fdf4c1>[0-9A-Fa-f]</span><span style=color:#fe8019>{2}</span><span style=color:#d3869b>\s</span><span style=color:#fe8019>*</span><span style=color:#b8bb26>)</span><span style=color:#fe8019>{1,8}</span><span style=color:#b8bb26>)"  </span><span style=font-style:italic;color:#928374># payload
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>  
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>parse_line</span><span>(</span><span style=color:#fdf4c1>line</span><span>: </span><span style=color:#fabd2f>str</span><span>):
+</span><span>
+</span><span>    m </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>CANDUMP.search(line)
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>if </span><span style=color:#fe8019>not </span><span>m:
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#d3869b>None
+</span><span>
+</span><span>    arb_id </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(m.group(</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>), </span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)
+</span><span>    dlc    </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(m.group(</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>))
+</span><span>    data   </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>bytes</span><span style=color:#fdf4c1>.fromhex(m.group(</span><span style=color:#d3869b>3</span><span style=color:#fdf4c1>))
+</span><span>    </span><span style=color:#fa5c4b>return </span><span>arb_id, data[:dlc]
+</span><span>    
+</span><span style=font-style:italic;color:#928374># ----------------------------- main loop ---------------------------------------
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>main</span><span>():
+</span><span>
+</span><span>    ap </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>argparse.ArgumentParser(description</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"Extract Ford GPS messages (ID 0x465)"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>ap.add_argument(</span><span style=color:#b8bb26>"logfile"</span><span style=color:#fdf4c1>, nargs</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"?"</span><span style=color:#fdf4c1>, help</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"candump text file (default: stdin)"</span><span style=color:#fdf4c1>)
+</span><span>    args </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ap.parse_args()
+</span><span>    src </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>open</span><span style=color:#fdf4c1>(args.logfile, </span><span style=color:#b8bb26>"r"</span><span style=color:#fdf4c1>) </span><span style=color:#fa5c4b>if </span><span>args.logfile </span><span style=color:#fa5c4b>else </span><span>sys.stdin
+</span><span>    </span><span style=color:#fa5c4b>for </span><span>ln </span><span style=color:#fa5c4b>in </span><span>src:
+</span><span>        parsed </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>parse_line(ln)
+</span><span>        </span><span style=color:#fa5c4b>if </span><span style=color:#fe8019>not </span><span>parsed:
+</span><span>            </span><span style=color:#fa5c4b>continue
+</span><span>        arb_id, data </span><span style=color:#fe8019>= </span><span>parsed
+</span><span>        </span><span style=color:#fa5c4b>if </span><span>arb_id </span><span style=color:#fe8019>== </span><span style=color:#fdf4c1>GPS_ID</span><span>:
+</span><span>            coords </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>decode_gps(data)
+</span><span>            </span><span style=color:#fa5c4b>if </span><span>coords:
+</span><span>                </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(json.dumps({</span><span style=color:#b8bb26>"lat"</span><span style=color:#fdf4c1>: coords[</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>], </span><span style=color:#b8bb26>"lon"</span><span style=color:#fdf4c1>: coords[</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>]}))
+</span><span>
+</span><span style=color:#fa5c4b>if </span><span style=color:#fabd2f>__name__ </span><span style=color:#fe8019>== </span><span style=color:#b8bb26>"__main__"</span><span>:
+</span><span>    </span><span style=color:#fdf4c1>main()
+</span></code></pre><pre class=language-zsh data-lang=zsh style=background:#282828;color:#fdf4c1aa><code class=language-zsh data-lang=zsh><span>(</span><span style=color:#fdf4c1>CTF</span><span>)</span><span style=color:#fdf4c1> ➜  lost-in-madras python ford_gps_decode.py canlog.txt
+</span><span style=color:#fdf4c1>{</span><span style=color:#b8bb26>"lat"</span><span style=color:#fdf4c1>: 13.09768, </span><span style=color:#b8bb26>"lon"</span><span style=color:#fdf4c1>: 80.2933</span><span>}
+</span><span style=color:#fdf4c1>{</span><span style=color:#b8bb26>"lat"</span><span style=color:#fdf4c1>: 13.09032, </span><span style=color:#b8bb26>"lon"</span><span style=color:#fdf4c1>: 80.29112</span><span>}
+</span><span style=color:#fdf4c1>{</span><span style=color:#b8bb26>"lat"</span><span style=color:#fdf4c1>: 13.08536, </span><span style=color:#b8bb26>"lon"</span><span style=color:#fdf4c1>: 80.28465</span><span>}
+</span><span style=color:#fdf4c1>{</span><span style=color:#b8bb26>"lat"</span><span style=color:#fdf4c1>: 13.0826, </span><span style=color:#b8bb26>"lon"</span><span style=color:#fdf4c1>: 80.28196</span><span>}
+</span><span style=color:#fdf4c1>{</span><span style=color:#b8bb26>"lat"</span><span style=color:#fdf4c1>: 13.08175, </span><span style=color:#b8bb26>"lon"</span><span style=color:#fdf4c1>: 80.2752</span><span>}
+</span><span style=color:#fdf4c1>{</span><span style=color:#b8bb26>"lat"</span><span style=color:#fdf4c1>: 13.07729, </span><span style=color:#b8bb26>"lon"</span><span style=color:#fdf4c1>: 80.28022</span><span>}
+</span><span style=color:#fdf4c1>{</span><span style=color:#b8bb26>"lat"</span><span style=color:#fdf4c1>: 13.07227, </span><span style=color:#b8bb26>"lon"</span><span style=color:#fdf4c1>: 80.27477</span><span>}
+</span><span style=color:#fdf4c1>{</span><span style=color:#b8bb26>"lat"</span><span style=color:#fdf4c1>: 13.06802, </span><span style=color:#b8bb26>"lon"</span><span style=color:#fdf4c1>: 80.27222</span><span>}
+</span><span style=color:#fdf4c1>{</span><span style=color:#b8bb26>"lat"</span><span style=color:#fdf4c1>: 13.06334, </span><span style=color:#b8bb26>"lon"</span><span style=color:#fdf4c1>: 80.27935</span><span>}
+</span></code></pre><p>the script above uses the same parsing as fordcan.py found in the library I mentioned<p>take the last few GPS data logs and you’ll see that they point to M. A. Chidambaram International Cricket Stadium<p>The flag is: <code>bi0s{1FMHK7D82BGA34954_M. A. Chidambaram Stadium}</code><h1 id=post-face>Post-face??</h1><p><a href=https://www.valgrindc.tf/posts/madras/ rel=noopener target=_blank>Valgrind’s Writeup</a> took a lower-level approach to decoding the GPS data, but I don’t particularly like their approach with how they found and decoded it. However their method for finding the VIN is far superior to the one I tried.<p>In the end they got the flag and we didn’t, so make of that what you will.<p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

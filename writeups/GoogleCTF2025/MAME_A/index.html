@@ -1,0 +1,99 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>MAME A</title><meta content="MAME A" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/MAME_A/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="MAME A" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/MAME_A/ property=twitter:url><meta content="MAME A" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/MAME_A/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>MAME_A</span></div><time datetime=2025-08-07>Published on: <span class=accent-data>2025-08-07</span></time><address rel=author>By <span class=accent-data> Aditya Sharma, and exploiitm </span></address><h1>MAME A</h1><h2 id=context>Context</h2><p>This challenge involves running a video game ROM on an emulator, I’ll give a little bit of context for the people who don’t mess around with emulators and emulation in general.<p>“The <strong>Sega Genesis</strong>, known as the <strong>Mega Drive</strong> outside North America, is a 16-bit console developed and sold by Sega.”, 16-bit refers to the word-length of the main processor of the console, i.e. what is the number of bits which it can work with at a time.<p>MAME stands for Multiple Arcade Machine Emulator. <strong>Emulation</strong> is the process of imitating the behaviour of one computer system (the <em>guest</em> system) using another (the <em>host</em> system), allowing software designed for the original system to run on new, often very different, hardware.<p>For the layman an emulator isn’t different from a compatibility layer for older hardware (often, gaming consoles)<h1 id=the-challenge>The Challenge</h1><p>You’re given a SEGA genesis ROM which is meant to be run on the MAME emulator. <img alt src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/MAME_A/attachments/Pasted%20image%2020250722132035.png><p>You’re provided a SEGA Genesis ROM written in rust and you’re given the source code of the rom to do whatever you want with. The aim of the challenge is for you to get the player to two locations which contain flags on the map. The game itself is a Sonic the Hedgehog inspired platformer.<p>The challenge requires you to record your inputs in the game and send them over so that the checker can execute those movements on the server and check if you got the flags in game. What this means is that you have to get the flags in the actual game and not mod the ROM into getting you the flag.<p>The ROM is ran using the MAME emulator by running MAME and then navigating to and selecting the sonk.md file.<p>When you start, you’re greeted by sonk the rabbit. The game itself contains obstacles like wasps and spikes. <img alt src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/MAME_A/attachments/Pasted%20image%2020250723115636.png> a wasp (waowaowao :3)<p>The aim of this challenge is to navigate to this flag here, <img alt src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/MAME_A/attachments/Pasted%20image%2020250723115441.png><h1 id=the-solution>The Solution</h1><p>While the way I solved it is more from intuition about how old games work, someone without the same knowledge as me wouldn’t have a hard time coming to the same solution.<pre class=language-rust data-lang=rust style=background:#282828;color:#fdf4c1aa><code class=language-rust data-lang=rust><span style=font-style:italic;color:#928374>// this is a snippet from game/src/sonk.rs
+</span><span style=color:#fa5c4b>pub fn </span><span style=color:#8ec07c>update</span><span>(</span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>) {
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>self</span><span>.controller.</span><span style=color:#fabd2f>update</span><span>();
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>if let </span><span style=color:#fabd2f>Some</span><span>(scene) </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>self</span><span>.win_scene.</span><span style=color:#fabd2f>as_mut</span><span>() {
+</span><span>
+</span><span>        scene.</span><span style=color:#fabd2f>update</span><span>();
+</span><span>
+</span><span>    } </span><span style=color:#fa5c4b>else </span><span>{
+</span><span>
+</span><span>        </span><span style=color:#fdf4c1>self</span><span>.frame </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>self</span><span>.frame.</span><span style=color:#fabd2f>wrapping_add</span><span>(</span><span style=color:#d3869b>1</span><span>);
+</span><span>
+</span><span>        </span><span style=color:#fdf4c1>self</span><span>.sonk
+</span><span>
+</span><span>            .</span><span style=color:#fabd2f>update</span><span>(</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>self</span><span>.map, </span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.vdp, </span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.controller, </span><span style=color:#fdf4c1>self</span><span>.frame);
+</span><span>
+</span><span>        </span><span style=color:#fdf4c1>self</span><span>.wasps
+</span><span>
+</span><span>            .</span><span style=color:#fabd2f>retain</span><span>(|</span><span style=color:#fdf4c1>w</span><span>| Wasp::on_screen(w.sprite.x </span><span style=color:#fe8019>as </span><span style=color:#fa5c4b>i16</span><span>, w.sprite.y </span><span style=color:#fe8019>as </span><span style=color:#fa5c4b>i16</span><span>));
+</span><span>
+</span><span>        </span><span style=color:#fdf4c1>self</span><span>.spikes
+</span><span>
+</span><span>            .</span><span style=color:#fabd2f>retain</span><span>(|</span><span style=color:#fdf4c1>w</span><span>| Spike::on_screen(w.sprite.x </span><span style=color:#fe8019>as </span><span style=color:#fa5c4b>i16</span><span>, w.sprite.y </span><span style=color:#fe8019>as </span><span style=color:#fa5c4b>i16</span><span>));
+</span><span>
+</span><span>        </span><span style=color:#fa5c4b>for</span><span> flag </span><span style=color:#fe8019>in &</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.flags.</span><span style=color:#fabd2f>iter_mut</span><span>() {
+</span><span>
+</span><span>            </span><span style=color:#fa5c4b>if</span><span> flag.</span><span style=color:#fabd2f>update</span><span>(</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>self</span><span>.sonk, </span><span style=color:#fdf4c1>self</span><span>.frame) {
+</span><span>
+</span><span>                </span><span style=color:#fdf4c1>self</span><span>.win_scene </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>Some</span><span>(YouWin::new(flag.id, </span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.vdp));
+</span><span>
+</span><span>                </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>
+</span><span>            }
+</span><span>
+</span><span>        }
+</span><span>
+</span><span>        </span><span style=color:#fa5c4b>for</span><span> wasp </span><span style=color:#fe8019>in &</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.wasps.</span><span style=color:#fabd2f>iter_mut</span><span>() {
+</span><span>
+</span><span>            wasp.</span><span style=color:#fabd2f>update</span><span>(</span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.sonk);
+</span><span>
+</span><span>        }
+</span><span>
+</span><span>        </span><span style=color:#fa5c4b>for</span><span> spike </span><span style=color:#fe8019>in &</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.spikes.</span><span style=color:#fabd2f>iter_mut</span><span>() {
+</span><span>
+</span><span>            spike.</span><span style=color:#fabd2f>update</span><span>(</span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.sonk, </span><span style=color:#fdf4c1>self</span><span>.frame);
+</span><span>
+</span><span>        }
+</span><span>
+</span><span>        </span><span style=color:#fdf4c1>self</span><span>.</span><span style=color:#fabd2f>update_camera</span><span>();
+</span><span>
+</span><span>    }
+</span><span>
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>pub fn </span><span style=color:#8ec07c>draw</span><span>(</span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>) {
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>self</span><span>.renderer.</span><span style=color:#fabd2f>clear</span><span>();
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>if let </span><span style=color:#fabd2f>Some</span><span>(scene) </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>self</span><span>.win_scene.</span><span style=color:#fabd2f>as_mut</span><span>() {
+</span><span>
+</span><span>        scene.</span><span style=color:#fabd2f>render</span><span>(</span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.vdp);
+</span><span>
+</span><span>    } </span><span style=color:#fa5c4b>else </span><span>{
+</span><span>
+</span><span>        </span><span style=color:#fdf4c1>self</span><span>.sonk.</span><span style=color:#fabd2f>render</span><span>(</span><span style=color:#fdf4c1>self</span><span>.frame, </span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.renderer);
+</span><span>
+</span><span>        </span><span style=color:#fa5c4b>for</span><span> flag </span><span style=color:#fe8019>in &</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.flags.</span><span style=color:#fabd2f>iter_mut</span><span>() {
+</span><span>
+</span><span>            flag.</span><span style=color:#fabd2f>render</span><span>(</span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.renderer);
+</span><span>
+</span><span>        }
+</span><span>
+</span><span>        </span><span style=color:#fa5c4b>for</span><span> wasp </span><span style=color:#fe8019>in &</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.wasps.</span><span style=color:#fabd2f>iter_mut</span><span>() {
+</span><span>
+</span><span>            wasp.</span><span style=color:#fabd2f>render</span><span>(</span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.renderer);
+</span><span>
+</span><span>        }
+</span><span>
+</span><span>        </span><span style=color:#fa5c4b>for</span><span> spike </span><span style=color:#fe8019>in &</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.spikes.</span><span style=color:#fabd2f>iter_mut</span><span>() {
+</span><span>
+</span><span>            spike.</span><span style=color:#fabd2f>render</span><span>(</span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.renderer);
+</span><span>
+</span><span>        }
+</span><span>
+</span><span>    }
+</span><span>
+</span><span>  
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>self</span><span>.renderer.</span><span style=color:#fabd2f>render</span><span>(</span><span style=color:#fe8019>&</span><span style=color:#fa5c4b>mut </span><span style=color:#fdf4c1>self</span><span>.vdp);
+</span><span>
+</span><span>  
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374>// vsync
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>self</span><span>.vdp.</span><span style=color:#fabd2f>wait_for_vblank</span><span>();
+</span><span>
+</span><span>}
+</span></code></pre><p>These two methods update which sprites to render, and what it means is that the only sprites which will be rendered are the ones which are in view of the camera.<p>Since the only sprites being rendered are the ones within the view of the camera, if it were somehow possible to move sonk outside of where the camera is looking at, you would be able to just walk through where the spikes were supposed to be and get the flag by rendering the flag again.<p>The problem is that if you can’t walk off the screen, the camera follows you everywhere, however you can knock yourself back out of the frame, there is a conveniently placed wasp right next to the spikes, by first unloading the spikes by walking off to the right, then positioning ourself such that we get knocked-back beyond the spikes, we can simply walk into flag A. <img alt src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/MAME_A/attachments/solngif.gif><p>by running the emulator with <code>mame -record</code>, you can output your recorded input to a .inp file, which you then send over to the challenge and get your flag.<p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

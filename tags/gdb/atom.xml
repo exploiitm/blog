@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>exploiitm blog - gdb</title>
+    <subtitle>Official blog of Cybersecurity Club, IIT Madras</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://exploiitm.github.io/blog/tags/gdb/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://exploiitm.github.io/blog"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-01-07T00:00:00+00:00</updated>
+    <id>https://exploiitm.github.io/blog/tags/gdb/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Basic GDB cheatsheet</title>
+        <published>2025-01-07T00:00:00+00:00</published>
+        <updated>2025-01-07T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://exploiitm.github.io/blog/resources/resource2/"/>
+        <id>https://exploiitm.github.io/blog/resources/resource2/</id>
+        
+        <content type="html" xml:base="https://exploiitm.github.io/blog/resources/resource2/">&lt;h1 id=&quot;gdb&quot;&gt;gdb&lt;&#x2F;h1&gt;
+&lt;p&gt;More important commands have a (*) by them.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;startup&quot;&gt;Startup&lt;&#x2F;h2&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;*% gdb object        normal debug  *% gdb object core  core debug (must specify core file)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;help&quot;&gt;Help&lt;&#x2F;h2&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;*(gdb) help         list command classes
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;breakpoints&quot;&gt;Breakpoints&lt;&#x2F;h2&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;*(gdb) break main       set a breakpoint on a function
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) break 101        set a breakpoint on a line number
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) break basic.c:101        set breakpoint at file and line (or function)
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) info breakpoints        show breakpoints
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) delete 1         delete a breakpoint by number
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;running-the-program&quot;&gt;Running the program&lt;&#x2F;h2&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;*(gdb) run          run the program with current arguments
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) run args redirection        run with args and redirection
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) cont            continue the program
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) step            single step the program; step into functions
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) next            step but step over functions 
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) CTRL-C          actually SIGINT, stop execution of current program 
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) attach process-id        attach to running program
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) detach        detach from running program
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) finish        finish current function&amp;#39;s execution
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;stack-backtrace&quot;&gt;Stack backtrace&lt;&#x2F;h3&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;*(gdb) bt           print stack backtrace
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) info locals      print automatic variables in frame
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;browsing-source&quot;&gt;Browsing source&lt;&#x2F;h2&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;*(gdb) list 101         list 10 lines around line 101
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) list 1,10        list lines 1 to 10
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) list main    list lines around function 
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) list basic.c:main        list from another file basic.c
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) list -           list previous 10 lines
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;browsing-data&quot;&gt;Browsing Data&lt;&#x2F;h2&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;*(gdb) print expression        print expression, added to value history
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) print&#x2F;x expressionR        print in hex
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) info locals      print local automatics only
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) ptype name        print type definition
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) set variable = expression        assign value
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;miscellaneous&quot;&gt;Miscellaneous&lt;&#x2F;h2&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;(gdb) define command ... end        define user command
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) RETURN               repeat last command
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) shell command args       execute shell command 
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) source file          load gdb commands from file
+&lt;&#x2F;span&gt;&lt;span&gt;*(gdb) quit             quit gdb
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;hr &#x2F;&gt;
+&lt;h3 id=&quot;startup-1&quot;&gt;Startup&lt;&#x2F;h3&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;% gdb -help             print startup help, show switches
+&lt;&#x2F;span&gt;&lt;span&gt;%% gdb object pid   attach to running process
+&lt;&#x2F;span&gt;&lt;span&gt;% gdb               use file command to load object 
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;help-1&quot;&gt;Help&lt;&#x2F;h3&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;(gdb) help running      list commands in one command class
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) help run          bottom-level help for a command &amp;quot;run&amp;quot; 
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) help info         list info commands (running program state)
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) help info line    help for a particular info command
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) help show         list show commands (gdb state)
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) help show commands        specific help for a show command
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;breakpoints-1&quot;&gt;Breakpoints&lt;&#x2F;h3&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;(gdb) delete            delete all breakpoints (prompted)
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) clear             delete breakpoints at current line
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) clear function    delete breakpoints at function
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) clear line        delete breakpoints at line
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) disable 2         turn a breakpoint off, but don&amp;#39;t remove it
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) enable 2          turn disabled breakpoint back on
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) tbreak function|line        set a temporary breakpoint
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) commands break-no ... end   set gdb commands with breakpoint
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) ignore break-no count       ignore bpt N-1 times before activation
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) condition break-no expression         break only if condition is true
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) condition 2 i == 20         example: break on breakpoint 2 if i equals 20
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) watch expression        set software watchpoint on variable
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) info watchpoints        show current watchpoints
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;running-the-program-1&quot;&gt;Running the program&lt;&#x2F;h3&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;(gdb) set args args...        set arguments for run 
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) show args        show current arguments to run
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) step count       singlestep \fIcount\fR times
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) next count       next \fIcount\fR times
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) kill           kill current executing program 
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;stack-backtrace-1&quot;&gt;Stack Backtrace&lt;&#x2F;h3&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;(gdb) frame         show current execution position
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) up            move up stack trace  (towards main)
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) down          move down stack trace (away from main)
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) info args         print function parameters 
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;browsing-source-1&quot;&gt;Browsing source&lt;&#x2F;h3&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;(gdb) list *0x22e4      list source at address
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) cd dir            change current directory to \fIdir\fR
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) pwd           print working directory
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) search regexpr    forward current for regular expression
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) reverse-search regexpr        backward search for regular expression
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) dir dirname       add directory to source path
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) dir           reset source path to nothing
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) show directories        show source path
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;browsing-data-1&quot;&gt;Browsing Data&lt;&#x2F;h3&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;(gdb) print array[i]@count        artificial array - print array range
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) print $           print last value
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) print *$-&amp;gt;next    print thru list
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) print $1          print value 1 from value history
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) print ::gx        force scope to be global
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) print &amp;#39;basic.c&amp;#39;::gx        global scope in named file (&amp;gt;=4.6)
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) print&#x2F;x &amp;amp;main     print address of function
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) x&#x2F;countFormatSize address        low-level examine command
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) x&#x2F;x &amp;amp;gx           print gx in hex
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) x&#x2F;4wx &amp;amp;main       print 4 longs at start of \fImain\fR in hex
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) x&#x2F;gf &amp;amp;gd1         print double
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) help x            show formats for x
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) info functions regexp         print function names
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) info variables  regexp        print global variable names
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) whatis expression       print type of expression
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) display expression        display expression result at stop
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) undisplay        delete displays
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) info display     show displays
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) show values      print value history (&amp;gt;= gdb 4.0)
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) info history     print value history (gdb 3.5)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;object-file-manipulation&quot;&gt;Object File manipulation&lt;&#x2F;h3&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;(gdb) file object           load new file for debug (sym+exec)
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) file                  discard sym+exec file info
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) symbol-file object        load only symbol table
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) exec-file object      specify object to run (not sym-file)
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) core-file core        post-mortem debugging
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;signal-control&quot;&gt;Signal Control&lt;&#x2F;h3&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;(gdb) info signals          print signal setup
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) handle signo actions      set debugger actions for signal
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) handle INT print          print message when signal occurs
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) handle INT noprint        don&amp;#39;t print message
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) handle INT stop           stop program when signal occurs
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) handle INT nostop         don&amp;#39;t stop program
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) handle INT pass           allow program to receive signal
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) handle INT nopass         debugger catches signal; program doesn&amp;#39;t
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) signal signo          continue and send signal to program
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) signal 0              continue and send no signal to program
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;machine-level-debug&quot;&gt;Machine-level Debug&lt;&#x2F;h3&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;(gdb) info registers            print registers sans floats
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) info all-registers        print all registers
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) print&#x2F;x $pc           print one register
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) stepi             single step at machine level
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) si                single step at machine level
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) nexti             single step (over functions) at machine level
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) ni                single step (over functions) at machine level
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) display&#x2F;i $pc         print current instruction in display
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) x&#x2F;x &amp;amp;gx               print variable gx in hex
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) info line 22          print addresses for object code for line 22
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) info line *0x2c4e         print line number of object code at address
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) x&#x2F;10i main            disassemble first 10 instructions in \fImain\fR
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) disassemble addr          disassemble code for function around addr
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;history-display&quot;&gt;History Display&lt;&#x2F;h3&gt;
+&lt;pre style=&quot;background-color:#282828;color:#fdf4c1aa;&quot;&gt;&lt;code&gt;&lt;span&gt;(gdb) show commands         print command history (&amp;gt;= gdb 4.0)
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) info editing          print command history (gdb 3.5)
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) ESC-CTRL-J            switch to vi edit mode from emacs edit mode
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) set history expansion on       turn on c-shell like history
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) break class::member       set breakpoint on class member. may get menu
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) list class::member        list member in class
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) ptype class               print class members
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) print *this           print contents of this pointer
+&lt;&#x2F;span&gt;&lt;span&gt;(gdb) rbreak regexpr        useful for breakpoint on overloaded member name
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</content>
+        
+    </entry>
+</feed>

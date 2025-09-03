@@ -1,0 +1,163 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>316 CTF</title><meta content="316 CTF" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/316_writeup/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="316 CTF" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/316_writeup/ property=twitter:url><meta content="316 CTF" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/316_writeup/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>316_writeup</span></div><time datetime=2024-09-02>Published on: <span class=accent-data>2024-09-02</span></time><address rel=author>By <span class=accent-data> Achintya Jai, and exploiitm </span></address><h1>316 CTF</h1><h1 id=316-ctf-writeup>316 CTF writeup</h1><p>challenges over at: https://316ctf.com/<h4 id=this-ctf-challenge-requires-you-do-a-lot-of-hashcracking-the-way-you-would-generally-approach-this-is-using>This CTF challenge requires you do a lot of hashcracking. The way you would generally approach this is using</h4><ol><li>John the ripper<li>Hashcat</ol><p>But an unconventional approach would be to use this python script and let it run overnight. This will solve all the problems for you.<p>Note: Works on linux machines. Run this bash script first to install the necessary dependencies<pre style=background:#282828;color:#fdf4c1aa><code><span>	#!/bin/bash
+</span><span>
+</span><span>	error_exit() {
+</span><span>	    echo "$1" 1>&2
+</span><span>	    exit 1
+</span><span>	}
+</span><span>
+</span><span>	# Check if pip is installed
+</span><span>	if ! command -v pip &> /dev/null
+</span><span>	then
+</span><span>	    error_exit "pip could not be found. Please install pip first."
+</span><span>	fi
+</span><span>
+</span><span>	# Check if Selenium is already installed
+</span><span>	if pip show selenium &> /dev/null
+</span><span>	then
+</span><span>	    echo "Selenium is already installed."
+</span><span>	fi
+</span><span>
+</span><span>	echo "Installing Selenium..."
+</span><span>	if pip install selenium
+</span><span>	then
+</span><span>	    echo "Selenium installed successfully."
+</span><span>	else
+</span><span>	    error_exit "There was an issue installing Selenium. Check the traceback above for details."
+</span><span>	fi
+</span><span>
+</span><span>	CHROMEDRIVER_URL="https://storage.googleapis.com/chrome-for-testing-public/127.0.6533.72/linux64/chromedriver-linux64.zip"
+</span><span>	DESTINATION_DIR="$HOME/Desktop"
+</span><span>
+</span><span>	TEMP_DIR=$(mktemp -d)
+</span><span>
+</span><span>	if ! command -v curl &> /dev/null
+</span><span>	then
+</span><span>	    error_exit "curl could not be found. Please install curl first."
+</span><span>	fi
+</span><span>
+</span><span>	if ! command -v unzip &> /dev/null
+</span><span>	then
+</span><span>	    error_exit "unzip could not be found. Please install unzip first."
+</span><span>	fi
+</span><span>
+</span><span>	echo "Downloading ChromeDriver..."
+</span><span>	if curl -L "$CHROMEDRIVER_URL" -o "$TEMP_DIR/chromedriver.zip"
+</span><span>	then
+</span><span>	    echo "Download complete."
+</span><span>	else
+</span><span>	    error_exit "Failed to download ChromeDriver."
+</span><span>	fi
+</span><span>
+</span><span>	echo "Unzipping ChromeDriver..."
+</span><span>	if unzip "$TEMP_DIR/chromedriver.zip" -d "$TEMP_DIR"
+</span><span>	then
+</span><span>	    echo "Unzipping complete."
+</span><span>	else
+</span><span>	    error_exit "Failed to unzip ChromeDriver."
+</span><span>	fi
+</span><span>
+</span><span>	if mv "$TEMP_DIR/chromedriver-linux64/chromedriver" "$DESTINATION_DIR"
+</span><span>	then
+</span><span>	    echo "ChromeDriver moved to $DESTINATION_DIR."
+</span><span>	else
+</span><span>	    error_exit "Failed to move ChromeDriver to $DESTINATION_DIR."
+</span><span>	fi
+</span><span>
+</span><span>	rm -rf "$TEMP_DIR"
+</span><span>
+</span><span>	echo "ChromeDriver installation completed successfully."
+</span><span>
+</span><span>	# URL of the latest Google Chrome for Linux
+</span><span>
+</span><span>	DESTINATION_DIR="/opt/google/chrome"
+</span><span>
+</span><span>	TEMP_DIR=$(mktemp -d)
+</span><span>
+</span><span>	# Ask the user if they have Google Chrome installed
+</span><span>	read -p "Do you already have Google Chrome installed? (Y/N): " has_chrome
+</span><span>
+</span><span>	if [[ "$has_chrome" =~ ^[Yy]$ ]]
+</span><span>	then
+</span><span>	    echo "You already have Google Chrome installed. Exiting the script."
+</span><span>	    exit 0
+</span><span>	fi
+</span><span>
+</span><span>	echo "Downloading Google Chrome..."
+</span><span>	if wget -q -O google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+</span><span>	then
+</span><span>	    echo "Download complete."
+</span><span>	else
+</span><span>	    error_exit "Failed to download Google Chrome."
+</span><span>	fi
+</span><span>	echo "Following requires your sudo password"
+</span><span>	sudo dpkg -i google-chrome-stable_current_amd64.deb
+</span><span>
+</span><span>	echo "Google Chrome installation completed successfully."
+</span></code></pre><p>Make sure you say “N” to having chrome. This is because it requires the specific version which you may not have. After this you can run this python script.<p>Just make sure to enter your <strong>email address</strong> and <strong>password</strong> in the script for a smooth login.<pre style=background:#282828;color:#fdf4c1aa><code><span>	#!/usr/bin/env python3
+</span><span>
+</span><span>	import time
+</span><span>	from selenium import webdriver
+</span><span>	from selenium.webdriver.common.by import By
+</span><span>	from bs4 import BeautifulSoup
+</span><span>	from selenium.webdriver.support.ui import WebDriverWait
+</span><span>	from selenium.webdriver.support import expected_conditions as EC
+</span><span>	from selenium.common.exceptions import TimeoutException
+</span><span>
+</span><span>	print('wait...')
+</span><span>	
+</span><span>	home_directory = os.path.expanduser("~")
+</span><span>	file_path = os.path.join(home_directory, "Desktop" , "chromedriver")
+</span><span>	
+</span><span>	service = webdriver.ChromeService(executable_path= file_path) # path to chromedriver executable
+</span><span>	driver = webdriver.Chrome(service = service)
+</span><span>
+</span><span>	email = ''
+</span><span>	password = ''
+</span><span>
+</span><span>	login_url = f'https://play.316ctf.com/login'
+</span><span>	driver.get(login_url)
+</span><span>	driver.find_element(By.NAME,'name').send_keys(email)
+</span><span>	driver.find_element(By.NAME,'password').send_keys(password)
+</span><span>	driver.find_element(By.NAME, "_submit").click()
+</span><span>
+</span><span>	def open_file(file_path):
+</span><span>		with open(file_path,'r') as fp:
+</span><span>			possible_passwords = fp.readlines()
+</span><span>		return possible_passwords
+</span><span>
+</span><span>	file_path = r'/home/.../dictionary-list.txt' # path to dictionary list
+</span><span>	possible_passwords = open_file(file_path)
+</span><span>
+</span><span>	def start_page():
+</span><span>		challenge_url = 'https://play.316ctf.com/challenges#Huntsville%20#1-121'
+</span><span>		driver.get(challenge_url)
+</span><span>		delay = 3 #seconds
+</span><span>		try:
+</span><span>			myElem = WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.ID, 'challenge-input')))
+</span><span>		except TimeoutException:
+</span><span>			print('page took too long')
+</span><span>
+</span><span>	start_page()
+</span><span>
+</span><span>	for password in possible_passwords:
+</span><span>		possible_answer = password
+</span><span>		driver.find_element(By.ID, 'challenge-input').send_keys(possible_answer)
+</span><span>		driver.find_element(By.ID, 'challenge-submit').click()
+</span><span>		time.sleep(0.9)
+</span><span>		result = driver.find_element(By.ID, 'result-message').text
+</span><span>		if result == 'correct':
+</span><span>			print(f'GOT IT: {password}')
+</span><span>			break
+</span><span>		elif result == "You're submitting flags too fast. Slow down.":
+</span><span>			print(f'too fast: {password}')
+</span><span>			driver.refresh()
+</span><span>			start_page()
+</span><span>			time.sleep(5)
+</span><span>		else:
+</span><span>			print(f'WRONG: {password}')
+</span><span>		answer_field = driver.find_element(By.ID, 'challenge-input')
+</span><span>		answer_field.clear()
+</span><span>		time.sleep(1)
+</span></code></pre><p>If you want to go the more traditional way then the following would help you<pre style=background:#282828;color:#fdf4c1aa><code><span>hashcat -m 0 -a 0 hash.txt dictionary-list.txt --show
+</span></code></pre><p>Just run<pre style=background:#282828;color:#fdf4c1aa><code><span>hashcat --help
+</span></code></pre><p>to understand the possible things this boy can do.<p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

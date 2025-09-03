@@ -1,0 +1,91 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Understanding ELFs, part 1</title><meta content="Understanding ELFs, part 1" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/posts/understanding_elfs/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Understanding ELFs, part 1" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/posts/understanding_elfs/ property=twitter:url><meta content="Understanding ELFs, part 1" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/posts/understanding_elfs/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>understanding_elfs</span></div><time datetime=2025-01-08>Published on: <span class=accent-data>2025-01-08</span></time><address rel=author>By <span class=accent-data> InnocentZero, and exploiitm </span></address><h1>Understanding ELFs, part 1</h1><p>In this post we analyze the header and sections of an ELF binary on disk.<h2 id=the-header>The header</h2><p>ELF files have a header section that can be read with <code>readelf -h executable</code> which gives you quite a bit of information about the binary.<pre style=background:#282828;color:#fdf4c1aa><code><span>ELF Header:
+</span><span>Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+</span><span>Class:                             ELF64
+</span><span>Data:                              2's complement, little endian
+</span><span>Version:                           1 (current)
+</span><span>OS/ABI:                            UNIX - System V
+</span><span>ABI Version:                       0
+</span><span>Type:                              DYN (Position-Independent Executable file)
+</span><span>Machine:                           Advanced Micro Devices X86-64
+</span><span>Version:                           0x1
+</span><span>Entry point address:               0x1040
+</span><span>Start of program headers:          64 (bytes into file)
+</span><span>Start of section headers:          13520 (bytes into file)
+</span><span>Flags:                             0x0
+</span><span>Size of this header:               64 (bytes)
+</span><span>Size of program headers:           56 (bytes)
+</span><span>Number of program headers:         13
+</span><span>Size of section headers:           64 (bytes)
+</span><span>Number of section headers:         30
+</span><span>Section header string table index: 29
+</span></code></pre><p>Needless to say, a lot of this is just metadata about the binary that is read by the OS to load the binary.<h2 id=the-sections>The sections</h2><p>ELF sections comprise all all the information that is needed to build an executable from an object file. They are only needed during compile time and not runtime. However, some of these sections may get mapped to segments during runtime. <code>readelf -S executable</code> tells you the sections.<p>Some of the more important ones are:<ul><li><code>.text</code>: The instructions of the binary are contained here. They are executed and <code>rip</code> moves through this section.<li><code>.data/.rodata</code>: This are the sections that contain initialized global data. <em>ro</em> stands for read-only.<li><code>.bss</code>: This is the section for uninitialized global variables.<li><code>.interp</code>: This holds the runtime linker, also known as the /interpreter/ of the program.<li>Some linker scripts may also contain preallocated space for stack and heap, although it’s not really the job of ELF sections to define them.</ul><p>For an example /hello world/ binary in C, the following was the output for <code>readelf -S</code><pre style=background:#282828;color:#fdf4c1aa><code><span>  There are 30 section headers, starting at offset 0x34d0:
+</span><span>
+</span><span>Section Headers:
+</span><span>  [Nr] Name              Type             Address           Offset
+</span><span>       Size              EntSize          Flags  Link  Info  Align
+</span><span>  [ 0]                   NULL             0000000000000000  00000000
+</span><span>       0000000000000000  0000000000000000           0     0     0
+</span><span>  [ 1] .interp           PROGBITS         0000000000000318  00000318
+</span><span>       000000000000001c  0000000000000000   A       0     0     1
+</span><span>  [ 2] .note.gnu.pr[...] NOTE             0000000000000338  00000338
+</span><span>       0000000000000040  0000000000000000   A       0     0     8
+</span><span>  [ 3] .note.gnu.bu[...] NOTE             0000000000000378  00000378
+</span><span>       0000000000000024  0000000000000000   A       0     0     4
+</span><span>  [ 4] .note.ABI-tag     NOTE             000000000000039c  0000039c
+</span><span>       0000000000000020  0000000000000000   A       0     0     4
+</span><span>  [ 5] .gnu.hash         GNU_HASH         00000000000003c0  000003c0
+</span><span>       000000000000001c  0000000000000000   A       6     0     8
+</span><span>  [ 6] .dynsym           DYNSYM           00000000000003e0  000003e0
+</span><span>       00000000000000a8  0000000000000018   A       7     1     8
+</span><span>  [ 7] .dynstr           STRTAB           0000000000000488  00000488
+</span><span>       000000000000008f  0000000000000000   A       0     0     1
+</span><span>  [ 8] .gnu.version      VERSYM           0000000000000518  00000518
+</span><span>       000000000000000e  0000000000000002   A       6     0     2
+</span><span>  [ 9] .gnu.version_r    VERNEED          0000000000000528  00000528
+</span><span>       0000000000000030  0000000000000000   A       7     1     8
+</span><span>  [10] .rela.dyn         RELA             0000000000000558  00000558
+</span><span>       00000000000000c0  0000000000000018   A       6     0     8
+</span><span>  [11] .rela.plt         RELA             0000000000000618  00000618
+</span><span>       0000000000000018  0000000000000018  AI       6    23     8
+</span><span>  [12] .init             PROGBITS         0000000000001000  00001000
+</span><span>       000000000000001b  0000000000000000  AX       0     0     4
+</span><span>  [13] .plt              PROGBITS         0000000000001020  00001020
+</span><span>       0000000000000020  0000000000000010  AX       0     0     16
+</span><span>  [14] .text             PROGBITS         0000000000001040  00001040
+</span><span>       0000000000000141  0000000000000000  AX       0     0     16
+</span><span>  [15] .fini             PROGBITS         0000000000001184  00001184
+</span><span>       000000000000000d  0000000000000000  AX       0     0     4
+</span><span>  [16] .rodata           PROGBITS         0000000000002000  00002000
+</span><span>       0000000000000015  0000000000000000   A       0     0     4
+</span><span>  [17] .eh_frame_hdr     PROGBITS         0000000000002018  00002018
+</span><span>       0000000000000024  0000000000000000   A       0     0     4
+</span><span>  [18] .eh_frame         PROGBITS         0000000000002040  00002040
+</span><span>       000000000000007c  0000000000000000   A       0     0     8
+</span><span>  [19] .init_array       INIT_ARRAY       0000000000003dd0  00002dd0
+</span><span>       0000000000000008  0000000000000008  WA       0     0     8
+</span><span>  [20] .fini_array       FINI_ARRAY       0000000000003dd8  00002dd8
+</span><span>       0000000000000008  0000000000000008  WA       0     0     8
+</span><span>  [21] .dynamic          DYNAMIC          0000000000003de0  00002de0
+</span><span>       00000000000001e0  0000000000000010  WA       7     0     8
+</span><span>  [22] .got              PROGBITS         0000000000003fc0  00002fc0
+</span><span>       0000000000000028  0000000000000008  WA       0     0     8
+</span><span>  [23] .got.plt          PROGBITS         0000000000003fe8  00002fe8
+</span><span>       0000000000000020  0000000000000008  WA       0     0     8
+</span><span>  [24] .data             PROGBITS         0000000000004008  00003008
+</span><span>       0000000000000010  0000000000000000  WA       0     0     8
+</span><span>  [25] .bss              NOBITS           0000000000004018  00003018
+</span><span>       0000000000000008  0000000000000000  WA       0     0     1
+</span><span>  [26] .comment          PROGBITS         0000000000000000  00003018
+</span><span>       0000000000000036  0000000000000001  MS       0     0     1
+</span><span>  [27] .symtab           SYMTAB           0000000000000000  00003050
+</span><span>       0000000000000240  0000000000000018          28     6     8
+</span><span>  [28] .strtab           STRTAB           0000000000000000  00003290
+</span><span>       000000000000012a  0000000000000000           0     0     1
+</span><span>  [29] .shstrtab         STRTAB           0000000000000000  000033ba
+</span><span>       0000000000000116  0000000000000000           0     0     1
+</span><span>Key to Flags:
+</span><span>  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),
+</span><span>  L (link order), O (extra OS processing required), G (group), T (TLS),
+</span><span>  C (compressed), x (unknown), o (OS specific), E (exclude),
+</span><span>  D (mbind), l (large), p (processor specific)
+</span></code></pre><ul><li><code>Nr</code>, <code>Name</code>, and <code>Size</code> should be obvious.<li><code>EntSize</code> contains the size of the entries, if the entries in the section have fixed sizes. Like symbol tables.<li><code>Type</code> will be explained later. <code>Address</code> contains the starting address of the section in the binary. This depends on the previous sections and the alignment requirements of the section.<li><code>Offset</code> and <code>Align</code> should also be obvious. The fields below <code>Address</code> will be explained below.</ul><p>The types of sections:<ul><li><code>NULL</code>: This marks an empty section. It is the first section of the binary for demarcation purposes. Acts as a placeholder.<li><code>PROGBITS</code>: These just have program-defined info, like the instructions (<code>.text</code>), the global data (<code>.data/.rodata</code>), the <code>.interp</code> section (defines the interpreter).<li><code>DYNAMIC</code>: Holds dynamic linking information. It is actually a dynamic table that has tags and name/value mapping of sorts that helps the runtime linker load shared libs and stuff.<li><code>INIT_ARRAY</code>: This contains an array of pointers to functions that must be executed before <code>main</code>. Only for <code>.init_array</code>.<li><code>FINI_ARRAY</code>: This contains an array of pointers to functions that must be executed on <code>exit</code>. Only for <code>.fini_array</code>.<li><code>GNU_HASH</code>: This is a sort of hash table for faster symbol lookup used by the dynamic linker. Used for <code>.gnu.hash</code><li><code>NOBITS</code>: Used for <code>.bss</code>, which is <em>zeroed out</em> upon loading. This contains the section having undefined global variables.<li><code>DYNSYM</code>: Used for <code>.dynsym</code> section, contains the dynamic symbol table.<li><code>STRTAB</code>: As the name suggests, it contains a string table. Usually it’s indexed. For sections <code>.strtab</code> and <code>.dynstr</code>, which are obviously static and dynamic string tables.<li><code>SYMTAB</code>: Once again, symbol table for <code>.symtab</code>. Larger than <code>.dynsym</code> as it’s more detailed, but not required at runtime.<li><code>RELA</code>: Contains reloc tables. These specify how to to modify certain addresses in the program to account for the layout of shared libraries or changes in addresses during linking.</ul><p>I’m not covering specific sections like <code>.got</code> and <code>.plt</code> in detail as they require a separate post of their own.<p>The flags for each section have been added below in the <code>readelf</code> output.<p>The link section is an index to another section to indicate a dependency.<p>The info section is an index to another section to indicate additional information.<p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

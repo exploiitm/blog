@@ -1,0 +1,548 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>HWSIMV2</title><meta content=HWSIMV2 name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/HWSIMV2/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content=HWSIMV2 property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/HWSIMV2/ property=twitter:url><meta content=HWSIMV2 property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/HWSIMV2/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>HWSIMV2</span></div><time datetime=2025-08-07>Published on: <span class=accent-data>2025-08-07</span></time><address rel=author>By <span class=accent-data> Aditya Sharma, and exploiitm </span></address><h1>HWSIMV2</h1><pre style=background:#282828;color:#fdf4c1aa><code><span>Perequisites for understanding this writeup
+</span><span>- A basic understanding of logic gates (just knowing what each does is enough)
+</span><span>- Assembly
+</span></code></pre><h1 id=challenge-description>Challenge Description</h1><p><img alt src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/HWSIMV2/attachments/challenge_description.png> The challenge requires you to build an instruction decoder for a CPU, then use it to access memory that you yourself have restricted access to by making the decoder output a security exception if you try to access certain parts of memory.<p>The decoder itself has to be made by describing to the script, an arrangement of NAND gates<p>At first glance this challenge seems daunting (to be fair, it is pretty tough if you don’t already know how a decoder works).<p>The CPU that you’re designing this decoder for is actually a python script emulating the actions of a processor, if you look at the<pre style=background:#282828;color:#fdf4c1aa><code><span>```python
+</span><span>def run(code):
+</span><span>	...
+</span></code></pre><p>function, all it does it look at the instruction provided and maps it to an action that the “CPU” is supposed to do, like raising a flag, or outputting a value stored in “memory”.<p>The challenge requires you to make this decoder (which gets formally verified against some constraints) and then use it to access kernel-only memory.<h1 id=what-is-a-decoder>What is a Decoder?</h1><p>A lot of the people reading this writeup will probably be unfamiliar with what an instruction actually is, and how the CPU interprets it. While you do not need to know this at a very deep level to understand and solve this challenge; for me this was a massive blind spot in understanding how a CPU works and how you go from a logical circuit which does binary addition (a full adder) or something which stores a state (a D flip-flop) to something like your computer’s CPU (or just any simple microcontroller) which does a lot more complex stuff. Knowing how this works has aided my understanding of other systems and their forms giving instructions to the CPU.<p>A processor can be modelled very simply by having an arithmetic unit, a logic unit, some registers and some RAM.<p>A decoder is a combinational circuit which takes in “opcodes” (short for operation code which are the actual binary numbers corresponding to assembly instructions) and sets the states of certain control signals (variables that the CPU looks at to determine its next action).<p>An instruction is just some n-bits (which form an opcode) sent to the processor at a time which sets the states of certain flags that determine the next action taken by the CPU. For example: you could have an 8 bit long instruction register (where the next instruction is stored) which had the MSB correspond to enabling the movement of data from a certain (fixed) register to the instruction pointer, another bit could correspond to moving (copying) a word from a position in the ram (the position being given by a register, say A) into another register (say D).<h1 id=making-a-decoder>Making a Decoder</h1><p>The program provides you an interface for “creating” a decoder, it lets you tell it what three “wires” to join using NAND gates, so you can give it<p><code>Write 3 wire names (e.g. 'C A B') to add NAND gate C = A NAND B</code><p>There exists a pretty well known property of logical circuits, its that any combinational circuit can be made using nothing other than NAND gates. So you’re supposed to come up with a design made completely out of NAND gates which satisfies the conditions imposed on the OPCODES.<h1 id=the-spec>The Spec</h1><p>Here’s the CPU spec given in the chal.py script.<pre style=background:#282828;color:#fdf4c1aa><code><span>### ISA: 
+</span><span>`ISA means instruction set architecture`
+</span><span>
+</span><span>- 4 8-bit registers
+</span><span>
+</span><span>- 256 bytes of instruction memory
+</span><span>
+</span><span>  - first 128 are user programs
+</span><span>
+</span><span>  - second 128 are kernel code
+</span><span>
+</span><span>- 256 bytes of data memory
+</span><span>
+</span><span>  - first 128 are user-accessible
+</span><span>
+</span><span>  - second 128 are kernel-only
+</span><span>
+</span><span>### Instructions:
+</span><span>
+</span><span>rdtsc rX (kernel only)
+</span><span>  0000'00rr
+</span><span>putc rX (kernel only)
+</span><span>  0000'01rr
+</span><span>ldi rX, imm
+</span><span>  0000'10rr
+</span><span>syscall
+</span><span>  0000'110x
+</span><span>- will jump into kernel location 130. Return address will be put in r0.
+</span><span>- kernel code handles syscall depending on r1, then sysret back to r0.
+</span><span>- r1 == 0: exit()
+</span><span>- r1 == 1: time() -> returns rdtsc in r2
+</span><span>- r1 == 2: putc(r2)
+</span><span>sysret (kernel only)
+</span><span>  0000'1110
+</span><span>halt
+</span><span>  0000'1111
+</span><span>load rX, [rY]
+</span><span>  0001'XXYY
+</span><span>store [rX], rY
+</span><span>  0010'YYXX
+</span><span>add rX, rY
+</span><span>  0011'XXYY
+</span><span>jmp rX
+</span><span>  01xx'xxrr
+</span><span>jz rX==0, rY
+</span><span>  1xxx'XXYY
+</span><span>
+</span><span>### Combinatorial instruction decoder specification:
+</span><span>
+</span><span>Inputs:
+</span><span>
+</span><span>- is_root_now
+</span><span>
+</span><span>- ins_0..ins_7
+</span><span>
+</span><span>- r0_0..r0_7, ..., r3_0..r3_7
+</span><span>
+</span><span>Outputs:
+</span><span>
+</span><span>- is_rdtsc, is_putc, ... is_jz
+</span><span>
+</span><span>- security_exception
+</span></code></pre><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span>  constraints </span><span style=color:#fe8019>= </span><span>[]
+</span><span>
+</span><span>  </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"is_jz"</span><span style=color:#fdf4c1>]      </span><span style=color:#fe8019>== </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_7"</span><span style=color:#fdf4c1>])
+</span><span>  </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"is_jmp"</span><span style=color:#fdf4c1>]     </span><span style=color:#fe8019>== ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_7"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_6"</span><span style=color:#fdf4c1>])
+</span><span>  </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"is_add"</span><span style=color:#fdf4c1>]     </span><span style=color:#fe8019>== ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_7"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_6"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_5"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_4"</span><span style=color:#fdf4c1>])
+</span><span>  </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"is_store"</span><span style=color:#fdf4c1>]   </span><span style=color:#fe8019>== ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_7"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_6"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_5"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_4"</span><span style=color:#fdf4c1>])
+</span><span>  </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"is_load"</span><span style=color:#fdf4c1>]    </span><span style=color:#fe8019>== ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_7"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_6"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_5"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_4"</span><span style=color:#fdf4c1>])
+</span><span>  </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"is_halt"</span><span style=color:#fdf4c1>]    </span><span style=color:#fe8019>== ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_7"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_6"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_5"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_4"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_3"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_2"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_1"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_0"</span><span style=color:#fdf4c1>])
+</span><span>  </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"is_sysret"</span><span style=color:#fdf4c1>]  </span><span style=color:#fe8019>== ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_7"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_6"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_5"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_4"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_3"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_2"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_1"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_0"</span><span style=color:#fdf4c1>])
+</span><span>  </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"is_syscall"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>== ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_7"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_6"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_5"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_4"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_3"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_2"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_1"</span><span style=color:#fdf4c1>])
+</span><span>  </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"is_ldi"</span><span style=color:#fdf4c1>]     </span><span style=color:#fe8019>== ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_7"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_6"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_5"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_4"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_3"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_2"</span><span style=color:#fdf4c1>])
+</span><span>  </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"is_putc"</span><span style=color:#fdf4c1>]    </span><span style=color:#fe8019>== ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_7"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_6"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_5"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_4"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_3"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_2"</span><span style=color:#fdf4c1>])
+</span><span>  </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"is_rdtsc"</span><span style=color:#fdf4c1>]   </span><span style=color:#fe8019>== ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_7"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_6"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_5"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_4"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_3"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"ins_2"</span><span style=color:#fdf4c1>])
+</span><span>  
+</span><span>  </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"security_exception"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>== ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"is_root_now"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>Or([
+</span><span style=color:#fdf4c1>      v[</span><span style=color:#b8bb26>"is_rdtsc"</span><span style=color:#fdf4c1>], v[</span><span style=color:#b8bb26>"is_putc"</span><span style=color:#fdf4c1>], v[</span><span style=color:#b8bb26>"is_sysret"</span><span style=color:#fdf4c1>], </span><span style=font-style:italic;color:#928374># &LT- is kernel instruction, or...
+</span><span style=color:#fdf4c1>      And(Or(v[</span><span style=color:#b8bb26>"is_store"</span><span style=color:#fdf4c1>], v[</span><span style=color:#b8bb26>"is_load"</span><span style=color:#fdf4c1>]), is_kernel_addr) </span><span style=font-style:italic;color:#928374># &LT- is memory instruction with kernel address
+</span><span style=color:#fdf4c1>  ]))
+</span></code></pre><p>you can either try to piece together what each opcode bit (ins_0 to ins_7) represents from the CPU spec, or you can use the constraints used by the verifier to check your design to get the mappings more easily.<p>each control signal is just a specific combination of literals, we can first represent them as combinations of AND and NOT gates, and then represent those as NAND gates. <img alt src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/HWSIMV2/attachments/image_of_nand_implementations.png><pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span>gates </span><span style=color:#fe8019>= </span><span>[
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n26"</span><span>, </span><span style=color:#b8bb26>"ins_0"</span><span>, </span><span style=color:#b8bb26>"ins_0"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n27"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n28"</span><span>, </span><span style=color:#b8bb26>"ins_2"</span><span>, </span><span style=color:#b8bb26>"ins_2"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n29"</span><span>, </span><span style=color:#b8bb26>"ins_3"</span><span>, </span><span style=color:#b8bb26>"ins_3"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n30"</span><span>, </span><span style=color:#b8bb26>"ins_4"</span><span>, </span><span style=color:#b8bb26>"ins_4"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n31"</span><span>, </span><span style=color:#b8bb26>"ins_5"</span><span>, </span><span style=color:#b8bb26>"ins_5"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"jz_nand1"</span><span>,      </span><span style=color:#b8bb26>"ins_7"</span><span>,    </span><span style=color:#b8bb26>"ins_7"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"is_jz"</span><span>,         </span><span style=color:#b8bb26>"jz_nand1"</span><span>, </span><span style=color:#b8bb26>"jz_nand1"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n33"</span><span>, </span><span style=color:#b8bb26>"ins_6"</span><span>, </span><span style=color:#b8bb26>"ins_6"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n34"</span><span>, </span><span style=color:#b8bb26>"is_root_now"</span><span>, </span><span style=color:#b8bb26>"is_root_now"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n35"</span><span>, </span><span style=color:#b8bb26>"r0_7"</span><span>, </span><span style=color:#b8bb26>"r0_7"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n36"</span><span>, </span><span style=color:#b8bb26>"r1_7"</span><span>, </span><span style=color:#b8bb26>"r1_7"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n37"</span><span>, </span><span style=color:#b8bb26>"r2_7"</span><span>, </span><span style=color:#b8bb26>"r2_7"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n38"</span><span>, </span><span style=color:#b8bb26>"r3_7"</span><span>, </span><span style=color:#b8bb26>"r3_7"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n39"</span><span>, </span><span style=color:#b8bb26>"jz_nand1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n33"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n40"</span><span>, </span><span style=color:#b8bb26>"abc528new_n39"</span><span>, </span><span style=color:#b8bb26>"abc528new_n39"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n41"</span><span>, </span><span style=color:#b8bb26>"ins_5"</span><span>, </span><span style=color:#b8bb26>"abc528new_n40"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n42"</span><span>, </span><span style=color:#b8bb26>"abc528new_n41"</span><span>, </span><span style=color:#b8bb26>"abc528new_n41"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n43"</span><span>, </span><span style=color:#b8bb26>"abc528new_n30"</span><span>, </span><span style=color:#b8bb26>"abc528new_n42"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"is_store"</span><span>,      </span><span style=color:#b8bb26>"abc528new_n43"</span><span>, </span><span style=color:#b8bb26>"abc528new_n43"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n45"</span><span>, </span><span style=color:#b8bb26>"abc528new_n31"</span><span>, </span><span style=color:#b8bb26>"abc528new_n40"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n46"</span><span>, </span><span style=color:#b8bb26>"abc528new_n45"</span><span>, </span><span style=color:#b8bb26>"abc528new_n45"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n47"</span><span>, </span><span style=color:#b8bb26>"ins_4"</span><span>, </span><span style=color:#b8bb26>"abc528new_n46"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"is_load"</span><span>,       </span><span style=color:#b8bb26>"abc528new_n47"</span><span>, </span><span style=color:#b8bb26>"abc528new_n47"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n49"</span><span>, </span><span style=color:#b8bb26>"abc528new_n30"</span><span>, </span><span style=color:#b8bb26>"abc528new_n46"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n50"</span><span>, </span><span style=color:#b8bb26>"abc528new_n49"</span><span>, </span><span style=color:#b8bb26>"abc528new_n49"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n51"</span><span>, </span><span style=color:#b8bb26>"ins_3"</span><span>, </span><span style=color:#b8bb26>"abc528new_n50"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n52"</span><span>, </span><span style=color:#b8bb26>"abc528new_n51"</span><span>, </span><span style=color:#b8bb26>"abc528new_n51"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n53"</span><span>, </span><span style=color:#b8bb26>"ins_2"</span><span>, </span><span style=color:#b8bb26>"abc528new_n52"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n54"</span><span>, </span><span style=color:#b8bb26>"abc528new_n53"</span><span>, </span><span style=color:#b8bb26>"abc528new_n53"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n55"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n54"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n56"</span><span>, </span><span style=color:#b8bb26>"abc528new_n55"</span><span>, </span><span style=color:#b8bb26>"abc528new_n55"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n57"</span><span>, </span><span style=color:#b8bb26>"abc528new_n26"</span><span>, </span><span style=color:#b8bb26>"abc528new_n56"</span><span>)
+</span><span>    (</span><span style=color:#b8bb26>"is_sysret"</span><span>,     </span><span style=color:#b8bb26>"abc528new_n57"</span><span>, </span><span style=color:#b8bb26>"abc528new_n57"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n59"</span><span>, </span><span style=color:#b8bb26>"abc528new_n29"</span><span>, </span><span style=color:#b8bb26>"abc528new_n50"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n60"</span><span>, </span><span style=color:#b8bb26>"abc528new_n59"</span><span>, </span><span style=color:#b8bb26>"abc528new_n59"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n61"</span><span>, </span><span style=color:#b8bb26>"ins_2"</span><span>, </span><span style=color:#b8bb26>"abc528new_n60"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"is_putc"</span><span>,       </span><span style=color:#b8bb26>"abc528new_n61"</span><span>, </span><span style=color:#b8bb26>"abc528new_n61"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n63"</span><span>, </span><span style=color:#b8bb26>"abc528new_n28"</span><span>, </span><span style=color:#b8bb26>"abc528new_n60"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"is_rdtsc"</span><span>,      </span><span style=color:#b8bb26>"abc528new_n63"</span><span>, </span><span style=color:#b8bb26>"abc528new_n63"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n65"</span><span>, </span><span style=color:#b8bb26>"abc528new_n28"</span><span>, </span><span style=color:#b8bb26>"abc528new_n52"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"is_ldi"</span><span>,        </span><span style=color:#b8bb26>"abc528new_n65"</span><span>, </span><span style=color:#b8bb26>"abc528new_n65"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n67"</span><span>, </span><span style=color:#b8bb26>"abc528new_n27"</span><span>, </span><span style=color:#b8bb26>"abc528new_n54"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"is_syscall"</span><span>,    </span><span style=color:#b8bb26>"abc528new_n67"</span><span>, </span><span style=color:#b8bb26>"abc528new_n67"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n69"</span><span>, </span><span style=color:#b8bb26>"ins_0"</span><span>, </span><span style=color:#b8bb26>"abc528new_n56"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"is_halt"</span><span>,       </span><span style=color:#b8bb26>"abc528new_n69"</span><span>, </span><span style=color:#b8bb26>"abc528new_n69"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n71"</span><span>, </span><span style=color:#b8bb26>"jz_nand1"</span><span>, </span><span style=color:#b8bb26>"ins_6"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"is_jmp"</span><span>,        </span><span style=color:#b8bb26>"abc528new_n71"</span><span>, </span><span style=color:#b8bb26>"abc528new_n71"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n73"</span><span>, </span><span style=color:#b8bb26>"abc528new_n43"</span><span>, </span><span style=color:#b8bb26>"abc528new_n47"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n74"</span><span>, </span><span style=color:#b8bb26>"abc528new_n27"</span><span>, </span><span style=color:#b8bb26>"abc528new_n36"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n75"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n38"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n76"</span><span>, </span><span style=color:#b8bb26>"abc528new_n74"</span><span>, </span><span style=color:#b8bb26>"abc528new_n75"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n77"</span><span>, </span><span style=color:#b8bb26>"ins_0"</span><span>, </span><span style=color:#b8bb26>"abc528new_n76"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n78"</span><span>, </span><span style=color:#b8bb26>"abc528new_n27"</span><span>, </span><span style=color:#b8bb26>"abc528new_n35"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n79"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n37"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n80"</span><span>, </span><span style=color:#b8bb26>"abc528new_n78"</span><span>, </span><span style=color:#b8bb26>"abc528new_n79"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n81"</span><span>, </span><span style=color:#b8bb26>"abc528new_n26"</span><span>, </span><span style=color:#b8bb26>"abc528new_n80"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n82"</span><span>, </span><span style=color:#b8bb26>"abc528new_n77"</span><span>, </span><span style=color:#b8bb26>"abc528new_n81"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n83"</span><span>, </span><span style=color:#b8bb26>"abc528new_n82"</span><span>, </span><span style=color:#b8bb26>"abc528new_n82"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n84"</span><span>, </span><span style=color:#b8bb26>"abc528new_n73"</span><span>, </span><span style=color:#b8bb26>"abc528new_n83"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n85"</span><span>, </span><span style=color:#b8bb26>"abc528new_n59"</span><span>, </span><span style=color:#b8bb26>"abc528new_n84"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n86"</span><span>, </span><span style=color:#b8bb26>"abc528new_n85"</span><span>, </span><span style=color:#b8bb26>"abc528new_n85"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n87"</span><span>, </span><span style=color:#b8bb26>"abc528new_n57"</span><span>, </span><span style=color:#b8bb26>"abc528new_n86"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n88"</span><span>, </span><span style=color:#b8bb26>"abc528new_n34"</span><span>, </span><span style=color:#b8bb26>"abc528new_n87"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"security_exception"</span><span>, </span><span style=color:#b8bb26>"abc528new_n88"</span><span>, </span><span style=color:#b8bb26>"abc528new_n88"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n90"</span><span>, </span><span style=color:#b8bb26>"ins_4"</span><span>, </span><span style=color:#b8bb26>"abc528new_n42"</span><span>),
+</span><span>    (</span><span style=color:#b8bb26>"is_add"</span><span>,        </span><span style=color:#b8bb26>"abc528new_n90"</span><span>, </span><span style=color:#b8bb26>"abc528new_n90"</span><span>)
+</span><span>]
+</span></code></pre><p>This is the intended “structure” of NAND gates for a valid decoder.<p>HOWEVER, There exists a fault in the way the circuit is checked for validity, especially in the way the security exception is raised.<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span> </span><span style=color:#fdf4c1>constraints.append(v[</span><span style=color:#b8bb26>"security_exception"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>== ~</span><span style=color:#fdf4c1>v[</span><span style=color:#b8bb26>"is_root_now"</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>& </span><span style=color:#fdf4c1>Or([
+</span><span style=color:#fdf4c1>      v[</span><span style=color:#b8bb26>"is_rdtsc"</span><span style=color:#fdf4c1>], v[</span><span style=color:#b8bb26>"is_putc"</span><span style=color:#fdf4c1>], v[</span><span style=color:#b8bb26>"is_sysret"</span><span style=color:#fdf4c1>], </span><span style=font-style:italic;color:#928374># &LT- is kernel instruction, or...
+</span><span style=color:#fdf4c1>      And(Or(v[</span><span style=color:#b8bb26>"is_store"</span><span style=color:#fdf4c1>], v[</span><span style=color:#b8bb26>"is_load"</span><span style=color:#fdf4c1>]), is_kernel_addr) </span><span style=font-style:italic;color:#928374># &LT- is memory instruction with kernel address
+</span><span style=color:#fdf4c1>  ]))
+</span></code></pre><p>if you look at this, you’ll see that bypassing the formal verification is simple.<p>Formal verification proves that: <strong>“If the system behaves exactly as modeled, then property P always holds.”</strong><p>the verifier works through by setting values to certain opcode bits and checking for bad-outputs, however if you set both security exception to zero and is_root_now to 1 always, you’ll always get a valid output because the verifier just sees “oh this guy is root and theres no security exception”.<p>The verifier doesn’t see cases of the security exception being high, and it doesn’t care about it.<p>so you can just take any opcode and wire it like<p>security exception = op_bit AND ~op_bit is_root_now = op_bit OR ~op_bit<p>it’ll just let you read from kernel memory and get the flag the assembly for that would look something like this:<pre style=background:#282828;color:#fdf4c1aa><code><span>The opcodes for printing the flag out would be something like this
+</span><span>
+</span><span>08 XX;  ldi XX into r0 
+</span><span>14 ;    load r1, [r0]
+</span><span>05 ;    putc r1
+</span><span>
+</span><span>where XX varies from 0x80 to 0xFF (we'll do till 0x99 because we solved and alr know the length of the flag lol)
+</span><span>
+</span><span>followed by
+</span><span>
+</span><span>0f ; halt
+</span></code></pre><p>so the opcodes for printing the flag out can be printed by this tiny python snippet<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>for </span><span>i </span><span style=color:#fa5c4b>in </span><span style=color:#fabd2f>range</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>0x80</span><span style=color:#fdf4c1>,</span><span style=color:#d3869b>0xAF</span><span style=color:#fdf4c1>)</span><span>:
+</span><span>
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"08</span><span style=color:#fdf4c1>{</span><span style=color:#fabd2f>hex</span><span style=color:#fdf4c1>(i)[</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>:]}</span><span style=color:#b8bb26>1405"</span><span style=color:#fdf4c1>,end</span><span style=color:#fe8019>=</span><span style=color:#b8bb26>""</span><span style=color:#fdf4c1>)    
+</span><span>
+</span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"0f"</span><span style=color:#fdf4c1>)
+</span></code></pre><p>Finally, we have a fully automated solve script:<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>from </span><span>pwn </span><span style=color:#fa5c4b>import </span><span style=color:#d3869b>* </span><span style=font-style:italic;color:#928374># type: ignore
+</span><span>
+</span><span style=color:#fa5c4b>import </span><span>subprocess
+</span><span>
+</span><span style=color:#fa5c4b>import </span><span>re
+</span><span>
+</span><span style=color:#fa5c4b>import </span><span>os
+</span><span>
+</span><span style=color:#fa5c4b>import </span><span>tempfile
+</span><span>
+</span><span>  
+</span><span>
+</span><span style=font-style:italic;color:#928374># Define all gates as (output, input1, input2) tuples
+</span><span>
+</span><span>gates_valid </span><span style=color:#fe8019>= </span><span>[
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_0"</span><span>, </span><span style=color:#b8bb26>"ins_0"</span><span>, </span><span style=color:#b8bb26>"ins_0"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_1"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_2"</span><span>, </span><span style=color:#b8bb26>"ins_2"</span><span>, </span><span style=color:#b8bb26>"ins_2"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_3"</span><span>, </span><span style=color:#b8bb26>"ins_3"</span><span>, </span><span style=color:#b8bb26>"ins_3"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_4"</span><span>, </span><span style=color:#b8bb26>"ins_4"</span><span>, </span><span style=color:#b8bb26>"ins_4"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_5"</span><span>, </span><span style=color:#b8bb26>"ins_5"</span><span>, </span><span style=color:#b8bb26>"ins_5"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"jz_nand1"</span><span>,      </span><span style=color:#b8bb26>"ins_7"</span><span>,    </span><span style=color:#b8bb26>"ins_7"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_jz"</span><span>,         </span><span style=color:#b8bb26>"jz_nand1"</span><span>, </span><span style=color:#b8bb26>"jz_nand1"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_6"</span><span>, </span><span style=color:#b8bb26>"ins_6"</span><span>, </span><span style=color:#b8bb26>"ins_6"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_is_root_now"</span><span>, </span><span style=color:#b8bb26>"is_root_now"</span><span>, </span><span style=color:#b8bb26>"is_root_now"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n35"</span><span>, </span><span style=color:#b8bb26>"r0_7"</span><span>, </span><span style=color:#b8bb26>"r0_7"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n36"</span><span>, </span><span style=color:#b8bb26>"r1_7"</span><span>, </span><span style=color:#b8bb26>"r1_7"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n37"</span><span>, </span><span style=color:#b8bb26>"r2_7"</span><span>, </span><span style=color:#b8bb26>"r2_7"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n38"</span><span>, </span><span style=color:#b8bb26>"r3_7"</span><span>, </span><span style=color:#b8bb26>"r3_7"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n39"</span><span>, </span><span style=color:#b8bb26>"jz_nand1"</span><span>, </span><span style=color:#b8bb26>"n_ins_6"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n40"</span><span>, </span><span style=color:#b8bb26>"abc528new_n39"</span><span>, </span><span style=color:#b8bb26>"abc528new_n39"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n41"</span><span>, </span><span style=color:#b8bb26>"ins_5"</span><span>, </span><span style=color:#b8bb26>"abc528new_n40"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n42"</span><span>, </span><span style=color:#b8bb26>"abc528new_n41"</span><span>, </span><span style=color:#b8bb26>"abc528new_n41"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n43"</span><span>, </span><span style=color:#b8bb26>"n_ins_4"</span><span>, </span><span style=color:#b8bb26>"abc528new_n42"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_store"</span><span>,      </span><span style=color:#b8bb26>"abc528new_n43"</span><span>, </span><span style=color:#b8bb26>"abc528new_n43"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n45"</span><span>, </span><span style=color:#b8bb26>"n_ins_5"</span><span>, </span><span style=color:#b8bb26>"abc528new_n40"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n46"</span><span>, </span><span style=color:#b8bb26>"abc528new_n45"</span><span>, </span><span style=color:#b8bb26>"abc528new_n45"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n47"</span><span>, </span><span style=color:#b8bb26>"ins_4"</span><span>, </span><span style=color:#b8bb26>"abc528new_n46"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_load"</span><span>,       </span><span style=color:#b8bb26>"abc528new_n47"</span><span>, </span><span style=color:#b8bb26>"abc528new_n47"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n49"</span><span>, </span><span style=color:#b8bb26>"n_ins_4"</span><span>, </span><span style=color:#b8bb26>"abc528new_n46"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n50"</span><span>, </span><span style=color:#b8bb26>"abc528new_n49"</span><span>, </span><span style=color:#b8bb26>"abc528new_n49"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n51"</span><span>, </span><span style=color:#b8bb26>"ins_3"</span><span>, </span><span style=color:#b8bb26>"abc528new_n50"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n52"</span><span>, </span><span style=color:#b8bb26>"abc528new_n51"</span><span>, </span><span style=color:#b8bb26>"abc528new_n51"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n53"</span><span>, </span><span style=color:#b8bb26>"ins_2"</span><span>, </span><span style=color:#b8bb26>"abc528new_n52"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n54"</span><span>, </span><span style=color:#b8bb26>"abc528new_n53"</span><span>, </span><span style=color:#b8bb26>"abc528new_n53"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n55"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n54"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n56"</span><span>, </span><span style=color:#b8bb26>"abc528new_n55"</span><span>, </span><span style=color:#b8bb26>"abc528new_n55"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n57"</span><span>, </span><span style=color:#b8bb26>"n_ins_0"</span><span>, </span><span style=color:#b8bb26>"abc528new_n56"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_sysret"</span><span>,     </span><span style=color:#b8bb26>"abc528new_n57"</span><span>, </span><span style=color:#b8bb26>"abc528new_n57"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n59"</span><span>, </span><span style=color:#b8bb26>"n_ins_3"</span><span>, </span><span style=color:#b8bb26>"abc528new_n50"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n60"</span><span>, </span><span style=color:#b8bb26>"abc528new_n59"</span><span>, </span><span style=color:#b8bb26>"abc528new_n59"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n61"</span><span>, </span><span style=color:#b8bb26>"ins_2"</span><span>, </span><span style=color:#b8bb26>"abc528new_n60"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_putc"</span><span>,       </span><span style=color:#b8bb26>"abc528new_n61"</span><span>, </span><span style=color:#b8bb26>"abc528new_n61"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n63"</span><span>, </span><span style=color:#b8bb26>"n_ins_2"</span><span>, </span><span style=color:#b8bb26>"abc528new_n60"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_rdtsc"</span><span>,      </span><span style=color:#b8bb26>"abc528new_n63"</span><span>, </span><span style=color:#b8bb26>"abc528new_n63"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n65"</span><span>, </span><span style=color:#b8bb26>"n_ins_2"</span><span>, </span><span style=color:#b8bb26>"abc528new_n52"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_ldi"</span><span>,        </span><span style=color:#b8bb26>"abc528new_n65"</span><span>, </span><span style=color:#b8bb26>"abc528new_n65"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n67"</span><span>, </span><span style=color:#b8bb26>"n_ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n54"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_syscall"</span><span>,    </span><span style=color:#b8bb26>"abc528new_n67"</span><span>, </span><span style=color:#b8bb26>"abc528new_n67"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n69"</span><span>, </span><span style=color:#b8bb26>"ins_0"</span><span>, </span><span style=color:#b8bb26>"abc528new_n56"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_halt"</span><span>,       </span><span style=color:#b8bb26>"abc528new_n69"</span><span>, </span><span style=color:#b8bb26>"abc528new_n69"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n71"</span><span>, </span><span style=color:#b8bb26>"jz_nand1"</span><span>, </span><span style=color:#b8bb26>"ins_6"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_jmp"</span><span>,        </span><span style=color:#b8bb26>"abc528new_n71"</span><span>, </span><span style=color:#b8bb26>"abc528new_n71"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n73"</span><span>, </span><span style=color:#b8bb26>"abc528new_n43"</span><span>, </span><span style=color:#b8bb26>"abc528new_n47"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n74"</span><span>, </span><span style=color:#b8bb26>"n_ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n36"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n75"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n38"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n76"</span><span>, </span><span style=color:#b8bb26>"abc528new_n74"</span><span>, </span><span style=color:#b8bb26>"abc528new_n75"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n77"</span><span>, </span><span style=color:#b8bb26>"ins_0"</span><span>, </span><span style=color:#b8bb26>"abc528new_n76"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n78"</span><span>, </span><span style=color:#b8bb26>"n_ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n35"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n79"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n37"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n80"</span><span>, </span><span style=color:#b8bb26>"abc528new_n78"</span><span>, </span><span style=color:#b8bb26>"abc528new_n79"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n81"</span><span>, </span><span style=color:#b8bb26>"n_ins_0"</span><span>, </span><span style=color:#b8bb26>"abc528new_n80"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n82"</span><span>, </span><span style=color:#b8bb26>"abc528new_n77"</span><span>, </span><span style=color:#b8bb26>"abc528new_n81"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n83"</span><span>, </span><span style=color:#b8bb26>"abc528new_n82"</span><span>, </span><span style=color:#b8bb26>"abc528new_n82"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n84"</span><span>, </span><span style=color:#b8bb26>"abc528new_n73"</span><span>, </span><span style=color:#b8bb26>"abc528new_n83"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n85"</span><span>, </span><span style=color:#b8bb26>"abc528new_n59"</span><span>, </span><span style=color:#b8bb26>"abc528new_n84"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n86"</span><span>, </span><span style=color:#b8bb26>"abc528new_n85"</span><span>, </span><span style=color:#b8bb26>"abc528new_n85"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n87"</span><span>, </span><span style=color:#b8bb26>"abc528new_n57"</span><span>, </span><span style=color:#b8bb26>"abc528new_n86"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"pre_sec"</span><span>, </span><span style=color:#b8bb26>"n_is_root_now"</span><span>, </span><span style=color:#b8bb26>"abc528new_n87"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"security_exception"</span><span>, </span><span style=color:#b8bb26>"pre_sec"</span><span>, </span><span style=color:#b8bb26>"pre_sec"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n90"</span><span>, </span><span style=color:#b8bb26>"ins_4"</span><span>, </span><span style=color:#b8bb26>"abc528new_n42"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_add"</span><span>,        </span><span style=color:#b8bb26>"abc528new_n90"</span><span>, </span><span style=color:#b8bb26>"abc528new_n90"</span><span>)
+</span><span>
+</span><span>]
+</span><span>
+</span><span>  
+</span><span>
+</span><span style=font-style:italic;color:#928374># our modified gates
+</span><span>
+</span><span>gates </span><span style=color:#fe8019>= </span><span>[
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_0"</span><span>, </span><span style=color:#b8bb26>"ins_0"</span><span>, </span><span style=color:#b8bb26>"ins_0"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_1"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_2"</span><span>, </span><span style=color:#b8bb26>"ins_2"</span><span>, </span><span style=color:#b8bb26>"ins_2"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_3"</span><span>, </span><span style=color:#b8bb26>"ins_3"</span><span>, </span><span style=color:#b8bb26>"ins_3"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_4"</span><span>, </span><span style=color:#b8bb26>"ins_4"</span><span>, </span><span style=color:#b8bb26>"ins_4"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_5"</span><span>, </span><span style=color:#b8bb26>"ins_5"</span><span>, </span><span style=color:#b8bb26>"ins_5"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"jz_nand1"</span><span>,      </span><span style=color:#b8bb26>"ins_7"</span><span>,    </span><span style=color:#b8bb26>"ins_7"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_jz"</span><span>,         </span><span style=color:#b8bb26>"jz_nand1"</span><span>, </span><span style=color:#b8bb26>"jz_nand1"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_ins_6"</span><span>, </span><span style=color:#b8bb26>"ins_6"</span><span>, </span><span style=color:#b8bb26>"ins_6"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_root_now"</span><span>,</span><span style=color:#b8bb26>"n_ins_0"</span><span>,</span><span style=color:#b8bb26>"ins_0"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_is_root_now"</span><span>, </span><span style=color:#b8bb26>"is_root_now"</span><span>, </span><span style=color:#b8bb26>"is_root_now"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n35"</span><span>, </span><span style=color:#b8bb26>"r0_7"</span><span>, </span><span style=color:#b8bb26>"r0_7"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n36"</span><span>, </span><span style=color:#b8bb26>"r1_7"</span><span>, </span><span style=color:#b8bb26>"r1_7"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n37"</span><span>, </span><span style=color:#b8bb26>"r2_7"</span><span>, </span><span style=color:#b8bb26>"r2_7"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n38"</span><span>, </span><span style=color:#b8bb26>"r3_7"</span><span>, </span><span style=color:#b8bb26>"r3_7"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n39"</span><span>, </span><span style=color:#b8bb26>"jz_nand1"</span><span>, </span><span style=color:#b8bb26>"n_ins_6"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n40"</span><span>, </span><span style=color:#b8bb26>"abc528new_n39"</span><span>, </span><span style=color:#b8bb26>"abc528new_n39"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n41"</span><span>, </span><span style=color:#b8bb26>"ins_5"</span><span>, </span><span style=color:#b8bb26>"abc528new_n40"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n42"</span><span>, </span><span style=color:#b8bb26>"abc528new_n41"</span><span>, </span><span style=color:#b8bb26>"abc528new_n41"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n43"</span><span>, </span><span style=color:#b8bb26>"n_ins_4"</span><span>, </span><span style=color:#b8bb26>"abc528new_n42"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_store"</span><span>,      </span><span style=color:#b8bb26>"abc528new_n43"</span><span>, </span><span style=color:#b8bb26>"abc528new_n43"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n45"</span><span>, </span><span style=color:#b8bb26>"n_ins_5"</span><span>, </span><span style=color:#b8bb26>"abc528new_n40"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n46"</span><span>, </span><span style=color:#b8bb26>"abc528new_n45"</span><span>, </span><span style=color:#b8bb26>"abc528new_n45"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n47"</span><span>, </span><span style=color:#b8bb26>"ins_4"</span><span>, </span><span style=color:#b8bb26>"abc528new_n46"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_load"</span><span>,       </span><span style=color:#b8bb26>"abc528new_n47"</span><span>, </span><span style=color:#b8bb26>"abc528new_n47"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n49"</span><span>, </span><span style=color:#b8bb26>"n_ins_4"</span><span>, </span><span style=color:#b8bb26>"abc528new_n46"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n50"</span><span>, </span><span style=color:#b8bb26>"abc528new_n49"</span><span>, </span><span style=color:#b8bb26>"abc528new_n49"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n51"</span><span>, </span><span style=color:#b8bb26>"ins_3"</span><span>, </span><span style=color:#b8bb26>"abc528new_n50"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n52"</span><span>, </span><span style=color:#b8bb26>"abc528new_n51"</span><span>, </span><span style=color:#b8bb26>"abc528new_n51"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n53"</span><span>, </span><span style=color:#b8bb26>"ins_2"</span><span>, </span><span style=color:#b8bb26>"abc528new_n52"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n54"</span><span>, </span><span style=color:#b8bb26>"abc528new_n53"</span><span>, </span><span style=color:#b8bb26>"abc528new_n53"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n55"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n54"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n56"</span><span>, </span><span style=color:#b8bb26>"abc528new_n55"</span><span>, </span><span style=color:#b8bb26>"abc528new_n55"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n57"</span><span>, </span><span style=color:#b8bb26>"n_ins_0"</span><span>, </span><span style=color:#b8bb26>"abc528new_n56"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_sysret"</span><span>,     </span><span style=color:#b8bb26>"abc528new_n57"</span><span>, </span><span style=color:#b8bb26>"abc528new_n57"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n59"</span><span>, </span><span style=color:#b8bb26>"n_ins_3"</span><span>, </span><span style=color:#b8bb26>"abc528new_n50"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n60"</span><span>, </span><span style=color:#b8bb26>"abc528new_n59"</span><span>, </span><span style=color:#b8bb26>"abc528new_n59"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n61"</span><span>, </span><span style=color:#b8bb26>"ins_2"</span><span>, </span><span style=color:#b8bb26>"abc528new_n60"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_putc"</span><span>,       </span><span style=color:#b8bb26>"abc528new_n61"</span><span>, </span><span style=color:#b8bb26>"abc528new_n61"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n63"</span><span>, </span><span style=color:#b8bb26>"n_ins_2"</span><span>, </span><span style=color:#b8bb26>"abc528new_n60"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_rdtsc"</span><span>,      </span><span style=color:#b8bb26>"abc528new_n63"</span><span>, </span><span style=color:#b8bb26>"abc528new_n63"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n65"</span><span>, </span><span style=color:#b8bb26>"n_ins_2"</span><span>, </span><span style=color:#b8bb26>"abc528new_n52"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_ldi"</span><span>,        </span><span style=color:#b8bb26>"abc528new_n65"</span><span>, </span><span style=color:#b8bb26>"abc528new_n65"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n67"</span><span>, </span><span style=color:#b8bb26>"n_ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n54"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_syscall"</span><span>,    </span><span style=color:#b8bb26>"abc528new_n67"</span><span>, </span><span style=color:#b8bb26>"abc528new_n67"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n69"</span><span>, </span><span style=color:#b8bb26>"ins_0"</span><span>, </span><span style=color:#b8bb26>"abc528new_n56"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_halt"</span><span>,       </span><span style=color:#b8bb26>"abc528new_n69"</span><span>, </span><span style=color:#b8bb26>"abc528new_n69"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n71"</span><span>, </span><span style=color:#b8bb26>"jz_nand1"</span><span>, </span><span style=color:#b8bb26>"ins_6"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_jmp"</span><span>,        </span><span style=color:#b8bb26>"abc528new_n71"</span><span>, </span><span style=color:#b8bb26>"abc528new_n71"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n73"</span><span>, </span><span style=color:#b8bb26>"abc528new_n43"</span><span>, </span><span style=color:#b8bb26>"abc528new_n47"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n74"</span><span>, </span><span style=color:#b8bb26>"n_ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n36"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n75"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n38"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n76"</span><span>, </span><span style=color:#b8bb26>"abc528new_n74"</span><span>, </span><span style=color:#b8bb26>"abc528new_n75"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n77"</span><span>, </span><span style=color:#b8bb26>"ins_0"</span><span>, </span><span style=color:#b8bb26>"abc528new_n76"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n78"</span><span>, </span><span style=color:#b8bb26>"n_ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n35"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n79"</span><span>, </span><span style=color:#b8bb26>"ins_1"</span><span>, </span><span style=color:#b8bb26>"abc528new_n37"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n80"</span><span>, </span><span style=color:#b8bb26>"abc528new_n78"</span><span>, </span><span style=color:#b8bb26>"abc528new_n79"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n81"</span><span>, </span><span style=color:#b8bb26>"n_ins_0"</span><span>, </span><span style=color:#b8bb26>"abc528new_n80"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n82"</span><span>, </span><span style=color:#b8bb26>"abc528new_n77"</span><span>, </span><span style=color:#b8bb26>"abc528new_n81"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n83"</span><span>, </span><span style=color:#b8bb26>"abc528new_n82"</span><span>, </span><span style=color:#b8bb26>"abc528new_n82"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n84"</span><span>, </span><span style=color:#b8bb26>"abc528new_n73"</span><span>, </span><span style=color:#b8bb26>"abc528new_n83"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n85"</span><span>, </span><span style=color:#b8bb26>"abc528new_n59"</span><span>, </span><span style=color:#b8bb26>"abc528new_n84"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n86"</span><span>, </span><span style=color:#b8bb26>"abc528new_n85"</span><span>, </span><span style=color:#b8bb26>"abc528new_n85"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n87"</span><span>, </span><span style=color:#b8bb26>"abc528new_n57"</span><span>, </span><span style=color:#b8bb26>"abc528new_n86"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"pre_sec"</span><span>, </span><span style=color:#b8bb26>"n_is_root_now"</span><span>, </span><span style=color:#b8bb26>"abc528new_n87"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"n_pre_sec"</span><span>,</span><span style=color:#b8bb26>"pre_sec"</span><span>,</span><span style=color:#b8bb26>"pre_sec"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"tmp_sec"</span><span>,</span><span style=color:#b8bb26>"pre_sec"</span><span>,</span><span style=color:#b8bb26>"n_pre_sec"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"security_exception"</span><span>, </span><span style=color:#b8bb26>"tmp_sec"</span><span>, </span><span style=color:#b8bb26>"tmp_sec"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"abc528new_n90"</span><span>, </span><span style=color:#b8bb26>"ins_4"</span><span>, </span><span style=color:#b8bb26>"abc528new_n42"</span><span>),
+</span><span>
+</span><span>    (</span><span style=color:#b8bb26>"is_add"</span><span>,        </span><span style=color:#b8bb26>"abc528new_n90"</span><span>, </span><span style=color:#b8bb26>"abc528new_n90"</span><span>)
+</span><span>
+</span><span>]
+</span><span>
+</span><span>  
+</span><span>
+</span><span>opcodes </span><span style=color:#fe8019>= </span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"08801405088114050882140508831405088414050885140508861405088714050888140508891405088a1405088b1405088c1405088d1405088e1405088f140508901405089114050892140508931405089414050895140508961405089714050898140508991405089a1405089b1405089c1405089d1405089e1405089f140508a0140508a1140508a2140508a3140508a4140508a5140508a6140508a7140508a8140508a9140508aa140508ab140508ac140508ad140508ae14050f"
+</span><span>
+</span><span>  
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>solve_pow</span><span>(</span><span style=color:#fdf4c1>challenge</span><span>):
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374>"""Solves kCTF proof-of-work challenge using the official solver"""
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374># Download the kctf-pow script
+</span><span>    script_path </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>os.path.join(tempfile.gettempdir(), </span><span style=color:#b8bb26>"kctf-pow.py"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fa5c4b>if </span><span style=color:#fe8019>not </span><span style=color:#fdf4c1>os.path.exists(script_path)</span><span>:
+</span><span>        </span><span style=color:#fdf4c1>subprocess.run([</span><span style=color:#b8bb26>'curl'</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>'-sSL'</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>'https://goo.gle/kctf-pow'</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>'-o'</span><span style=color:#fdf4c1>, script_path], check</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374># Solve the challenge
+</span><span>    result </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>subprocess.run([</span><span style=color:#b8bb26>'python3'</span><span style=color:#fdf4c1>, script_path, </span><span style=color:#b8bb26>'solve'</span><span style=color:#fdf4c1>, challenge],
+</span><span style=color:#fdf4c1>                            capture_output</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>, text</span><span style=color:#fe8019>=</span><span style=color:#d3869b>True</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>result.returncode </span><span style=color:#fe8019>!= </span><span style=color:#d3869b>0</span><span>:
+</span><span>        </span><span style=color:#fa5c4b>raise </span><span style=color:#fabd2f>RuntimeError</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"PoW solve failed: </span><span style=color:#fdf4c1>{result.stderr}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>result.stdout.strip()
+</span><span>
+</span><span>  
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>main</span><span>():
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374># Start the CPU emulator challenge
+</span><span>
+</span><span>    p </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>remote(</span><span style=color:#b8bb26>"hwsim.2025.ctfcompetition.com"</span><span style=color:#fdf4c1>, </span><span style=color:#d3869b>1337</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=font-style:italic;color:#928374># Handle proof-of-work if presented
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>try</span><span>:
+</span><span>        pow_prompt </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"Solution?"</span><span style=color:#fdf4c1>, timeout</span><span style=color:#fe8019>=</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>) </span><span style=font-style:italic;color:#928374># type: ignore
+</span><span>        </span><span style=color:#fa5c4b>if b</span><span style=color:#b8bb26>"proof-of-work" </span><span style=color:#fe8019>in </span><span>pow_prompt:
+</span><span>            </span><span style=font-style:italic;color:#928374># Extract challenge string
+</span><span>            match </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>re.search(</span><span style=color:#fa5c4b>rb</span><span style=color:#b8bb26>'python3</span><span style=color:#d3869b>.</span><span style=color:#fe8019>*</span><span style=color:#b8bb26>solve (</span><span style=color:#d3869b>\S</span><span style=color:#fe8019>+</span><span style=color:#b8bb26>)'</span><span style=color:#fdf4c1>, pow_prompt)
+</span><span>            </span><span style=color:#fa5c4b>if </span><span style=color:#fe8019>not </span><span>match:
+</span><span>                </span><span style=color:#fdf4c1>log.error(</span><span style=color:#b8bb26>"Failed to extract PoW challenge"</span><span style=color:#fdf4c1>)
+</span><span>                </span><span style=color:#fa5c4b>return
+</span><span>            challenge </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>match.group(</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>).decode()
+</span><span>            </span><span style=color:#fdf4c1>log.info(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"Solving PoW challenge: </span><span style=color:#fdf4c1>{challenge}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>            </span><span style=font-style:italic;color:#928374># Solve PoW
+</span><span>            solution </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>solve_pow(challenge)
+</span><span>            </span><span style=color:#fdf4c1>log.info(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"PoW solution: </span><span style=color:#fdf4c1>{solution}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>            </span><span style=font-style:italic;color:#928374># Submit solution
+</span><span>            </span><span style=color:#fdf4c1>p.sendline(solution.encode())
+</span><span>            </span><span style=color:#fdf4c1>p.recvline()  </span><span style=font-style:italic;color:#928374># Skip "Correct" response
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>except </span><span style=color:#fabd2f>EOFError</span><span>:
+</span><span>        </span><span style=color:#fdf4c1>log.error(</span><span style=color:#b8bb26>"Process ended prematurely"</span><span style=color:#fdf4c1>)
+</span><span>        </span><span style=color:#fa5c4b>return
+</span><span>
+</span><span>    </span><span style=font-style:italic;color:#928374># Add all gates through the menu
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>for </span><span>output, in1, in2 </span><span style=color:#fa5c4b>in </span><span>gates:
+</span><span>        </span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"6. Quit.\n"</span><span style=color:#fdf4c1>)
+</span><span>        </span><span style=color:#fdf4c1>p.sendline(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"3"</span><span style=color:#fdf4c1>)
+</span><span>        </span><span style=color:#fdf4c1>p.recvuntil(</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"to add NAND gate C = A NAND B\n"</span><span style=color:#fdf4c1>)
+</span><span>        </span><span style=color:#fdf4c1>p.sendline(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>{output} {in1} {in2}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>.encode())
+</span><span>        </span><span style=color:#fdf4c1>log.info(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"Added gate: </span><span style=color:#fdf4c1>{output}</span><span style=color:#b8bb26> = </span><span style=color:#fdf4c1>{in1}</span><span style=color:#b8bb26> NAND </span><span style=color:#fdf4c1>{in2}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>  
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>p.sendlineafter(</span><span style=color:#b8bb26>"6. Quit."</span><span style=color:#fdf4c1>,</span><span style=color:#fa5c4b>b</span><span style=color:#b8bb26>"5"</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>p.sendlineafter(</span><span style=color:#b8bb26>"Input (hex-encoded) user code (up to 128 bytes):"</span><span style=color:#fdf4c1>,opcodes)
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>p.interactive()
+</span><span>
+</span><span style=color:#fa5c4b>if </span><span style=color:#fabd2f>__name__ </span><span style=color:#fe8019>== </span><span style=color:#b8bb26>"__main__"</span><span>:
+</span><span>    context.log_level </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>'info'
+</span><span>    </span><span style=color:#fdf4c1>main()
+</span></code></pre><p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

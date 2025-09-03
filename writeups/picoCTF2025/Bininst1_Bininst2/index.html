@@ -1,0 +1,819 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Bininst1/Bininst2</title><meta content=Bininst1/Bininst2 name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/picoCTF2025/Bininst1_Bininst2/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content=Bininst1/Bininst2 property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/picoCTF2025/Bininst1_Bininst2/ property=twitter:url><meta content=Bininst1/Bininst2 property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/picoCTF2025/Bininst1_Bininst2/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>Bininst1_Bininst2</span></div><time datetime=2025-03-07>Published on: <span class=accent-data>2025-03-07</span></time><address rel=author>By <span class=accent-data> Abizer, and exploiitm </span></address><h1>Bininst1/Bininst2</h1><h2 id=bininst1>Bininst1:</h2><p>We are given a .exe that seems to throw errors we just want to find flag this is doable with just a decompiler but it would be a whole lot harder to do.<p>First frida allows us to intercept any function that we want so if we just intercept any syscalls made to nt.dll or kernel32.dll we can see almost all functions that are called.<p>This is the script i used in python i will just be putting the js part from now on so that there is less clutter:<pre class=language-python data-lang=python style=background:#282828;color:#fdf4c1aa><code class=language-python data-lang=python><span style=color:#fa5c4b>import </span><span>frida
+</span><span style=color:#fa5c4b>import </span><span>sys
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>on_message</span><span>(</span><span style=color:#fdf4c1>message</span><span>, </span><span style=color:#fdf4c1>data</span><span>):
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>message[</span><span style=color:#b8bb26>'type'</span><span>] </span><span style=color:#fe8019>== </span><span style=color:#b8bb26>'send'</span><span>:
+</span><span>        </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"[*] </span><span style=color:#fdf4c1>{0}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>.format(message[</span><span style=color:#b8bb26>'payload'</span><span style=color:#fdf4c1>]))
+</span><span>    </span><span style=color:#fa5c4b>else</span><span>:
+</span><span>        </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(message)
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>def </span><span style=color:#8ec07c>main</span><span>():
+</span><span>    target_binary </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"./bininst1/bininst1.exe"
+</span><span>    </span><span style=color:#fa5c4b>try</span><span>:
+</span><span>        pid </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>frida.spawn([target_binary])
+</span><span>        session </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>frida.attach(pid)
+</span><span>    </span><span style=color:#fa5c4b>except </span><span>frida.ProcessNotFoundError:
+</span><span>        </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"Error: Binary '</span><span style=color:#fdf4c1>{target_binary}</span><span style=color:#b8bb26>' not found."</span><span style=color:#fdf4c1>)
+</span><span>        </span><span style=color:#fdf4c1>sys.exit(</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fa5c4b>except </span><span style=color:#fabd2f>Exception </span><span style=color:#fa5c4b>as </span><span>e:
+</span><span>        </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#fa5c4b>f</span><span style=color:#b8bb26>"Error spawning or attaching to process: </span><span style=color:#fdf4c1>{e}</span><span style=color:#b8bb26>"</span><span style=color:#fdf4c1>)
+</span><span>        </span><span style=color:#fdf4c1>sys.exit(</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>)
+</span><span>
+</span><span>    script_code </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"""
+</span><span style=color:#b8bb26>    The js part here
+</span><span style=color:#b8bb26>    """
+</span><span>
+</span><span>    script </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>session.create_script(script_code)
+</span><span>    </span><span style=color:#fdf4c1>script.on(</span><span style=color:#b8bb26>'message'</span><span style=color:#fdf4c1>, on_message)
+</span><span>    </span><span style=color:#fdf4c1>script.load()
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>frida.resume(pid)
+</span><span>
+</span><span>    </span><span style=color:#fabd2f>print</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"[*] Frida is running. Press Ctrl+C to exit."</span><span style=color:#fdf4c1>)
+</span><span>    </span><span style=color:#fdf4c1>sys.stdin.read()
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>session.detach()
+</span><span>
+</span><span>
+</span><span style=color:#fa5c4b>if </span><span style=color:#fabd2f>__name__ </span><span style=color:#fe8019>== </span><span style=color:#b8bb26>'__main__'</span><span>:
+</span><span>    </span><span style=color:#fdf4c1>main()
+</span></code></pre><p>But the binary gives us a hint to what is happening so we want to look for functions like sleep or settimeout:<pre class=language-JavaScript data-lang=JavaScript style=background:#282828;color:#fdf4c1aa><code class=language-JavaScript data-lang=JavaScript><span style=font-style:italic;color:#928374>// Hook NtDelayExecution
+</span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(</span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.getExportByName(</span><span style=color:#b8bb26>"ntdll.dll"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"NtDelayExecution"</span><span style=color:#fdf4c1>), {
+</span><span style=color:#fdf4c1>    </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>        </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>alertable </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>].toInt32();
+</span><span style=color:#fdf4c1>        </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>intervalPtr </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>        </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>interval </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>intervalPtr.readInt64();  </span><span style=font-style:italic;color:#928374>// in 100ns units
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>        </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[NtDelayExecution] Alertable: </span><span style=color:#fdf4c1>${alertable}</span><span style=color:#b8bb26>, Interval: </span><span style=color:#fdf4c1>${interval}</span><span style=color:#b8bb26> (100ns units)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>    }
+</span><span style=color:#fdf4c1>})</span><span>;
+</span><span>
+</span><span style=font-style:italic;color:#928374>// Hook Sleep
+</span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(</span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.getExportByName(</span><span style=color:#b8bb26>"kernel32.dll"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"Sleep"</span><span style=color:#fdf4c1>), {
+</span><span style=color:#fdf4c1>    </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>        </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[Sleep] Duration: </span><span style=color:#fdf4c1>${args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>].toInt32()}</span><span style=color:#b8bb26> ms`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>    }
+</span><span style=color:#fdf4c1>})</span><span>;
+</span></code></pre><p>This gives the following output:<pre style=background:#282828;color:#fdf4c1aa><code><span>[*] Frida is running. Press Ctrl+C to exit.
+</span><span>Hi, I have the flag for you just right here!
+</span><span>I'll just take a quick nap before I print it out for you, should only take me a decade or so!
+</span><span>zzzzzzzz....
+</span><span>[Sleep] Duration: -2 ms
+</span></code></pre><p>Sleep -2 ms is invalid but it will actually wrap around to 4294967294 about 49 days if we replace this call with something else we should have flag. Actually we dont need to replace it with any function at all:<pre class=language-JavaScript data-lang=JavaScript style=background:#282828;color:#fdf4c1aa><code class=language-JavaScript data-lang=JavaScript><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.replace(</span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.getExportByName(</span><span style=color:#b8bb26>"kernel32.dll"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"Sleep"</span><span style=color:#fdf4c1>), </span><span style=color:#fe8019>new </span><span style=color:#fdf4c1>NativeCallback(</span><span style=color:#fa5c4b>function</span><span style=color:#fdf4c1>(ms) {
+</span><span style=color:#fdf4c1>    </span><span style=color:#fa5c4b>return</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>}, </span><span style=color:#b8bb26>'void'</span><span style=color:#fdf4c1>, [</span><span style=color:#b8bb26>'uint32'</span><span style=color:#fdf4c1>]))</span><span>;
+</span></code></pre><p>This is the output we get:<pre style=background:#282828;color:#fdf4c1aa><code><span>Hi, I have the flag for you just right here!
+</span><span>I'll just take a quick nap before I print it out for you, should only take me a decade or so!
+</span><span>zzzzzzzz....
+</span><span>Ok, I'm Up! The flag is: cGljb0NURnt3NGtlX20zX3VwX3cxdGhfZnIxZGFfZjI3YWNjMzh9
+</span></code></pre><p>Decoding the base64 we get out flag: <code>picoCTF{w4ke_m3_up_w1th_fr1da_f27acc38}</code><p>In ghidra we could have done the same thing but we would have to go through the entire binary to look for the flag string or replace the sleep call with nops which would have been a lot more annoying than this was.<h2 id=bininst2>Bininst2:</h2><p>Reusing the same python as above we can just change the binary to bininst2.exe and look at all the functions called. This one is a lot less helpful in the debugging so we will have to look at all the calls to sys32 to see what is going on. If we try to do all that in one script it actually overwhelms frida and it will miss a few calls so instead we want to have dedicated scripts for highlevel lower level and network and run them one at a time:<pre class=language-JavaScript data-lang=JavaScript style=background:#282828;color:#fdf4c1aa><code class=language-JavaScript data-lang=JavaScript><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>'[+] Hooking High-Level Win32 APIs'</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>
+</span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>win32Hooks </span><span style=color:#fe8019>= </span><span>{
+</span><span>    </span><span style=color:#b8bb26>'kernel32.dll'</span><span>: [
+</span><span>        </span><span style=color:#b8bb26>'CreateFileA'</span><span>, </span><span style=color:#b8bb26>'ReadFile'</span><span>, </span><span style=color:#b8bb26>'WriteFile'</span><span>,
+</span><span>        </span><span style=color:#b8bb26>'CreateProcessA'</span><span>, </span><span style=color:#b8bb26>'GetProcAddress'
+</span><span>    ],
+</span><span>    </span><span style=color:#b8bb26>'advapi32.dll'</span><span>: [
+</span><span>        </span><span style=color:#b8bb26>'RegOpenKeyExA'</span><span>, </span><span style=color:#b8bb26>'RegSetValueExA'
+</span><span>    ]
+</span><span>};
+</span><span>
+</span><span style=color:#fa5c4b>for </span><span>(</span><span style=color:#fa5c4b>const </span><span>[</span><span style=color:#fdf4c1>moduleName</span><span>, </span><span style=color:#fdf4c1>functions</span><span>] </span><span style=color:#fe8019>of </span><span style=color:#8ec07c>Object</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>entries</span><span style=color:#fdf4c1>(win32Hooks)</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>mod </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Process</span><span style=color:#fdf4c1>.getModuleByName(moduleName)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>mod</span><span>) {
+</span><span>        </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Module </span><span style=color:#fdf4c1>${moduleName}</span><span style=color:#b8bb26> not found`</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>continue</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>functions.forEach(funcName </span><span style=color:#fe8019>=&</span><span style=color:#fdf4c1>gt</span><span>; {
+</span><span>        </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>funcAddr </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>mod.getExportByName(funcName)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fdf4c1>funcAddr</span><span>) {
+</span><span>            </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(funcAddr, {
+</span><span style=color:#fdf4c1>                </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>                    this.funcName </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>funcName;
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[HL] </span><span style=color:#fdf4c1>${moduleName}</span><span style=color:#b8bb26>::</span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> called`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                    </span><span style=font-style:italic;color:#928374>// Special handling for CreateFileA
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(funcName </span><span style=color:#fe8019>=== </span><span style=color:#b8bb26>'CreateFileA'</span><span style=color:#fdf4c1>) {
+</span><span style=color:#fdf4c1>                        this.fileName </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>safeReadString(args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>]);
+</span><span style=color:#fdf4c1>                        </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    File: </span><span style=color:#fdf4c1>${this.fileName}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                    }
+</span><span style=color:#fdf4c1>                },
+</span><span style=color:#fdf4c1>                </span><span style=color:#8ec07c>onLeave</span><span style=color:#fdf4c1>(retval) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[HL] </span><span style=color:#fdf4c1>${this.funcName}</span><span style=color:#b8bb26> returned: </span><span style=color:#fdf4c1>${retval}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>            })</span><span>;
+</span><span>        }
+</span><span>    }</span><span style=background:#932b1e;color:#fdf4c1>)</span><span>;
+</span><span style=background:#932b1e;color:#fdf4c1>}</span><span>
+</span><span>
+</span></code></pre><pre class=language-JavaScript data-lang=JavaScript style=background:#282828;color:#fdf4c1aa><code class=language-JavaScript data-lang=JavaScript><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>'[+] Hooking Low-Level NT APIs'</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>
+</span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>ntHooks </span><span style=color:#fe8019>= </span><span>[
+</span><span>    </span><span style=color:#b8bb26>'NtCreateFile'</span><span>, </span><span style=color:#b8bb26>'NtReadFile'</span><span>,
+</span><span>    </span><span style=color:#b8bb26>'NtAllocateVirtualMemory'</span><span>, </span><span style=color:#b8bb26>'NtProtectVirtualMemory'
+</span><span>];
+</span><span>
+</span><span style=color:#fdf4c1>ntHooks.forEach(funcName </span><span style=color:#fe8019>=&</span><span style=color:#fdf4c1>gt</span><span>; {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>funcAddr </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.findExportByName(</span><span style=color:#b8bb26>'ntdll.dll'</span><span style=color:#fdf4c1>, funcName)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>funcAddr</span><span>) </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>
+</span><span>    </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(funcAddr, {
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[LL] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> called`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(funcName </span><span style=color:#fe8019>=== </span><span style=color:#b8bb26>'NtCreateFile'</span><span style=color:#fdf4c1>) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>filenamePtr </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>3</span><span style=color:#fdf4c1>].add(</span><span style=color:#d3869b>8</span><span style=color:#fdf4c1>).readPointer();
+</span><span style=color:#fdf4c1>                this.fileName </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>safeReadUnicodeString(filenamePtr);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    File: </span><span style=color:#fdf4c1>${this.fileName}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        }
+</span><span style=color:#fdf4c1>    })</span><span>;
+</span><span>}</span><span style=background:#932b1e;color:#fdf4c1>)</span><span>;
+</span><span>
+</span></code></pre><pre class=language-JavaScript data-lang=JavaScript style=background:#282828;color:#fdf4c1aa><code class=language-JavaScript data-lang=JavaScript><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>'[+] Hooking Service APIs'</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>
+</span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>serviceHooks </span><span style=color:#fe8019>= </span><span>{
+</span><span>    </span><span style=color:#b8bb26>'CreateServiceA'</span><span>: </span><span style=color:#fdf4c1>args </span><span style=color:#fe8019>=&</span><span style=color:#fdf4c1>gt</span><span>; ({
+</span><span>        serviceName: </span><span style=color:#fdf4c1>safeReadString(args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>])</span><span>,
+</span><span>        displayName: </span><span style=color:#fdf4c1>safeReadString(args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>])
+</span><span style=color:#fdf4c1>    </span><span>}</span><span style=background:#932b1e;color:#fdf4c1>)</span><span style=color:#fe8019>,
+</span><span>    </span><span style=color:#b8bb26>'StartServiceA'</span><span>: </span><span style=color:#fdf4c1>args </span><span style=color:#fe8019>=&</span><span style=color:#fdf4c1>gt</span><span>; ({
+</span><span>        serviceName: </span><span style=color:#fdf4c1>safeReadString(args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>])
+</span><span style=color:#fdf4c1>    </span><span>})
+</span><span style=background:#932b1e;color:#fdf4c1>}</span><span>;
+</span><span>
+</span><span style=color:#8ec07c>Object</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>entries</span><span style=color:#fdf4c1>(serviceHooks)</span><span>.</span><span style=color:#fdf4c1>forEach(([funcName, argParser]) </span><span style=color:#fe8019>=&</span><span style=color:#fdf4c1>gt</span><span>; {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>funcAddr </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.findExportByName(</span><span style=color:#b8bb26>'advapi32.dll'</span><span style=color:#fdf4c1>, funcName)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>funcAddr</span><span>) </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>
+</span><span>    </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(funcAddr, {
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>            this.args </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>argParser(args);
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[SRV] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> called: </span><span style=color:#fdf4c1>${</span><span style=color:#fabd2f>JSON</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>stringify</span><span style=color:#fdf4c1>(this.args)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>        }
+</span><span style=color:#fdf4c1>    })</span><span>;
+</span><span>}</span><span style=background:#932b1e;color:#fdf4c1>)</span><span>;
+</span><span>
+</span></code></pre><pre class=language-JavaScript data-lang=JavaScript style=background:#282828;color:#fdf4c1aa><code class=language-JavaScript data-lang=JavaScript><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>'[+] Hooking Network APIs'</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>
+</span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>wsockHooks </span><span style=color:#fe8019>= </span><span>[
+</span><span>    </span><span style=color:#b8bb26>'send'</span><span>, </span><span style=color:#b8bb26>'recv'</span><span>, </span><span style=color:#b8bb26>'connect'</span><span>, </span><span style=color:#b8bb26>'WSASend'
+</span><span>];
+</span><span>
+</span><span style=color:#fdf4c1>wsockHooks.forEach(funcName </span><span style=color:#fe8019>=&</span><span style=color:#fdf4c1>gt</span><span>; {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>funcAddr </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.findExportByName(</span><span style=color:#b8bb26>'ws2_32.dll'</span><span style=color:#fdf4c1>, funcName)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>funcAddr</span><span>) </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>
+</span><span>    </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(funcAddr, {
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[NET] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> called`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(funcName </span><span style=color:#fe8019>=== </span><span style=color:#b8bb26>'send' </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>funcName </span><span style=color:#fe8019>=== </span><span style=color:#b8bb26>'WSASend'</span><span style=color:#fdf4c1>) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>buffer </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>].readByteArray(args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>].toInt32());
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>'    Data:'</span><span style=color:#fdf4c1>, buffer);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        }
+</span><span style=color:#fdf4c1>    })</span><span>;
+</span><span>}</span><span style=background:#932b1e;color:#fdf4c1>)</span><span>;
+</span></code></pre><p>Now if we look at the winapi calls we can see that it is calling CreateFileA which is returning an error:<pre style=background:#282828;color:#fdf4c1aa><code><span>[+] Hooking High-Level Win32 APIs
+</span><span>[*] Frida is running. Press Ctrl+C to exit.
+</span><span>[HL] kernel32.dll::GetProcAddress called
+</span><span>[HL] GetProcAddress returned: 0x7ffeec702440
+</span><span>[HL] kernel32.dll::GetProcAddress called
+</span><span>[HL] GetProcAddress returned: 0x7ffeec71bbb0
+</span><span>[HL] kernel32.dll::GetProcAddress called
+</span><span>[HL] GetProcAddress returned: 0x7ffeec6ea8c0
+</span><span>[HL] kernel32.dll::CreateFileA called
+</span><span>{'type': 'error', 'description': "ReferenceError: 'safeReadString' is not defined", 'stack': "ReferenceError: 'safeReadString' is not defined\n    at onEnt
+</span><span>er (/script1.js:31)", 'fileName': '/script1.js', 'lineNumber': 31, 'columnNumber': 1}
+</span><span>[HL] CreateFileA returned: 0xffffffffffffffff
+</span><span>[HL] kernel32.dll::GetProcAddress called
+</span></code></pre><p>Let’s look at exactly why its failing look at input and return args:<pre class=language-JavaScript data-lang=JavaScript style=background:#282828;color:#fdf4c1aa><code class=language-JavaScript data-lang=JavaScript><span style=font-style:italic;color:#928374>// Utility function for safe string reading
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>safeReadString</span><span>(</span><span style=color:#fdf4c1>ptr</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>try </span><span>{
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>ptr.readUtf8String()</span><span>;
+</span><span>    } </span><span style=color:#fa5c4b>catch </span><span>(</span><span style=color:#fdf4c1>e</span><span>) {
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#b8bb26>"&amplt;invalid&ampgt;"</span><span>;
+</span><span>    }
+</span><span>}
+</span><span>
+</span><span style=font-style:italic;color:#928374>// Parse file access flags
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>parseAccess</span><span>(</span><span style=color:#fdf4c1>access</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>flags </span><span style=color:#fe8019>= </span><span>[];
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fdf4c1>access </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp</span><span>; </span><span style=color:#d3869b>0x80000000</span><span>) </span><span style=color:#fdf4c1>flags.push(</span><span style=color:#b8bb26>"GENERIC_READ"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fdf4c1>access </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp</span><span>; </span><span style=color:#d3869b>0x40000000</span><span>) </span><span style=color:#fdf4c1>flags.push(</span><span style=color:#b8bb26>"GENERIC_WRITE"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fdf4c1>access </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp</span><span>; </span><span style=color:#d3869b>0x20000000</span><span>) </span><span style=color:#fdf4c1>flags.push(</span><span style=color:#b8bb26>"GENERIC_EXECUTE"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fdf4c1>access </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp</span><span>; </span><span style=color:#d3869b>0x10000000</span><span>) </span><span style=color:#fdf4c1>flags.push(</span><span style=color:#b8bb26>"GENERIC_ALL"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>flags</span><span>.length </span><span style=color:#fe8019>? </span><span style=color:#fdf4c1>flags.join(</span><span style=color:#b8bb26>"|"</span><span style=color:#fdf4c1>) </span><span style=color:#fe8019>: </span><span style=color:#b8bb26>"0x" </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>access.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>}
+</span><span>
+</span><span style=font-style:italic;color:#928374>// Parse creation disposition
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>parseCreation</span><span>(</span><span style=color:#fdf4c1>creation</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>dispositions </span><span style=color:#fe8019>= </span><span>{
+</span><span>        </span><span style=color:#d3869b>1</span><span>: </span><span style=color:#b8bb26>"CREATE_NEW"</span><span>,
+</span><span>        </span><span style=color:#d3869b>2</span><span>: </span><span style=color:#b8bb26>"CREATE_ALWAYS"</span><span>,
+</span><span>        </span><span style=color:#d3869b>3</span><span>: </span><span style=color:#b8bb26>"OPEN_EXISTING"</span><span>,
+</span><span>        </span><span style=color:#d3869b>4</span><span>: </span><span style=color:#b8bb26>"OPEN_ALWAYS"</span><span>,
+</span><span>        </span><span style=color:#d3869b>5</span><span>: </span><span style=color:#b8bb26>"TRUNCATE_EXISTING"
+</span><span>    };
+</span><span>    </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>dispositions</span><span>[</span><span style=color:#fdf4c1>creation</span><span>] </span><span style=color:#fe8019>|| </span><span style=color:#b8bb26>"0x" </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>creation.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>hookCreateFileA</span><span>() {
+</span><span>    </span><span style=font-style:italic;color:#928374>// Hook both possible locations
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>modules </span><span style=color:#fe8019>= </span><span>[</span><span style=color:#b8bb26>"kernel32.dll"</span><span>, </span><span style=color:#b8bb26>"kernelbase.dll"</span><span>];
+</span><span>
+</span><span>    </span><span style=color:#fdf4c1>modules.forEach(</span><span style=color:#fabd2f>module </span><span style=color:#fe8019>=&</span><span style=color:#fdf4c1>gt</span><span>; {
+</span><span>        </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>createFileA </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.getExportByName(</span><span style=color:#fabd2f>module</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"CreateFileA"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>createFileA</span><span>) </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>
+</span><span>        </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(createFileA, {
+</span><span style=color:#fdf4c1>            </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>                this.fileName </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>safeReadString(args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>]);
+</span><span style=color:#fdf4c1>                this.access </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>].toInt32();
+</span><span style=color:#fdf4c1>                this.share </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>].toInt32();
+</span><span style=color:#fdf4c1>                this.creation </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>4</span><span style=color:#fdf4c1>].toInt32();
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                send(</span><span style=color:#b8bb26>`\n[CreateFileA Called]
+</span><span style=color:#b8bb26>Module: </span><span style=color:#fdf4c1>${</span><span style=color:#fabd2f>module</span><span style=color:#fdf4c1>}
+</span><span style=color:#b8bb26>File: </span><span style=color:#fdf4c1>${this.fileName}
+</span><span style=color:#b8bb26>Access: </span><span style=color:#fdf4c1>${parseAccess(this.access)}</span><span style=color:#b8bb26> (0x</span><span style=color:#fdf4c1>${this.access.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>)
+</span><span style=color:#b8bb26>Share: 0x</span><span style=color:#fdf4c1>${this.share.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}
+</span><span style=color:#b8bb26>Creation: </span><span style=color:#fdf4c1>${parseCreation(this.creation)}
+</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            },
+</span><span style=color:#fdf4c1>            </span><span style=color:#8ec07c>onLeave</span><span style=color:#fdf4c1>(retval) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>result </span><span style=color:#fe8019>=
+</span><span style=color:#fdf4c1>                    retval.toInt32() </span><span style=color:#fe8019>=== -</span><span style=color:#d3869b>1
+</span><span style=color:#fdf4c1>                        </span><span style=color:#fe8019>? </span><span style=color:#b8bb26>"INVALID_HANDLE_VALUE"
+</span><span style=color:#fdf4c1>                        </span><span style=color:#fe8019>: </span><span style=color:#b8bb26>"0x" </span><span style=color:#fe8019>+ </span><span style=color:#fdf4c1>retval.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                send(</span><span style=color:#b8bb26>`[CreateFileA Returned]
+</span><span style=color:#b8bb26>File: </span><span style=color:#fdf4c1>${this.fileName}
+</span><span style=color:#b8bb26>Handle: </span><span style=color:#fdf4c1>${result}
+</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        })</span><span>;
+</span><span>    }</span><span style=background:#932b1e;color:#fdf4c1>)</span><span>;
+</span><span style=background:#932b1e;color:#fdf4c1>}</span><span>
+</span><span>
+</span><span style=color:#fdf4c1>hookCreateFileA()</span><span>;
+</span></code></pre><p>The output here is:<pre style=background:#282828;color:#fdf4c1aa><code><span>[*] Frida is running. Press Ctrl+C to exit.
+</span><span>[*]
+</span><span>[CreateFileA Called]
+</span><span>Module: kernel32.dll
+</span><span>File: &amplt;Insert path here&ampgt;
+</span><span>Access: GENERIC_WRITE (0x40000000)
+</span><span>Share: 0x0
+</span><span>Creation: CREATE_ALWAYS
+</span><span>
+</span><span>[*]
+</span><span>[CreateFileA Called]
+</span><span>Module: kernelbase.dll
+</span><span>File: &amplt;Insert path here&ampgt;
+</span><span>Access: GENERIC_WRITE (0x40000000)
+</span><span>Share: 0x0
+</span><span>Creation: CREATE_ALWAYS
+</span><span>
+</span><span>[*] [CreateFileA Returned]
+</span><span>File: &amplt;Insert path here&ampgt;
+</span><span>Handle: INVALID_HANDLE_VALUE
+</span><span>
+</span><span>[*] [CreateFileA Returned]
+</span><span>File: &amplt;Insert path here&ampgt;
+</span><span>Handle: INVALID_HANDLE_VALUE
+</span></code></pre><p>Let’s lookup CreateFileA on the winapi docs:<pre style=background:#282828;color:#fdf4c1aa><code><span>HANDLE CreateFileA(
+</span><span>  [in]           LPCSTR                lpFileName,
+</span><span>  [in]           DWORD                 dwDesiredAccess,
+</span><span>  [in]           DWORD                 dwShareMode,
+</span><span>  [in, optional] LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+</span><span>  [in]           DWORD                 dwCreationDisposition,
+</span><span>  [in]           DWORD                 dwFlagsAndAttributes,
+</span><span>  [in, optional] HANDLE                hTemplateFile
+</span><span>);
+</span></code></pre><p>Writing script to modify the call so that it creates ./flag.txt also keeping all the file related hooks since it may write in a separate call or even delete the file after:<pre class=language-JavaScript data-lang=JavaScript style=background:#282828;color:#fdf4c1aa><code class=language-JavaScript data-lang=JavaScript><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>handleMap </span><span style=color:#fe8019>= </span><span>{};
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>pointerToString</span><span>(</span><span style=color:#fdf4c1>ptr</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>try </span><span>{
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>ptr.readAnsiString()</span><span>;
+</span><span>    } </span><span style=color:#fa5c4b>catch </span><span>{
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#d3869b>null</span><span>;
+</span><span>    }
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>logError</span><span>() {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>err </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.getExportByName(</span><span style=color:#b8bb26>"kernel32.dll"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"GetLastError"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>getErr </span><span style=color:#fe8019>= new </span><span style=color:#fdf4c1>NativeFunction(err, </span><span style=color:#b8bb26>"uint32"</span><span style=color:#fdf4c1>, [])</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>code </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>getErr()</span><span>;
+</span><span>    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] Error Code: </span><span style=color:#fdf4c1>${code}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>replacePath</span><span>(</span><span style=color:#fdf4c1>args</span><span>, </span><span style=color:#fdf4c1>index</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>originalPtr </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args</span><span>[</span><span style=color:#fdf4c1>index</span><span>];
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>str </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>pointerToString(originalPtr)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>str </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>str.indexOf(</span><span style=color:#b8bb26>":"</span><span style=color:#fdf4c1>) </span><span style=color:#fe8019>=== -</span><span style=color:#d3869b>1</span><span>) {
+</span><span>        </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"    [!] Invalid file path detected. Modifying..."</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>newPath </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Memory</span><span style=color:#fdf4c1>.allocUtf8String(</span><span style=color:#b8bb26>"./flag.txt"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>        </span><span style=color:#fdf4c1>args</span><span>[</span><span style=color:#fdf4c1>index</span><span>] </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>newPath</span><span>;
+</span><span>        </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"    [!] Modified File Path -&ampgt; ./flag.txt"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    } </span><span style=color:#fa5c4b>else </span><span>{
+</span><span>        </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Original File Path: </span><span style=color:#fdf4c1>${str}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    }
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>hookCreateFile</span><span>(</span><span style=color:#fdf4c1>name</span><span>, </span><span style=color:#fdf4c1>address</span><span>) {
+</span><span>    </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(address, {
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`\n[+] </span><span style=color:#fdf4c1>${name}</span><span style=color:#b8bb26> called`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            replacePath(args, </span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Desired Access: 0x</span><span style=color:#fdf4c1>${args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>].</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Share Mode: 0x</span><span style=color:#fdf4c1>${args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>].</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Creation Disposition: 0x</span><span style=color:#fdf4c1>${args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>4</span><span style=color:#fdf4c1>].</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Flags &ampamp; Attributes: 0x</span><span style=color:#fdf4c1>${args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>5</span><span style=color:#fdf4c1>].</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Security Attributes: </span><span style=color:#fdf4c1>${args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>3</span><span style=color:#fdf4c1>]}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Template File: </span><span style=color:#fdf4c1>${args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>6</span><span style=color:#fdf4c1>]}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>            </span><span style=font-style:italic;color:#928374>// Force safe values
+</span><span style=color:#fdf4c1>            args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ptr(</span><span style=color:#d3869b>0x3</span><span style=color:#fdf4c1>); </span><span style=font-style:italic;color:#928374>// Share mode: read | write
+</span><span style=color:#fdf4c1>            args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>4</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ptr(</span><span style=color:#d3869b>0x2</span><span style=color:#fdf4c1>); </span><span style=font-style:italic;color:#928374>// CREATE_ALWAYS
+</span><span style=color:#fdf4c1>            args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>5</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ptr(</span><span style=color:#d3869b>0x80</span><span style=color:#fdf4c1>); </span><span style=font-style:italic;color:#928374>// Normal attributes... this.modified = true;
+</span><span style=color:#fdf4c1>        },
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onLeave</span><span style=color:#fdf4c1>(retval) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>handle </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>retval.toInt32();
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(handle </span><span style=color:#fe8019>=== -</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"[!] CreateFileA failed. Getting error code..."</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                logError();
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>else </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[+] </span><span style=color:#fdf4c1>${name}</span><span style=color:#b8bb26> returned: 0x</span><span style=color:#fdf4c1>${handle.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                handleMap[handle] </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"./flag.txt"</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        }
+</span><span style=color:#fdf4c1>    })</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>hookWriteFile</span><span>() {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>writeFile </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.getExportByName(</span><span style=color:#b8bb26>"kernel32.dll"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"WriteFile"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(writeFile, {
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>handle </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>].toInt32();
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>buf </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>len </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>].toInt32();
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>handleName </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>handleMap[handle] </span><span style=color:#fe8019>|| </span><span style=color:#b8bb26>"&amplt;Unknown&ampgt;"</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`\n[+] WriteFile called`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Handle: 0x</span><span style=color:#fdf4c1>${handle.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26> (</span><span style=color:#fdf4c1>${handleName}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Bytes to write: </span><span style=color:#fdf4c1>${len}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>        },
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onLeave</span><span style=color:#fdf4c1>(retval) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[+] WriteFile returned: </span><span style=color:#fdf4c1>${retval}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>        }
+</span><span style=color:#fdf4c1>    })</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>hookCloseHandle</span><span>() {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>closeHandle </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.getExportByName(</span><span style=color:#b8bb26>"kernel32.dll"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"CloseHandle"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(closeHandle, {
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>handle </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>].toInt32();
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`\n[+] CloseHandle called → Handle: 0x</span><span style=color:#fdf4c1>${handle.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>        },
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onLeave</span><span style=color:#fdf4c1>(retval) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[+] CloseHandle returned: </span><span style=color:#fdf4c1>${retval}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>        }
+</span><span style=color:#fdf4c1>    })</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>hookAll</span><span>() {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>createFileA </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.getExportByName(</span><span style=color:#b8bb26>"kernel32.dll"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"CreateFileA"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>createFileW </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.getExportByName(</span><span style=color:#b8bb26>"kernel32.dll"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"CreateFileW"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fdf4c1>hookCreateFile(</span><span style=color:#b8bb26>"CreateFileA"</span><span style=color:#fdf4c1>, createFileA)</span><span>;
+</span><span>    </span><span style=color:#fdf4c1>hookCreateFile(</span><span style=color:#b8bb26>"CreateFileW"</span><span style=color:#fdf4c1>, createFileW)</span><span>;
+</span><span>    </span><span style=color:#fdf4c1>hookWriteFile()</span><span>;
+</span><span>    </span><span style=color:#fdf4c1>hookCloseHandle()</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"[*] Frida is running. Press Ctrl+C to exit."</span><span style=color:#fdf4c1>)</span><span>;
+</span><span style=color:#fdf4c1>hookAll()</span><span>;
+</span></code></pre><pre style=background:#282828;color:#fdf4c1aa><code><span>[*] Frida is running. Press Ctrl+C to exit.
+</span><span>
+</span><span>[+] CreateFileA called
+</span><span>    [*] Original File Path: &amplt;Insert path here&ampgt;
+</span><span>    [*] Desired Access: 0x40000000
+</span><span>    [*] Share Mode: 0x0
+</span><span>    [*] Creation Disposition: 0x2
+</span><span>    [*] Flags &ampamp; Attributes: 0x100000080
+</span><span>    [*] Security Attributes: 0x0
+</span><span>    [*] Template File: 0x0
+</span><span>    [!] Invalid file path detected. Modifying...
+</span><span>    [!] Modified File Path -&ampgt; ./flag.txt
+</span><span>    [!] Modified Share Mode -&ampgt; 0x3 (READ | WRITE)
+</span><span>    [!] Modified Creation -&ampgt; CREATE_ALWAYS
+</span><span>[+] CreateFileA returned: 0x2b8
+</span><span>
+</span><span>[+] WriteFile called
+</span><span>    [*] Handle: 0x2b8
+</span><span>    [*] Bytes to write: 0
+</span><span>[+] WriteFile returned: 0x1
+</span></code></pre><p>So write file is being called after like we suspected but the file doesn’t have anything. Let’s look at the args to writefile and it looks like its 0 - let’s increase it to 64:<pre class=language-JavaScript data-lang=JavaScript style=background:#282828;color:#fdf4c1aa><code class=language-JavaScript data-lang=JavaScript><span style=color:#b8bb26>'use strict'</span><span>;
+</span><span>
+</span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>replacementPath </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Memory</span><span style=color:#fdf4c1>.allocUtf8String(</span><span style=color:#b8bb26>"./flag.txt"</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>getLastError</span><span>() {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>GetLastError </span><span style=color:#fe8019>= new </span><span style=color:#fdf4c1>NativeFunction(</span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.getExportByName(</span><span style=color:#b8bb26>"kernel32.dll"</span><span style=color:#fdf4c1>, </span><span style=color:#b8bb26>"GetLastError"</span><span style=color:#fdf4c1>), </span><span style=color:#b8bb26>"uint32"</span><span style=color:#fdf4c1>, [])</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>GetLastError()</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>dumpHex</span><span>(</span><span style=color:#fdf4c1>ptr</span><span>, </span><span style=color:#fdf4c1>len</span><span>) {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>effectiveLen </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>Math</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>max</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>, len)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fdf4c1>effectiveLen </span><span style=color:#fe8019>=== </span><span style=color:#d3869b>0</span><span>) {
+</span><span>         </span><span style=color:#fa5c4b>return </span><span style=color:#b8bb26>"&amplt;Zero length specified for dump&ampgt;"</span><span>;
+</span><span>    }
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fdf4c1>ptr.isNull()</span><span>) {
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#b8bb26>"&amplt;Invalid Pointer (NULL)&ampgt;"</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>try </span><span>{
+</span><span>        </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>maxDumpSize </span><span style=color:#fe8019>= </span><span style=color:#d3869b>256</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>dumpLength </span><span style=color:#fe8019>= </span><span style=color:#fabd2f>Math</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>min</span><span style=color:#fdf4c1>(effectiveLen, maxDumpSize)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>bytes </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Memory</span><span style=color:#fdf4c1>.readByteArray(ptr, dumpLength)</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>let </span><span style=color:#fdf4c1>output </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>hexdump(bytes, {
+</span><span style=color:#fdf4c1>            offset: ptr.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(),
+</span><span style=color:#fdf4c1>            length: dumpLength,
+</span><span style=color:#fdf4c1>            header: </span><span style=color:#d3869b>true</span><span style=color:#fdf4c1>,
+</span><span style=color:#fdf4c1>            ansi: </span><span style=color:#d3869b>false
+</span><span style=color:#fdf4c1>        })</span><span>;
+</span><span>        </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fdf4c1>dumpLength </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>lt</span><span>; </span><span style=color:#fdf4c1>effectiveLen</span><span>) {
+</span><span>             </span><span style=color:#fdf4c1>output </span><span style=color:#fe8019>+= </span><span style=color:#b8bb26>`\n      ... (showing first </span><span>${</span><span style=color:#fdf4c1>dumpLength</span><span>}</span><span style=color:#b8bb26> of </span><span>${</span><span style=color:#fdf4c1>effectiveLen</span><span>}</span><span style=color:#b8bb26> requested bytes)`</span><span>;
+</span><span>             </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fdf4c1>effectiveLen </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>gt</span><span>; </span><span style=color:#fdf4c1>maxDumpSize</span><span>) {
+</span><span>                 </span><span style=color:#fdf4c1>output </span><span style=color:#fe8019>+= </span><span style=color:#b8bb26>` [Limited to </span><span>${</span><span style=color:#fdf4c1>maxDumpSize</span><span>}</span><span style=color:#b8bb26> bytes max]`</span><span>;
+</span><span>             }
+</span><span>        }
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#fdf4c1>output</span><span>;
+</span><span>    } </span><span style=color:#fa5c4b>catch </span><span>(</span><span style=color:#fdf4c1>e</span><span>) {
+</span><span>        </span><span style=color:#fa5c4b>return </span><span style=color:#b8bb26>`&amplt;Error reading </span><span>${</span><span style=color:#fdf4c1>effectiveLen</span><span>}</span><span style=color:#b8bb26> bytes at </span><span>${</span><span style=color:#fdf4c1>ptr</span><span>}</span><span style=color:#b8bb26>: </span><span>${</span><span style=color:#fdf4c1>e.message</span><span>}</span><span style=color:#b8bb26>&ampgt;`</span><span>;
+</span><span>    }
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>interceptCreateFileA</span><span>() {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>funcName </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"CreateFileA"</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>targetModule </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"kernel32.dll"</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>targetFunction </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.findExportByName(targetModule, funcName)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>targetFunction</span><span>) </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>
+</span><span>    </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(targetFunction, {
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                this.lpFileName </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.dwDesiredAccess </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>].toUInt32();
+</span><span style=color:#fdf4c1>                this.dwShareMode </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>].toUInt32();
+</span><span style=color:#fdf4c1>                this.lpSecurityAttributes </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>3</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.dwCreationDisposition </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>4</span><span style=color:#fdf4c1>].toUInt32();
+</span><span style=color:#fdf4c1>                this.dwFlagsAndAttributes </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>5</span><span style=color:#fdf4c1>].toUInt32();
+</span><span style=color:#fdf4c1>                this.hTemplateFile </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>6</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.origPath </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"&amplt;Invalid Pointer&ampgt;"</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>this.lpFileName.isNull()) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{ this.origPath </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Memory</span><span style=color:#fdf4c1>.readCString(this.lpFileName); } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) { this.origPath </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"&amplt;Read Error&ampgt;"</span><span style=color:#fdf4c1>; }
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`\n[+] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> called`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; File Path: "</span><span style=color:#fdf4c1>${this.origPath}</span><span style=color:#b8bb26>" (</span><span style=color:#fdf4c1>${this.lpFileName}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; Desired Access: 0x</span><span style=color:#fdf4c1>${this.dwDesiredAccess.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; Share Mode: 0x</span><span style=color:#fdf4c1>${this.dwShareMode.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; Security Attrs: </span><span style=color:#fdf4c1>${this.lpSecurityAttributes}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; Creation Disp: </span><span style=color:#fdf4c1>${this.dwCreationDisposition}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; Flags &ampamp; Attrs: 0x</span><span style=color:#fdf4c1>${this.dwFlagsAndAttributes.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; Template File: </span><span style=color:#fdf4c1>${this.hTemplateFile}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>newShareMode </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x3</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>newCreationDisp </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x2</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] Modifying arguments...`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`        - Path: "</span><span style=color:#fdf4c1>${this.origPath}</span><span style=color:#b8bb26>" -&ampgt; "./flag.txt"`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`        - Share Mode: 0x</span><span style=color:#fdf4c1>${this.dwShareMode.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26> -&ampgt; 0x</span><span style=color:#fdf4c1>${newShareMode.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`        - Creation Disp: </span><span style=color:#fdf4c1>${this.dwCreationDisposition}</span><span style=color:#b8bb26> -&ampgt; </span><span style=color:#fdf4c1>${newCreationDisp}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>replacementPath;
+</span><span style=color:#fdf4c1>                args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ptr(newShareMode.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>());
+</span><span style=color:#fdf4c1>                args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>4</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ptr(newCreationDisp.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>());
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Error in </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> onEnter: </span><span style=color:#fdf4c1>${e.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>e}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        },
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onLeave</span><span style=color:#fdf4c1>(retval) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(retval.equals(ptr(</span><span style=color:#b8bb26>"-1"</span><span style=color:#fdf4c1>))) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>error </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>getLastError();
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> failed. Return Value: </span><span style=color:#fdf4c1>${retval}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] GetLastError(): </span><span style=color:#fdf4c1>${error}</span><span style=color:#b8bb26> (0x</span><span style=color:#fdf4c1>${error.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                } </span><span style=color:#fa5c4b>else </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[+] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> returned Handle: </span><span style=color:#fdf4c1>${retval}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Error in </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> onLeave: </span><span style=color:#fdf4c1>${e.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>e}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        }
+</span><span style=color:#fdf4c1>    })</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>interceptCreateFileW</span><span>() {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>funcName </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"CreateFileW"</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>targetModule </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"kernel32.dll"</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>targetFunction </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.findExportByName(targetModule, funcName)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>targetFunction</span><span>) </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>
+</span><span>    </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(targetFunction, {
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                this.lpFileName </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.dwDesiredAccess </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>].toUInt32();
+</span><span style=color:#fdf4c1>                this.dwShareMode </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>].toUInt32();
+</span><span style=color:#fdf4c1>                this.lpSecurityAttributes </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>3</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.dwCreationDisposition </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>4</span><span style=color:#fdf4c1>].toUInt32();
+</span><span style=color:#fdf4c1>                this.dwFlagsAndAttributes </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>5</span><span style=color:#fdf4c1>].toUInt32();
+</span><span style=color:#fdf4c1>                this.hTemplateFile </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>6</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.origPath </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"&amplt;Invalid Pointer&ampgt;"</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                 </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>this.lpFileName.isNull()) {
+</span><span style=color:#fdf4c1>                     </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{ this.origPath </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Memory</span><span style=color:#fdf4c1>.readUtf16String(this.lpFileName); } </span><span style=color:#fa5c4b>catch</span><span style=color:#fdf4c1>(e) { this.origPath </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"&amplt;Read Error&ampgt;"</span><span style=color:#fdf4c1>; }
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`\n[+] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> called`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; File Path: "</span><span style=color:#fdf4c1>${this.origPath}</span><span style=color:#b8bb26>" (</span><span style=color:#fdf4c1>${this.lpFileName}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; Desired Access: 0x</span><span style=color:#fdf4c1>${this.dwDesiredAccess.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; Share Mode: 0x</span><span style=color:#fdf4c1>${this.dwShareMode.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; Security Attrs: </span><span style=color:#fdf4c1>${this.lpSecurityAttributes}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; Creation Disp: </span><span style=color:#fdf4c1>${this.dwCreationDisposition}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; Flags &ampamp; Attrs: 0x</span><span style=color:#fdf4c1>${this.dwFlagsAndAttributes.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; Template File: </span><span style=color:#fdf4c1>${this.hTemplateFile}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>newShareMode </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x3</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>newCreationDisp </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x2</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] Modifying arguments...`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`        - Path: "</span><span style=color:#fdf4c1>${this.origPath}</span><span style=color:#b8bb26>" -&ampgt; "./flag.txt"`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`        - Share Mode: 0x</span><span style=color:#fdf4c1>${this.dwShareMode.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26> -&ampgt; 0x</span><span style=color:#fdf4c1>${newShareMode.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`        - Creation Disp: </span><span style=color:#fdf4c1>${this.dwCreationDisposition}</span><span style=color:#b8bb26> -&ampgt; </span><span style=color:#fdf4c1>${newCreationDisp}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>replacementPath;
+</span><span style=color:#fdf4c1>                args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ptr(newShareMode.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>());
+</span><span style=color:#fdf4c1>                args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>4</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ptr(newCreationDisp.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>());
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Error in </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> onEnter: </span><span style=color:#fdf4c1>${e.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>e}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        },
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onLeave</span><span style=color:#fdf4c1>(retval) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(retval.equals(ptr(</span><span style=color:#b8bb26>"-1"</span><span style=color:#fdf4c1>))) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>error </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>getLastError();
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> failed. Return Value: </span><span style=color:#fdf4c1>${retval}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] GetLastError(): </span><span style=color:#fdf4c1>${error}</span><span style=color:#b8bb26> (0x</span><span style=color:#fdf4c1>${error.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                } </span><span style=color:#fa5c4b>else </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[+] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> returned Handle: </span><span style=color:#fdf4c1>${retval}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Error in </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> onLeave: </span><span style=color:#fdf4c1>${e.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>e}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        }
+</span><span style=color:#fdf4c1>    })</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>interceptReadFile</span><span>() {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>funcName </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"ReadFile"</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>targetModule </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"kernel32.dll"</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>targetFunction </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.findExportByName(targetModule, funcName)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>targetFunction</span><span>) </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>
+</span><span>    </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(targetFunction, {
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                this.hFile </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.lpBuffer </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.nNumberOfBytesToRead </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>].toUInt32();
+</span><span style=color:#fdf4c1>                this.lpNumberOfBytesRead </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>3</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.lpOverlapped </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>4</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`\n[+] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> called`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; hFile (Handle): </span><span style=color:#fdf4c1>${this.hFile}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; lpBuffer (Buffer Ptr): </span><span style=color:#fdf4c1>${this.lpBuffer}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; nNumberOfBytesToRead (Max Bytes): </span><span style=color:#fdf4c1>${this.nNumberOfBytesToRead}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; lpNumberOfBytesRead (Bytes Read Ptr): </span><span style=color:#fdf4c1>${this.lpNumberOfBytesRead}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; lpOverlapped (Overlapped Ptr): </span><span style=color:#fdf4c1>${this.lpOverlapped}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(this.lpBuffer.isNull() </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp;</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp; this.nNumberOfBytesToRead </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>gt; </span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>) {
+</span><span style=color:#fdf4c1>                     </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] Potential Issue: Read length is </span><span style=color:#fdf4c1>${this.nNumberOfBytesToRead}</span><span style=color:#b8bb26>, but buffer pointer is NULL!`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Error in </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> onEnter: </span><span style=color:#fdf4c1>${e.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>e}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        },
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onLeave</span><span style=color:#fdf4c1>(retval) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>success </span><span style=color:#fe8019>= !</span><span style=color:#fdf4c1>retval.isNull() </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp;</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp; retval.toInt32() </span><span style=color:#fe8019>!== </span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>error </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>getLastError();
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>let </span><span style=color:#fdf4c1>status </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>success </span><span style=color:#fe8019>? </span><span style=color:#b8bb26>'Success' </span><span style=color:#fe8019>: </span><span style=color:#b8bb26>'Failure'</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>success </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp;</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp; error </span><span style=color:#fe8019>=== </span><span style=color:#d3869b>997</span><span style=color:#fdf4c1>) {
+</span><span style=color:#fdf4c1>                    status </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>'Pending (Async)'</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[+] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> returned: </span><span style=color:#fdf4c1>${retval}</span><span style=color:#b8bb26> (</span><span style=color:#fdf4c1>${status}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>success </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp;</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp; error </span><span style=color:#fe8019>!== </span><span style=color:#d3869b>997</span><span style=color:#fdf4c1>) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] GetLastError(): </span><span style=color:#fdf4c1>${error}</span><span style=color:#b8bb26> (0x</span><span style=color:#fdf4c1>${error.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                } </span><span style=color:#fa5c4b>else if </span><span style=color:#fdf4c1>(success </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>this.lpOverlapped.isNull() </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp;</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp; error </span><span style=color:#fe8019>=== </span><span style=color:#d3869b>997</span><span style=color:#fdf4c1>)) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>let </span><span style=color:#fdf4c1>bytesRead </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                     </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>this.lpOverlapped.isNull()) {
+</span><span style=color:#fdf4c1>                        </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Note: Asynchronous operation </span><span style=color:#fdf4c1>${status}</span><span style=color:#b8bb26>. Bytes read available later.`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                    } </span><span style=color:#fa5c4b>else if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>this.lpNumberOfBytesRead.isNull()) {
+</span><span style=color:#fdf4c1>                        </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                            bytesRead </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Memory</span><span style=color:#fdf4c1>.readUInt(this.lpNumberOfBytesRead);
+</span><span style=color:#fdf4c1>                            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Bytes Read (sync): </span><span style=color:#fdf4c1>${bytesRead}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                            </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(bytesRead </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>gt; </span><span style=color:#d3869b>0 </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp;</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp; </span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>this.lpBuffer.isNull()) {
+</span><span style=color:#fdf4c1>                                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Buffer data read (</span><span style=color:#fdf4c1>${bytesRead}</span><span style=color:#b8bb26> bytes):`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(dumpHex(this.lpBuffer, bytesRead));
+</span><span style=color:#fdf4c1>                            } </span><span style=color:#fa5c4b>else if </span><span style=color:#fdf4c1>(bytesRead </span><span style=color:#fe8019>=== </span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>) {
+</span><span style=color:#fdf4c1>                                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Read 0 bytes (potentially EOF or empty read).`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                            }
+</span><span style=color:#fdf4c1>                        } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(readError) {
+</span><span style=color:#fdf4c1>                            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] Could not read *lpNumberOfBytesRead: </span><span style=color:#fdf4c1>${readError.message}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                        }
+</span><span style=color:#fdf4c1>                    }
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Error in </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> onLeave: </span><span style=color:#fdf4c1>${e.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>e}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        }
+</span><span style=color:#fdf4c1>    })</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>interceptWriteFile</span><span>() {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>funcName </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"WriteFile"</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>targetModule </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"kernel32.dll"</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>targetFunction </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.findExportByName(targetModule, funcName)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>targetFunction</span><span>) </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>FORCED_WRITE_SIZE </span><span style=color:#fe8019>= </span><span style=color:#d3869b>64</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>CONTEXT_DUMP_SIZE </span><span style=color:#fe8019>= </span><span style=color:#d3869b>256</span><span>;
+</span><span>
+</span><span>    </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(targetFunction, {
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                this.hFile </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.lpBuffer </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>1</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.nOriginalBytesToWrite </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>].toUInt32();
+</span><span style=color:#fdf4c1>                this.lpNumberOfBytesWritten </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>3</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.lpOverlapped </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>4</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`\n[+] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> called`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; hFile (Handle): </span><span style=color:#fdf4c1>${this.hFile}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; lpBuffer (Buffer Ptr): </span><span style=color:#fdf4c1>${this.lpBuffer}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; nNumberOfBytesToWrite (Original): </span><span style=color:#fdf4c1>${this.nOriginalBytesToWrite}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; lpNumberOfBytesWritten (Ptr): </span><span style=color:#fdf4c1>${this.lpNumberOfBytesWritten}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; lpOverlapped (Ptr): </span><span style=color:#fdf4c1>${this.lpOverlapped}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(this.lpBuffer.isNull()) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] lpBuffer is NULL.`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(this.nOriginalBytesToWrite </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>gt; </span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>) {
+</span><span style=color:#fdf4c1>                         </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] Potential Issue: Original write length is </span><span style=color:#fdf4c1>${this.nOriginalBytesToWrite}</span><span style=color:#b8bb26>, but buffer pointer is NULL!`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                    }
+</span><span style=color:#fdf4c1>                    this.writeSizeModified </span><span style=color:#fe8019>= </span><span style=color:#d3869b>false</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                } </span><span style=color:#fa5c4b>else </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Dumping buffer context (up to </span><span style=color:#fdf4c1>${CONTEXT_DUMP_SIZE}</span><span style=color:#b8bb26> bytes) from </span><span style=color:#fdf4c1>${this.lpBuffer}</span><span style=color:#b8bb26>:`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                        </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(dumpHex(this.lpBuffer, CONTEXT_DUMP_SIZE));
+</span><span style=color:#fdf4c1>                    } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(dumpError) {
+</span><span style=color:#fdf4c1>                        </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] Error during context hexdump at </span><span style=color:#fdf4c1>${this.lpBuffer}</span><span style=color:#b8bb26>: </span><span style=color:#fdf4c1>${dumpError.message}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                    }
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] RISKY: Forcing nNumberOfBytesToWrite to </span><span style=color:#fdf4c1>${FORCED_WRITE_SIZE}</span><span style=color:#b8bb26> (Original was </span><span style=color:#fdf4c1>${this.nOriginalBytesToWrite}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                    args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>2</span><span style=color:#fdf4c1>] </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>ptr(</span><span style=color:#8ec07c>FORCED_WRITE_SIZE</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>());
+</span><span style=color:#fdf4c1>                    this.writeSizeModified </span><span style=color:#fe8019>= </span><span style=color:#d3869b>true</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Error in </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> onEnter: </span><span style=color:#fdf4c1>${e.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>e}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                this.writeSizeModified </span><span style=color:#fe8019>= </span><span style=color:#d3869b>false</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        },
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onLeave</span><span style=color:#fdf4c1>(retval) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>success </span><span style=color:#fe8019>= !</span><span style=color:#fdf4c1>retval.isNull() </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp;</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp; retval.toInt32() </span><span style=color:#fe8019>!== </span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[+] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> returned: </span><span style=color:#fdf4c1>${retval}</span><span style=color:#b8bb26> (</span><span style=color:#fdf4c1>${success </span><span style=color:#fe8019>? </span><span style=color:#b8bb26>'Success' </span><span style=color:#fe8019>: </span><span style=color:#b8bb26>'Failure'</span><span style=color:#fdf4c1>}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(this.writeSizeModified) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Note: Write size was potentially forced to </span><span style=color:#fdf4c1>${FORCED_WRITE_SIZE}</span><span style=color:#b8bb26>.`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>success) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>error </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>getLastError();
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] GetLastError(): </span><span style=color:#fdf4c1>${error}</span><span style=color:#b8bb26> (0x</span><span style=color:#fdf4c1>${error.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                } </span><span style=color:#fa5c4b>else </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>this.lpOverlapped.isNull()) {
+</span><span style=color:#fdf4c1>                         </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Note: Asynchronous operation.`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                    } </span><span style=color:#fa5c4b>else if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>this.lpNumberOfBytesWritten.isNull()) {
+</span><span style=color:#fdf4c1>                        </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                            </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>bytesWritten </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Memory</span><span style=color:#fdf4c1>.readUInt(this.lpNumberOfBytesWritten);
+</span><span style=color:#fdf4c1>                             </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [*] Bytes Written (sync): </span><span style=color:#fdf4c1>${bytesWritten}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                             </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(this.writeSizeModified </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp;</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp; bytesWritten </span><span style=color:#fe8019>!== </span><span style=color:#fdf4c1>FORCED_WRITE_SIZE) {
+</span><span style=color:#fdf4c1>                                 </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] Warning: Forced write size was </span><span style=color:#fdf4c1>${FORCED_WRITE_SIZE}</span><span style=color:#b8bb26>, but actual bytes written was </span><span style=color:#fdf4c1>${bytesWritten}</span><span style=color:#b8bb26>.`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                             }
+</span><span style=color:#fdf4c1>                        } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(readError) {
+</span><span style=color:#fdf4c1>                            </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] Could not read *lpNumberOfBytesWritten: </span><span style=color:#fdf4c1>${readError.message}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                        }
+</span><span style=color:#fdf4c1>                    }
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) {
+</span><span style=color:#fdf4c1>                 </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Error in </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> onLeave: </span><span style=color:#fdf4c1>${e.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>e}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        }
+</span><span style=color:#fdf4c1>    })</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>interceptDeleteFileA</span><span>() {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>funcName </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"DeleteFileA"</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>targetModule </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"kernel32.dll"</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>targetFunction </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.findExportByName(targetModule, funcName)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>targetFunction</span><span>) </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>
+</span><span>    </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(targetFunction, {
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                this.lpFileName </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.filePath </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"&amplt;Invalid Pointer&ampgt;"</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>this.lpFileName.isNull()) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{ this.filePath </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Memory</span><span style=color:#fdf4c1>.readCString(this.lpFileName); } </span><span style=color:#fa5c4b>catch</span><span style=color:#fdf4c1>(e) { this.filePath </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"&amplt;Read Error&ampgt;"</span><span style=color:#fdf4c1>; }
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`\n[+] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> called`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; lpFileName (Path): "</span><span style=color:#fdf4c1>${this.filePath}</span><span style=color:#b8bb26>" (</span><span style=color:#fdf4c1>${this.lpFileName}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Error in </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> onEnter: </span><span style=color:#fdf4c1>${e.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>e}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        },
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onLeave</span><span style=color:#fdf4c1>(retval) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>success </span><span style=color:#fe8019>= !</span><span style=color:#fdf4c1>retval.isNull() </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp;</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp; retval.toInt32() </span><span style=color:#fe8019>!== </span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[+] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> returned: </span><span style=color:#fdf4c1>${retval}</span><span style=color:#b8bb26> (</span><span style=color:#fdf4c1>${success </span><span style=color:#fe8019>? </span><span style=color:#b8bb26>'Success' </span><span style=color:#fe8019>: </span><span style=color:#b8bb26>'Failure'</span><span style=color:#fdf4c1>}</span><span style=color:#b8bb26>) for path "</span><span style=color:#fdf4c1>${this.filePath}</span><span style=color:#b8bb26>"`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>success) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>error </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>getLastError();
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] GetLastError(): </span><span style=color:#fdf4c1>${error}</span><span style=color:#b8bb26> (0x</span><span style=color:#fdf4c1>${error.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Error in </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> onLeave: </span><span style=color:#fdf4c1>${e.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>e}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        }
+</span><span style=color:#fdf4c1>    })</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fa5c4b>function </span><span style=color:#8ec07c>interceptDeleteFileW</span><span>() {
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>funcName </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"DeleteFileW"</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>targetModule </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"kernel32.dll"</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>targetFunction </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Module</span><span style=color:#fdf4c1>.findExportByName(targetModule, funcName)</span><span>;
+</span><span>    </span><span style=color:#fa5c4b>if </span><span>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>targetFunction</span><span>) </span><span style=color:#fa5c4b>return</span><span>;
+</span><span>
+</span><span>    </span><span style=color:#8ec07c>Interceptor</span><span style=color:#fdf4c1>.attach(targetFunction, {
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onEnter</span><span style=color:#fdf4c1>(args) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                this.lpFileName </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>args[</span><span style=color:#fe8019>^</span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>];
+</span><span style=color:#fdf4c1>                this.filePath </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"&amplt;Invalid Pointer&ampgt;"</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>this.lpFileName.isNull()) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{ this.filePath </span><span style=color:#fe8019>= </span><span style=color:#8ec07c>Memory</span><span style=color:#fdf4c1>.readUtf16String(this.lpFileName); } </span><span style=color:#fa5c4b>catch</span><span style=color:#fdf4c1>(e) { this.filePath </span><span style=color:#fe8019>= </span><span style=color:#b8bb26>"&amplt;Read Error&ampgt;"</span><span style=color:#fdf4c1>; }
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`\n[+] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> called`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    &ampgt; lpFileName (Path): "</span><span style=color:#fdf4c1>${this.filePath}</span><span style=color:#b8bb26>" (</span><span style=color:#fdf4c1>${this.lpFileName}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Error in </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> onEnter: </span><span style=color:#fdf4c1>${e.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>e}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        },
+</span><span style=color:#fdf4c1>        </span><span style=color:#8ec07c>onLeave</span><span style=color:#fdf4c1>(retval) {
+</span><span style=color:#fdf4c1>            </span><span style=color:#fa5c4b>try </span><span style=color:#fdf4c1>{
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>success </span><span style=color:#fe8019>= !</span><span style=color:#fdf4c1>retval.isNull() </span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp;</span><span style=color:#fe8019>&</span><span style=color:#fdf4c1>amp; retval.toInt32() </span><span style=color:#fe8019>!== </span><span style=color:#d3869b>0</span><span style=color:#fdf4c1>;
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[+] </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> returned: </span><span style=color:#fdf4c1>${retval}</span><span style=color:#b8bb26> (</span><span style=color:#fdf4c1>${success </span><span style=color:#fe8019>? </span><span style=color:#b8bb26>'Success' </span><span style=color:#fe8019>: </span><span style=color:#b8bb26>'Failure'</span><span style=color:#fdf4c1>}</span><span style=color:#b8bb26>) for path "</span><span style=color:#fdf4c1>${this.filePath}</span><span style=color:#b8bb26>"`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                </span><span style=color:#fa5c4b>if </span><span style=color:#fdf4c1>(</span><span style=color:#fe8019>!</span><span style=color:#fdf4c1>success) {
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fa5c4b>const </span><span style=color:#fdf4c1>error </span><span style=color:#fe8019>= </span><span style=color:#fdf4c1>getLastError();
+</span><span style=color:#fdf4c1>                    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`    [!] GetLastError(): </span><span style=color:#fdf4c1>${error}</span><span style=color:#b8bb26> (0x</span><span style=color:#fdf4c1>${error.</span><span style=color:#fabd2f>toString</span><span style=color:#fdf4c1>(</span><span style=color:#d3869b>16</span><span style=color:#fdf4c1>)}</span><span style=color:#b8bb26>)`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>                }
+</span><span style=color:#fdf4c1>            } </span><span style=color:#fa5c4b>catch </span><span style=color:#fdf4c1>(e) {
+</span><span style=color:#fdf4c1>                </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Error in </span><span style=color:#fdf4c1>${funcName}</span><span style=color:#b8bb26> onLeave: </span><span style=color:#fdf4c1>${e.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>e}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>);
+</span><span style=color:#fdf4c1>            }
+</span><span style=color:#fdf4c1>        }
+</span><span style=color:#fdf4c1>    })</span><span>;
+</span><span>}
+</span><span>
+</span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"[*] Frida script starting..."</span><span style=color:#fdf4c1>)</span><span>;
+</span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"[*] Attaching interceptors..."</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>
+</span><span style=color:#fa5c4b>try </span><span>{
+</span><span>    </span><span style=color:#fdf4c1>interceptCreateFileA()</span><span>;
+</span><span>    </span><span style=color:#fdf4c1>interceptCreateFileW()</span><span>;
+</span><span>    </span><span style=color:#fdf4c1>interceptReadFile()</span><span>;
+</span><span>    </span><span style=color:#fdf4c1>interceptWriteFile()</span><span>;
+</span><span>    </span><span style=color:#fdf4c1>interceptDeleteFileA()</span><span>;
+</span><span>    </span><span style=color:#fdf4c1>interceptDeleteFileW()</span><span>;
+</span><span>
+</span><span>    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"[*] Interceptors attached successfully."</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>log</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>"[*] Waiting for API calls. Press Ctrl+C to exit."</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>} </span><span style=color:#fa5c4b>catch </span><span>(</span><span style=color:#fdf4c1>error</span><span>) {
+</span><span>    </span><span style=color:#fabd2f>console</span><span style=color:#fdf4c1>.</span><span style=color:#fabd2f>error</span><span style=color:#fdf4c1>(</span><span style=color:#b8bb26>`[!] Failed to attach interceptors: </span><span style=color:#fdf4c1>${error.stack </span><span style=color:#fe8019>|| </span><span style=color:#fdf4c1>error}</span><span style=color:#b8bb26>`</span><span style=color:#fdf4c1>)</span><span>;
+</span><span>}
+</span></code></pre><p>This writes <code>cGljb0NURntmcjFkYV9mMHJfYjFuX2luNXRydW0zbnQ0dGlvbiFfYjIxYWVmMzl9</code> to flag.txt. Base64 decode it to get <code>picoCTF{fr1da_f0r_b1n_in5trum3nt4tion!_b21aef39}</code> a slightly easier thing to do was to just memdump the buffer and we would have got the flag<p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>

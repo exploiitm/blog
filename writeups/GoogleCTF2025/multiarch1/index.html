@@ -1,0 +1,75 @@
+<!doctype html><html lang=en><head><script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],["\\[","\\]"]],processEscapes:true,processEnvironments:true}}</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1,user-scalable=no" name=viewport><meta content="index, follow" name=robots><title>Multiarch 1</title><meta content="Multiarch 1" name=title><meta content=exploiitm name=author><meta content="Official blog of Cybersecurity Club, IIT Madras" name=description><meta content=website property=og:type><meta content=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/multiarch1/ property=og:url><meta content="exploiitm blog" property=og:site_name><meta content="Multiarch 1" property=og:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=og:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=og:image><meta content=summary_large_image property=twitter:card><meta content=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/multiarch1/ property=twitter:url><meta content="Multiarch 1" property=twitter:title><meta content="Official blog of Cybersecurity Club, IIT Madras" property=twitter:description><meta content=https://exploiitm.github.io/blog/favicon.ico property=twitter:image><link href=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/multiarch1/ rel=canonical><link rel="shortcut icon" href=https://exploiitm.github.io/blog/favicon.ico type=image/x-icon><link href=https://speyll.github.io/suCSS/reset-min.css rel=stylesheet><link href=https://speyll.github.io/suCSS/suCSS-min.css rel=stylesheet><link href=https://exploiitm.github.io/blog/css/style.css rel=stylesheet><script defer src=https://exploiitm.github.io/blog/js/script.js></script><body><header><nav id=nav-bar><a href=https://exploiitm.github.io/> home </a><a href=/blog> blog </a><a href=/blog/writeups> writeups </a><a href=/blog/about> about </a><a href=/blog/contacts> contact </a><div><input id=theme-toggle style=display:none type=checkbox><label for=theme-toggle id=theme-toggle-label><svg class=icons id=theme-icon><use href=https://exploiitm.github.io/blog/icons.svg#lightMode></use></svg></label><audio id=theme-sound><source src=https://exploiitm.github.io/blog/click.ogg type=audio/ogg></audio></div></nav></header><main><div><a href=..>..</a>/<span class=accent-data>multiarch1</span></div><time datetime=2025-07-21>Published on: <span class=accent-data>2025-07-21</span></time><address rel=author>By <span class=accent-data> rishit khandelwal, and exploiitm </span></address><h1>Multiarch 1</h1><p>We are given a binary called <code>multiarch</code> and another binary file called <code>crackme.masm</code>. <img alt="Screenshot of decompilation of main function" src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/multiarch1/main.png><p>The <code>make_ctx</code> function gives us information about the runtime of the VM via a struct containing the context.<p><img alt="Screenshot of decompilation of make_ctx" src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/multiarch1/make_ctx.png><p>The other information about the context, can be gained from <code>stack_trace</code> function <img alt="Screenshot of decompilation of stack_trace" src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/multiarch1/stack_trace.png><pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=color:#fa5c4b>struct </span><span style=color:#8ec07c>Context
+</span><span>{
+</span><span>    </span><span style=color:#fa5c4b>void </span><span style=color:#fe8019>*</span><span>mmap_sec_1;      
+</span><span>    </span><span style=color:#fa5c4b>void </span><span style=color:#fe8019>*</span><span>mmap_sec_2;     
+</span><span>    </span><span style=color:#fa5c4b>void </span><span style=color:#fe8019>*</span><span>mmap_sec_3;    
+</span><span>    </span><span style=color:#fa5c4b>void </span><span style=color:#fe8019>*</span><span>__wierd_calloc__;              
+</span><span>    </span><span style=color:#fa5c4b>char</span><span> reserved_1[</span><span style=color:#d3869b>8</span><span>];            
+</span><span>    </span><span style=color:#fa5c4b>void </span><span style=color:#fe8019>*</span><span>getenv_callback;
+</span><span>    </span><span style=color:#fa5c4b>bool</span><span> trigger_exception; 
+</span><span>    </span><span style=color:#fa5c4b>bool</span><span> permission_syscall;
+</span><span>    </span><span style=color:#fabd2f>uint8_t</span><span> eflag;         
+</span><span>    </span><span style=color:#fabd2f>uint32_t</span><span> memory_offset;
+</span><span>    </span><span style=color:#fabd2f>uint32_t</span><span> stack_offset;
+</span><span>    </span><span style=color:#fabd2f>uint32_t</span><span> mA;         
+</span><span>    </span><span style=color:#fabd2f>uint32_t</span><span> mB;        
+</span><span>    </span><span style=color:#fabd2f>uint32_t</span><span> mC;       
+</span><span>    </span><span style=color:#fabd2f>uint32_t</span><span> mD;      
+</span><span>};
+</span></code></pre><p>These are all the parameters in the VM Context.<p>The VM runs in 2 modes: Stack and Register. <img alt="Screenshot of decompilation of vm_tick" src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/multiarch1/vm_tick.png> This function is looped over until either one of the functions returns a 0 (which is ig a <code>hlt</code> instruction equivalent).<p>We can explore <code>handle_stack_vm</code> and get these opcodes from analysing each branch.<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=color:#fa5c4b>enum </span><span style=color:#8ec07c>stack_vm_opcodes
+</span><span>{
+</span><span>    S_LDB </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x10</span><span>,
+</span><span>    S_LDW </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x20</span><span>,
+</span><span>    PUSH_STACK </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x30</span><span>,
+</span><span>    S_LDP </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x40</span><span>,
+</span><span>    POP_STACK </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x50</span><span>,
+</span><span>    ADD </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x60</span><span>,
+</span><span>    SUB </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x61</span><span>,
+</span><span>    XOR </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x62</span><span>,
+</span><span>    AND </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x63</span><span>,
+</span><span>    JMP </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x70</span><span>,
+</span><span>    JZ </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x71</span><span>,
+</span><span>    JNZ </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x72</span><span>,
+</span><span>    CMP </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x80</span><span>,
+</span><span>    SYSCALL </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0xA0</span><span>,
+</span><span>    S_HLT </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0xFF</span><span>,
+</span><span>};
+</span></code></pre><p>We can similarly look into the <code>handle_reg_vm</code> function and get information about the opcodes from there.<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=color:#fa5c4b>enum </span><span style=color:#8ec07c>reg_vm_opcodes
+</span><span>{
+</span><span>    REG_HALT </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x0</span><span>,
+</span><span>    REG_SYSCALL </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x1</span><span>,
+</span><span>    REG_PUSH </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x10</span><span>,
+</span><span>    PUSH_REG0 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x11</span><span>,
+</span><span>    PUSH_REG1 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x12</span><span>,
+</span><span>    PUSH_REG2 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x13</span><span>,
+</span><span>    PUSH_REG3 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x14</span><span>,
+</span><span>    POP_REG0 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x15</span><span>,
+</span><span>    POP_REG1 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x16</span><span>,
+</span><span>    POP_REG2 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x17</span><span>,
+</span><span>    POP_REG3 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x18</span><span>,
+</span><span>    ADD_REG </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x20</span><span>,
+</span><span>    ADD_IMM </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x21</span><span>,
+</span><span>    SUB_REG </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x30</span><span>,
+</span><span>    SUB_IMM </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x31</span><span>,
+</span><span>    XOR_REG </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x40</span><span>,
+</span><span>    XOR_IMM </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x41</span><span>,
+</span><span>    MUL_REG </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x50</span><span>,
+</span><span>    MUL_IMM </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x51</span><span>,
+</span><span>    JMP_ABS </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x60</span><span>,
+</span><span>    CALL </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x61</span><span>,
+</span><span>    JZ_REG </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x62</span><span>,
+</span><span>    JNZ_REG </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x63</span><span>,
+</span><span>    JMP_FLAG2 </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x64</span><span>,
+</span><span>    JMP_IMM </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x68</span><span>,
+</span><span>};
+</span></code></pre><p>And we also can figure out the syscall codes.<pre class=language-c data-lang=c style=background:#282828;color:#fdf4c1aa><code class=language-c data-lang=c><span style=color:#fa5c4b>enum </span><span style=color:#8ec07c>sycall_codes
+</span><span>{
+</span><span>    SYS_GET_INPUT </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x0</span><span>,
+</span><span>    SYS_PRINT </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x1</span><span>,
+</span><span>    SYS_WRITE </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x2</span><span>,
+</span><span>    SYS_SRAND </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x3</span><span>,
+</span><span>    SYS_RAND </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x4</span><span>,
+</span><span>    SYS_FLAG </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x5</span><span>,
+</span><span>    SYS_MALLOC </span><span style=color:#fe8019>= </span><span style=color:#d3869b>0x6</span><span>,
+</span><span>};
+</span></code></pre><p>We run the vm inside of gdb and break out at the first task, and skip instructions until we reach some operator, then see the relevant disassembly. <img alt="Screenshot of disassembly (xor operator)" src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/multiarch1/./gdb_xor.png><p>We can see that <code>[rsp+0x8]</code> and <code>[rsp+0xc]</code>, are xor-ed together, and after that it calls another function at some address, which if we follow its execution, we see that it makes multiple syscalls and then we see that there is another operation<p><img alt="Screenshot of disassembly (add operation)" src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/multiarch1/./gdb_add.png> This is another operation where <code>[rsp+0x8]</code> and <code>[rsp+0xc]</code> are added.<p>Skipping further ahead, we observe <img alt=" " src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/multiarch1/./gdb_cmp.png> that some values are loaded <code>edx</code> which is subtracted from <code>0xaaaaaaaa</code>. We can ignore the other instructions and notice that <img alt src=https://exploiitm.github.io/blog/writeups/GoogleCTF2025/multiarch1/./gdb_cmp_ext.png> where there is a <code>cmove</code> instruction. Lets go to where it would have taken us by providing a value such that it passes <code>test esi, esi</code><p>First there is an xor between constants <code>0x8675309</code> and <code>0x13370539</code>, and then the result is stored. This result is added to our input and stored. The result of this operation is then subtracted from <code>0xaaaaaaaa</code> as mentioned above which triggers an exception if the difference is non-zero. So we have to figure out a input which would be equal to <code>0xaaaaaaaa</code> after this bunch of operations. Simply entering these values in python and solving for the input gives us <code>0x8f5a547a</code> or 2405061754.<p>If we give this as an input to the first challenge, we pass it and reach the 2nd challenge “Tell me a joke”.<p>When we walk through the execution, we can observe that:<ul><li>Our input bytes (4 at a time) are multiplied by <code>0xCAFEBABE</code> using <code>MUL_IMM</code>.<li>The output is stored into 2 registers <code>C</code> (lower bits) and <code>D</code> (higher bits)<li>Store the value of <code>B ^ D</code> into <code>B</code> (initially 0)<li>Do this 7 times<li>If the value of B is not equal to <code>0x7331</code> it will not allow us to pass to the next challenge, so we have to simply figure out a value of an input which will produce such an output.</ul><p>Our<p class=tags-data></main><footer><hr><div class=footContainer><div class=footLeft><p>Licensed under <a rel="noopener noreferrer" href=https://fr.wikipedia.org/wiki/Licence_MIT target=_blank>MIT</a><br></div><div class=footRight><img class="footGif noStyle" alt=footGif loading=lazy src=https://i.ibb.co/XYDpfcs/foot.gif><a rel="noopener noreferrer" title="Subscribe via RSS for updates." class=metaData href=https://exploiitm.github.io/blog/atom.xml target=_blank>RSS</a></div></div></footer>
