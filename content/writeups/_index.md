@@ -8,6 +8,7 @@ page_template = "blog-page.html"
 
 ## CTF writeups
 
+- [GPN CTF 2026](./GPN_CTF_2026/)
 - [Google CTF 2025](./GoogleCTF2025)
 - [bi0sCTF](./bi0sCTF-2025)
 - [Guild Selection CTF](./Guild_Selection_CTF)
