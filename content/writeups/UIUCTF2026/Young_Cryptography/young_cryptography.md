@@ -59,7 +59,7 @@ Initially we spent some time analyzing the product to see if some nice
 properties like linearity or commutativity were followed. The product only
 yielded associativity which didn't lead to anything else.
 
-Then we fell into an amazing rabit hole of the delightfully named [Tropical
+Then we fell into an amazing rabbit hole of the delightfully named [Tropical
 Geometry](https://en.wikipedia.org/wiki/Tropical_geometry) which, also
 unfortunately didn't help much.
 
@@ -69,7 +69,7 @@ I remembered a combinatorial object I'd seen in an old [Numberphile
 video](https://www.youtube.com/watch?v=vgZhrEs4tuk) a while back called Young
 Tableau.
 
-The definition of a young tableau (French for _shockingly_ table) is rather
+The definition of a Young tableau (French for _shockingly_ table) is rather
 simple, but like most things in this neck of math it is deceptively so.
 
 > A Young diagram (also called a Ferrers diagram, particularly when represented
@@ -77,7 +77,7 @@ using dots) is a finite collection of boxes, or cells, arranged in
 left-justified rows, with the row lengths in non-increasing order. (taken from
 [Young_tableau](https://en.wikipedia.org/wiki/Young_tableau))
 
-A young tableau is an objected obtained by filling in the boxes of the diagram
+A Young tableau is an object obtained by filling in the boxes of the diagram
 with symbols from a totally ordered alphabet (usually taken as some set of
 numbers for brevity).
 
@@ -86,8 +86,8 @@ non-decreasing along rows and strictly increasing down columns. It is called
 standard if the entries are strictly increasing along both rows and columns,
 and contains all symbols of the alphabet.
 
-After some digging we came across is some nice properties of the tableau that
-showed similarities of elements to the question, namely the
+After some digging we came across some nice properties of the tableau that
+showed similarities to elements in the challenge, namely the
 [Robinson–Schensted](https://en.wikipedia.org/wiki/Robinson%E2%80%93Schensted_correspondence)
 (RS) correspondence and its generalization the
 [RSK](https://en.wikipedia.org/wiki/Robinson%E2%80%93Schensted%E2%80%93Knuth_correspondence)
@@ -167,7 +167,7 @@ def random_matrix():
 ```
 
 So the gut feeling was that hopefully the weird product function on matrices
-would decompose to some easier to work with transformation on corresponding
+would correspond to some easier to work with transformation on corresponding
 tableaux.
 
 Attempting that on small matrices
@@ -183,26 +183,42 @@ B = random_matrix()
 
 from sage.combinat import rsk
 
-print(rsk.RSK(A)[0])
+print(rsk.RSK(A)[1])
 print(rsk.RSK(B)[0])
 print(rsk.RSK(my_prod(A, B))[0])
 ```
 
-gave
+gives something like
 
-```
-[OUTPUT]
+```python
+[[ 1,  2,  2,  9],        [[ 5,  5,  6,  9,  9,  10,  11], 
+ [ 3,  3,  8, 11],         [ 7,  7,  7, 16], 
+ [ 4,  8],                 [11, 11], 
+ [ 7, 16],                 [12], 
+ [ 8],                     [13], 
+ [ 9],                     [16]]
+ [10],
+ [12]]
+
+[[ 1,  2,  2,  5,  5,  6,  9,  9, 10, 11], 
+ [ 3,  3,  7,  7,  7, 11, 16],
+ [ 4,  8,  8,  9, 11],
+ [ 7, 11, 12],
+ [ 8, 13, 16],
+ [ 9, 16],
+ [10],
+ [12]]
 ```
 
-This was clearly much simpler. The elements and a semblence of structure seem
+The result was clearly much simpler. The elements and a "semblance of structure" seem
 to be preserved. The output looked like what you might get by using Schensted
 insertion iteratively on one tableau using the elements of the other tableau.
 
-With a little guess work we figured out the order in whcich they were being
+With a little guess work we figured out the order in which they were being
 inserted. This turned out to be a general operation on tableaux and can be done
 using Sage's `.bump_multiply(T)` function.
 
-The aim of the challenge was to find $A \otimes G \otimes B$ from $G$, $A \otimes G$
+The goal of the challenge was to find $A \otimes G \otimes B$ from $G$, $A \otimes G$
 and $G \otimes B$. The most straight forward approach is deducing $A$ from $A
 \otimes G$ and then doing $A \otimes (G \otimes B)$. This would then translate to finding a tableau $T_A$ such that
 $`T_A.\text{bump\_multiply}(T_G) = T_{AG}`$ where $T_G, T_{AG}$ are the tableau
