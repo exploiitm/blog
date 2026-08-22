@@ -224,8 +224,24 @@ and $G \otimes B$. The most straight forward approach is deducing $A$ from $A
 $`T_A.\text{bump\_multiply}(T_G) = T_{AG}`$ where $T_G, T_{AG}$ are the tableau
 corresponding to $G, AG$.
 
-> TODO: Explain Plactic Monoids
+So the set of semi-standard tableau equipped with the "bump_multiply" form a
+monoid. It is a monoid and not a group since we don't have a guarentee of
+inversion. 
 
-> TOOD: Link papers
+> The monoid we are describing is usually referred to as the 
+[plactic monoid](https://en.wikipedia.org/wiki/Plactic_Monoid)
+
+Now this scheme implemented in the challenge was proposed by Daniel Brown as a
+key exchange protocol that is safe against a quantum computer aided attack. It
+is also particularly clever given the inherent difficulty of division in
+monoids.
+
+Luckily we found a probabilistic algorithm published by [Chris Monico](https://eprint.iacr.org/2022/1684) which we
+left running over dinner to recover $A$ and then trivially solve the challenge,
+getting
+
+```
+uiuctf{r081n50n_sch3n573d_knu7h_f9a29620}
+```
 
 
