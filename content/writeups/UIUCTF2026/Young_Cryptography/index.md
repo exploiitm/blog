@@ -4,9 +4,6 @@ date = 2026-08-11
 authors = ["Swaminath Shiju", "Sriram V"]
 +++
 
-# Young Cryptography UIUCTF26
-## Description
-
 The Princess has sent you an encrypted message, but The Enemy has stolen your secret key! Can you recover the message?
 
 ## Solution
@@ -113,7 +110,7 @@ Permutation $\sigma$ of $\{1\ldots n\}$ can be written as
 
 $$
 \sigma = \begin{pmatrix}
-1 & 2 & \ldots & n \\
+1 & 2 & \ldots & n \\\\
 \sigma_1 & \sigma_2 & \ldots & \sigma_n
 \end{pmatrix}
 $$
@@ -140,7 +137,7 @@ The two line array corresponding to matrix $A$ is defined as
 
 $$
 w_A = \begin{pmatrix}
-i_1 & i_2 & \ldots & i_n \\
+i_1 & i_2 & \ldots & i_n \\\\
 j_1 & j_2 & \ldots & j_n
 \end{pmatrix}
 $$
